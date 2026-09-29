@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DRP Holiday Homes
 
-## Getting Started
+A premium marketing / showcase website for **DRP Holiday Homes** — the short-term
+rental division of D|R|P, a Dubai real estate brokerage.
 
-First, run the development server:
+This is a client-facing demo build: polished design and UX with realistic mock
+data. There is no live booking backend — the search widget and forms are
+interactive UI only.
+
+## Stack
+
+- **Next.js 16** (App Router) + **TypeScript**
+- **Tailwind CSS v4** (design tokens in `src/app/globals.css`)
+- **Framer Motion** for scroll reveals, the FAQ accordion, the testimonial
+  carousel and hero motion
+- `next/image` with remote images from Unsplash
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build   # production build
+npm start       # serve the production build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project structure
 
-## Learn More
+```
+src/
+  app/
+    page.tsx              Home — fully built single-page marketing site
+    explore/page.tsx      Explore Stays — full grid (filters stubbed)
+    property/[slug]/       Property detail — SSG from mock data
+    about/page.tsx
+    contact/page.tsx
+    globals.css           Brand design system (colours, fonts, shadows)
+  components/              PropertyCard, SectionHeading, FAQAccordion,
+                           SearchWidget, Navbar, Footer, Reveal, …
+  data/                    properties, areas, testimonials, faqs, site config
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Brand
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Token            | Value     | Use                                  |
+| ---------------- | --------- | ------------------------------------ |
+| `brand`          | `#f47b49` | CTAs, active states, accents         |
+| `ink`            | `#2e2e2e` | Headings, body, dark sections        |
+| `canvas`         | `#ffffff` | Backgrounds                          |
+| `ink-05…ink-90`  | tints     | Borders, muted text, section fills   |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Headings use **Space Grotesk**, body copy uses **Inter** (both via
+`next/font`).
 
-## Deploy on Vercel
+## Deploying
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Deploys to Vercel with no configuration. `images.unsplash.com` is already
+allow-listed in `next.config.ts`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes for the next round
+
+- Wire the search widget + Explore filters to real availability
+- Property detail: gallery, amenities, map, availability calendar
+- Connect the contact / enquiry form to a real inbox or CRM
+- Swap Unsplash placeholders for DRP's own photography

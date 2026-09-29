@@ -1,26 +1,87 @@
 @import "tailwindcss";
 
+/* ============================================================
+   DRP Holiday Homes — Design System
+   Brand palette (fixed):
+     #f47b49  coral-orange accent
+     #2e2e2e  primary dark neutral
+     #ffffff  primary light background
+   Supporting neutral scale derived from #2e2e2e.
+   ============================================================ */
+
+@theme {
+  --color-brand: #f47b49;
+  --color-brand-600: #e56a37;
+  --color-brand-400: #f79369;
+  --color-brand-soft: #fdeee6;
+
+  --color-ink: #2e2e2e;
+  --color-ink-90: #434343;
+  --color-ink-80: #585858;
+  --color-ink-60: #808080;
+  --color-ink-40: #adadad;
+  --color-ink-20: #d5d5d5;
+  --color-ink-10: #eaeaea;
+  --color-ink-05: #f5f4f3;
+
+  --color-canvas: #ffffff;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif,
+    system-ui, sans-serif;
+
+  --radius-card: 1.25rem;
+
+  --shadow-soft: 0 1px 2px rgba(46, 46, 46, 0.04),
+    0 12px 32px -12px rgba(46, 46, 46, 0.16);
+  --shadow-lift: 0 2px 4px rgba(46, 46, 46, 0.06),
+    0 28px 50px -18px rgba(46, 46, 46, 0.28);
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #2e2e2e;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #f47b49;
+  color: #ffffff;
+}
+
+/* Utility: editorial container */
+@utility container-drp {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-inline: 1.5rem;
+
+  @media (min-width: 1024px) {
+    padding-inline: 2.5rem;
+  }
+}
+
+.display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Thin scrollbar for horizontal scrollers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
