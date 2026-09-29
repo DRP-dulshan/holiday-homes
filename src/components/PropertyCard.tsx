@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Property } from "@/data/properties";
-import { IconArrowUpRight, IconBed, IconUsers } from "./icons";
+import { IconArrowUpRight, IconBed, IconStar, IconUsers } from "./icons";
 
 const aed = new Intl.NumberFormat("en-AE", {
   maximumFractionDigits: 0,
@@ -33,9 +33,15 @@ export function PropertyCard({ property }: { property: Property }) {
         <span className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-600">
           {property.area}
         </span>
-        <h3 className="display mt-2 text-lg font-semibold text-ink">
-          {property.title}
-        </h3>
+        <div className="mt-2 flex items-start justify-between gap-2">
+          <h3 className="display text-lg font-semibold text-ink">
+            {property.title}
+          </h3>
+          <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-ink">
+            <IconStar className="h-3.5 w-3.5 text-brand" />
+            {property.rating}
+          </span>
+        </div>
 
         <div className="mt-4 flex items-center gap-5 text-sm text-ink-80">
           <span className="inline-flex items-center gap-1.5">

@@ -4,21 +4,74 @@ import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
+import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
+import { CountUp } from "@/components/CountUp";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
-import { IconArrowRight } from "@/components/icons";
+import {
+  IconArrowRight,
+  IconBadgeCheck,
+  IconCar,
+  IconKey,
+  IconSofa,
+} from "@/components/icons";
 
 export const metadata: Metadata = {
-  title: "About — DRP Holiday Homes",
+  title: "About",
   description:
     "DRP Holiday Homes is the short-stay division of D|R|P, a Dubai real estate brokerage. Designed, furnished and managed in-house.",
 };
 
 const stats = [
-  { value: "90+", label: "Homes under management" },
-  { value: "6", label: "Dubai neighbourhoods" },
-  { value: "4.9", label: "Average guest rating" },
-  { value: "24/7", label: "Guest support" },
+  { value: 90, suffix: "+", label: "Homes under management" },
+  { value: 6, suffix: "", label: "Dubai neighbourhoods" },
+  { value: 4.9, suffix: "", decimals: 1, label: "Average guest rating" },
+  { value: 24, suffix: "/7", label: "Guest support" },
+];
+
+const differentiators = [
+  {
+    icon: IconSofa,
+    title: "In-house design & furnishing",
+    body: "Every home is styled and furnished by our own studio, not simply listed as we find it.",
+  },
+  {
+    icon: IconKey,
+    title: "Full property management",
+    body: "Housekeeping, maintenance, guest support and pricing are run end-to-end, by one team.",
+  },
+  {
+    icon: IconCar,
+    title: "Car fleet & concierge",
+    body: "Guests travel with a private DRP car and a concierge who arranges the details ahead of arrival.",
+  },
+  {
+    icon: IconBadgeCheck,
+    title: "Vetted, curated portfolio",
+    body: "Every home is personally selected and quality-checked — never an open marketplace.",
+  },
+];
+
+const values = [
+  {
+    title: "One standard, every address",
+    body: "A stay in Business Bay should feel the same as a stay on the Palm. We hold every home to the same bar.",
+  },
+  {
+    title: "Nothing outsourced to strangers",
+    body: "Design, management, transport and support all sit inside DRP — so accountability never gets lost between vendors.",
+  },
+  {
+    title: "Owners and guests, equally",
+    body: "A good guest experience protects an owner's return. We build for both sides of the booking at once.",
+  },
+];
+
+const team = [
+  { initials: "AR", name: "Amina R.", role: "Guest Experience Lead" },
+  { initials: "OK", name: "Omar K.", role: "Head of Property Management" },
+  { initials: "LS", name: "Lena S.", role: "Interior Design Lead" },
+  { initials: "TM", name: "Tariq M.", role: "Owner Relations" },
 ];
 
 export default function AboutPage() {
@@ -61,10 +114,7 @@ export default function AboutPage() {
                 that is genuinely cared for. For guests, it means a home you can
                 book with the confidence of a hotel.
               </p>
-              <Link
-                href="/contact"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
-              >
+              <Link href="/contact" className="btn btn-primary mt-6">
                 Talk to the team
                 <IconArrowRight className="h-4 w-4" />
               </Link>
@@ -77,11 +127,72 @@ export default function AboutPage() {
             {stats.map((s, i) => (
               <Reveal key={s.label} delay={i * 0.08}>
                 <p className="display text-4xl font-bold text-brand-400">
-                  {s.value}
+                  <CountUp value={s.value} suffix={s.suffix} decimals={s.decimals ?? 0} />
                 </p>
                 <p className="mt-2 text-sm text-white/60">{s.label}</p>
               </Reveal>
             ))}
+          </div>
+        </section>
+
+        <section className="bg-canvas py-16 md:py-24">
+          <div className="container-drp">
+            <SectionHeading
+              eyebrow="What sets us apart"
+              title="The difference is in what we own and control."
+            />
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {differentiators.map((d, i) => (
+                <Reveal
+                  as="article"
+                  key={d.title}
+                  delay={i * 0.06}
+                  className="flex flex-col rounded-card border border-ink-10 bg-canvas p-7"
+                >
+                  <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft text-brand-600">
+                    <d.icon className="h-6 w-6" />
+                  </span>
+                  <h3 className="display mt-6 text-lg font-semibold text-ink">{d.title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-80">{d.body}</p>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-ink-05 py-16 md:py-24">
+          <div className="container-drp">
+            <SectionHeading eyebrow="Values" title="What guides how we operate." />
+            <div className="mt-14 grid gap-8 sm:grid-cols-3">
+              {values.map((v, i) => (
+                <Reveal key={v.title} delay={i * 0.08}>
+                  <span className="display block h-1 w-10 rounded-full bg-brand" />
+                  <h3 className="display mt-5 text-lg font-semibold text-ink">{v.title}</h3>
+                  <p className="mt-2.5 text-sm leading-relaxed text-ink-80">{v.body}</p>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-canvas py-16 md:py-24">
+          <div className="container-drp">
+            <SectionHeading
+              eyebrow="The team"
+              title="A small team you'll actually talk to."
+              intro="Placeholder profiles for this demo — real photos and bios go here before launch."
+            />
+            <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {team.map((m, i) => (
+                <Reveal key={m.name} delay={i * 0.06} className="text-center">
+                  <span className="display mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-brand-soft text-2xl font-semibold text-brand-600">
+                    {m.initials}
+                  </span>
+                  <h3 className="display mt-4 text-base font-semibold text-ink">{m.name}</h3>
+                  <p className="mt-1 text-sm text-ink-60">{m.role}</p>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </section>
       </main>

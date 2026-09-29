@@ -85,3 +85,102 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ============================================================
+   Button system — primary / secondary / ghost.
+   Shared sizing + focus-visible + disabled state; color varies by variant.
+   ============================================================ */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding-inline: 1.5rem;
+  padding-block: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 200ms ease;
+  outline-offset: 2px;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+@utility btn-sm {
+  padding-inline: 1.15rem;
+  padding-block: 0.65rem;
+  font-size: 0.8125rem;
+}
+
+@utility btn-primary {
+  background: var(--color-brand);
+  color: white;
+  box-shadow: var(--shadow-soft);
+
+  &:hover:not(:disabled) {
+    background: var(--color-brand-600);
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+@utility btn-secondary {
+  border: 1px solid var(--color-ink-20);
+  color: var(--color-ink);
+  background: transparent;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-brand);
+    color: var(--color-brand-600);
+  }
+}
+
+@utility btn-secondary-dark {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: white;
+  background: transparent;
+
+  &:hover:not(:disabled) {
+    border-color: white;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@utility btn-ghost {
+  color: var(--color-ink-80);
+  background: transparent;
+
+  &:hover:not(:disabled) {
+    color: var(--color-ink);
+    background: var(--color-ink-05);
+  }
+}
+
+/* Global focus-visible ring for any interactive element without a bespoke style */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

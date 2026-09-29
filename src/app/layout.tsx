@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import { site } from "@/config/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -14,17 +15,49 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
+const defaultTitle = "DRP Holiday Homes — Dubai's Curated Short-Stay Collection";
+const defaultDescription =
+  "DRP Holiday Homes is Dubai's boutique collection of professionally designed, fully managed holiday homes across Palm Jumeirah, Dubai Marina, Downtown and beyond. A division of D|R|P.";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://drpholidayhomes.ae"),
-  title: "DRP Holiday Homes — Dubai's Curated Short-Stay Collection",
-  description:
-    "DRP Holiday Homes is Dubai's boutique collection of professionally designed, fully managed holiday homes across Palm Jumeirah, Dubai Marina, Downtown and beyond. A division of D|R|P.",
+  metadataBase: new URL(site.url),
+  title: {
+    default: defaultTitle,
+    template: `%s — ${site.name}`,
+  },
+  description: defaultDescription,
+  keywords: [
+    "Dubai holiday homes",
+    "Dubai short-term rentals",
+    "Palm Jumeirah villa rental",
+    "Dubai Marina apartment rental",
+    "furnished apartments Dubai",
+    "DRP Holiday Homes",
+  ],
+  authors: [{ name: site.name }],
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
   openGraph: {
-    title: "DRP Holiday Homes — Dubai's Curated Short-Stay Collection",
+    title: defaultTitle,
     description:
       "Professionally designed, fully managed holiday homes across Dubai's most sought-after addresses.",
     type: "website",
+    url: site.url,
+    siteName: site.name,
+    locale: "en_AE",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: defaultTitle,
+    description:
+      "Professionally designed, fully managed holiday homes across Dubai's most sought-after addresses.",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2e2e2e",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

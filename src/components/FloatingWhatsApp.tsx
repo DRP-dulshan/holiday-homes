@@ -1,4 +1,4 @@
-import { site } from "@/data/site";
+import { site } from "@/config/site";
 import { IconWhatsApp } from "./icons";
 
 export function FloatingWhatsApp() {

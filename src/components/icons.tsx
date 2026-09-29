@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 
-type IconProps = SVGProps<SVGSVGElement>;
+export type IconProps = SVGProps<SVGSVGElement>;
 
 const base = {
   width: 24,
@@ -156,5 +156,108 @@ export const IconBroom = (p: IconProps) => (
     <path d="M19 4 12 11" />
     <path d="M8.5 10.5 13.5 15.5" />
     <path d="M11 13c-2 0-4 1-5 3l-2 4 4-2c2-1 3-3 3-5z" />
+  </svg>
+);
+
+export const IconPool = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M2 17.5c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0" />
+    <path d="M2 21c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0" />
+    <path d="M7 13V6a2 2 0 0 1 2-2h2l4 4v5" />
+    <circle cx="17" cy="6" r="1.4" />
+  </svg>
+);
+
+export const IconParking = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <rect x="3.5" y="3.5" width="17" height="17" rx="3" />
+    <path d="M9 16V8h3.2a2.6 2.6 0 0 1 0 5.2H9" />
+  </svg>
+);
+
+export const IconGym = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M4 9v6M20 9v6" />
+    <path d="M2 12h2M20 12h2" />
+    <rect x="6" y="7" width="2.4" height="10" rx="1" />
+    <rect x="15.6" y="7" width="2.4" height="10" rx="1" />
+    <path d="M8.4 12h7.2" />
+  </svg>
+);
+
+export const IconWaves = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M2 8c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0" />
+    <path d="M2 13c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0" />
+    <path d="M2 18c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0" />
+  </svg>
+);
+
+export const IconLeaf = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M20 4c-9 0-16 5-16 14 9 0 16-5 16-14z" />
+    <path d="M6 18C10 12 14 9 20 4" />
+  </svg>
+);
+
+export const IconWasher = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <rect x="4" y="3" width="16" height="18" rx="2.5" />
+    <circle cx="12" cy="13" r="4.5" />
+    <circle cx="12" cy="13" r="1.6" />
+    <path d="M8 6.2h.01M11 6.2h.01" />
+  </svg>
+);
+
+export const IconLaptop = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <rect x="4.5" y="4.5" width="15" height="10" rx="1.5" />
+    <path d="M2.5 18.5h19" />
+    <path d="M9 18.5l.6-2h4.8l.6 2" />
+  </svg>
+);
+
+export const IconElevator = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <rect x="5" y="3" width="14" height="18" rx="2" />
+    <path d="M10 9l2-2 2 2M10 15l2 2 2-2" />
+  </svg>
+);
+
+export const IconPaw = (p: IconProps) => (
+  <svg {...base} fill="currentColor" stroke="none" {...p}>
+    <circle cx="7" cy="8" r="1.8" />
+    <circle cx="12" cy="6" r="1.8" />
+    <circle cx="17" cy="8" r="1.8" />
+    <circle cx="19" cy="12.5" r="1.6" />
+    <path d="M12 12c-3.2 0-6 2-6 4.6 0 1.6 1.3 2.6 2.9 2.2.9-.2 1.7-.7 3.1-.7s2.2.5 3.1.7c1.6.4 2.9-.6 2.9-2.2 0-2.6-2.8-4.6-6-4.6z" />
+  </svg>
+);
+
+export const IconSmartHome = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M4 11l8-7 8 7" />
+    <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" />
+    <circle cx="12" cy="15" r="2" />
+  </svg>
+);
+
+export const IconRuler = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="7" width="18" height="10" rx="1.5" transform="rotate(0 12 12)" />
+    <path d="M7 7v3M11 7v2M15 7v3M19 7v2" />
+  </svg>
+);
+
+export const IconClose = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+);
+
+export const IconEye = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" />
+    <circle cx="12" cy="12" r="2.6" />
   </svg>
 );

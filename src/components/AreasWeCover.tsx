@@ -24,7 +24,7 @@ export function AreasWeCover() {
             className="min-w-[78%] sm:min-w-[46%] lg:min-w-0"
           >
             <Link
-              href={`/explore?area=${area.slug}`}
+              href={`/areas/${area.slug}`}
               className="group relative block h-80 overflow-hidden rounded-card"
             >
               <Image

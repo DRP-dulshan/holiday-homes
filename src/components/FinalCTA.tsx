@@ -1,7 +1,8 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ContactForm } from "./ContactForm";
 import { Reveal } from "./Reveal";
-import { site } from "@/data/site";
+import { site } from "@/config/site";
 import { IconArrowRight, IconWhatsApp } from "./icons";
 
 export function FinalCTA() {
@@ -33,19 +34,13 @@ export function FinalCTA() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#contact-form"
-              className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
-            >
+            <Link href="/explore" className="btn btn-primary">
               Book a stay
               <IconArrowRight className="h-4 w-4" />
-            </a>
-            <a
-              href="#contact-form"
-              className="inline-flex items-center gap-2 rounded-full border border-white/25 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10"
-            >
+            </Link>
+            <Link href="/owners" className="btn btn-secondary-dark">
               List your property with DRP
-            </a>
+            </Link>
           </div>
 
           <div className="mt-8 flex flex-wrap gap-6 text-sm text-white/70">
@@ -69,7 +64,7 @@ export function FinalCTA() {
 
         <Reveal delay={0.1} className="scroll-mt-28" >
           <div id="contact-form" className="text-ink">
-            <ContactForm />
+            <ContactForm source="home-final-cta" />
           </div>
         </Reveal>
       </div>

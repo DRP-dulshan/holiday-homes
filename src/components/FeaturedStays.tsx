@@ -5,7 +5,21 @@ import { SectionHeading } from "./SectionHeading";
 import { Reveal } from "./Reveal";
 import { IconArrowRight } from "./icons";
 
+// One flagship home per area for the homepage grid — the full collection lives at /explore.
+const FEATURED_SLUGS = [
+  "palm-signature-villa",
+  "marina-cayan-designer-loft",
+  "jbr-family-beach-apartment",
+  "downtown-opera-district-penthouse",
+  "business-bay-corner-penthouse",
+  "jvc-circle-villa",
+];
+
 export function FeaturedStays() {
+  const featured = FEATURED_SLUGS.map((slug) =>
+    properties.find((p) => p.slug === slug),
+  ).filter((p): p is NonNullable<typeof p> => Boolean(p));
+
   return (
     <section id="stays" className="bg-ink-05 py-24 md:py-32">
       <div className="container-drp">
@@ -27,7 +41,7 @@ export function FeaturedStays() {
         </div>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {properties.map((property, i) => (
+          {featured.map((property, i) => (
             <Reveal key={property.id} delay={(i % 3) * 0.08}>
               <PropertyCard property={property} />
             </Reveal>

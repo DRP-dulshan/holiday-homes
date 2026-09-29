@@ -2,19 +2,32 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
-import { PropertyCard } from "@/components/PropertyCard";
-import { Reveal } from "@/components/Reveal";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
+import { ExploreClient } from "./ExploreClient";
 import { properties } from "@/data/properties";
-import { areas } from "@/data/areas";
+import { applyFilters, filtersFromSearchParams } from "@/lib/filters";
 
 export const metadata: Metadata = {
-  title: "Explore Stays — DRP Holiday Homes",
+  title: "Explore Stays",
   description:
-    "Browse the full DRP Holiday Homes collection across Dubai's most sought-after neighbourhoods.",
+    "Filter the full DRP Holiday Homes collection by area, property type, bedrooms, guests, price and amenities.",
 };
 
-export default function ExplorePage() {
+export default async function ExplorePage({
+  searchParams,
+}: PageProps<"/explore">) {
+  const resolved = await searchParams;
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(resolved)) {
+    if (typeof value === "string") params.set(key, value);
+    else if (Array.isArray(value) && value[0]) params.set(key, value[0]);
+  }
+
+  const filters = filtersFromSearchParams(params);
+  const results = applyFilters(properties, filters);
+  const checkIn = params.get("checkIn");
+  const checkOut = params.get("checkOut");
+
   return (
     <>
       <Navbar />
@@ -22,34 +35,14 @@ export default function ExplorePage() {
         <PageHero
           eyebrow="Explore stays"
           title="The full collection."
-          intro="Filtering, availability and instant booking are coming in the next release. For now, here is every home currently in the DRP collection."
+          intro="Every home in the DRP collection, filterable by area, type, budget and the amenities that matter to you."
         />
-
-        <section className="bg-canvas py-16 md:py-24">
-          <div className="container-drp">
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-white">
-                All areas
-              </span>
-              {areas.map((a) => (
-                <span
-                  key={a.slug}
-                  className="rounded-full border border-ink-20 px-4 py-1.5 text-sm font-medium text-ink-80"
-                >
-                  {a.name}
-                </span>
-              ))}
-            </div>
-
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {properties.map((property, i) => (
-                <Reveal key={property.id} delay={(i % 3) * 0.08}>
-                  <PropertyCard property={property} />
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
+        <ExploreClient
+          filters={filters}
+          results={results}
+          checkIn={checkIn}
+          checkOut={checkOut}
+        />
       </main>
       <Footer />
       <FloatingWhatsApp />

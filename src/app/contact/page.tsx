@@ -4,14 +4,15 @@ import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
 import { ContactForm } from "@/components/ContactForm";
 import { Reveal } from "@/components/Reveal";
+import { MapEmbed } from "@/components/MapEmbed";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
-import { site } from "@/data/site";
+import { site } from "@/config/site";
 import { IconWhatsApp } from "@/components/icons";
 
 export const metadata: Metadata = {
-  title: "Contact — DRP Holiday Homes",
+  title: "Contact",
   description:
-    "Enquire about a stay, or ask about bringing your Dubai property into the DRP collection.",
+    "Enquire about a stay, or ask about bringing your Dubai property into the DRP collection. Call, WhatsApp or send a note.",
 };
 
 export default function ContactPage() {
@@ -78,13 +79,32 @@ export default function ContactPage() {
                   <dt className="font-semibold uppercase tracking-[0.12em] text-ink-60">
                     Office
                   </dt>
-                  <dd className="mt-1 text-ink-80">{site.address}</dd>
+                  <dd className="mt-1 text-ink-80">{site.address.full}</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold uppercase tracking-[0.12em] text-ink-60">
+                    Office hours
+                  </dt>
+                  <dd className="mt-1.5 space-y-1 text-ink-80">
+                    {site.officeHours.map((h) => (
+                      <div key={h.days} className="flex justify-between gap-4 sm:w-72">
+                        <span className="text-ink-60">{h.days}</span>
+                        <span>{h.hours}</span>
+                      </div>
+                    ))}
+                  </dd>
                 </div>
               </dl>
+
+              <MapEmbed
+                query={site.address.full}
+                label="the DRP office"
+                className="mt-6 h-56"
+              />
             </Reveal>
 
             <Reveal delay={0.1}>
-              <ContactForm />
+              <ContactForm source="contact-page" />
             </Reveal>
           </div>
         </section>

@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
-import { IconArrowRight, IconBed, IconPin, IconUsers } from "@/components/icons";
+import { PropertyGallery } from "@/components/PropertyGallery";
+import { AmenitiesList } from "@/components/AmenitiesList";
+import { BookingCard } from "@/components/BookingCard";
+import { MapEmbed } from "@/components/MapEmbed";
+import { SimilarStays } from "@/components/SimilarStays";
+import {
+  IconArrowRight,
+  IconBed,
+  IconPin,
+  IconRuler,
+  IconStar,
+  IconUsers,
+} from "@/components/icons";
 import { getProperty, properties } from "@/data/properties";
-import { site } from "@/data/site";
-
-const aed = new Intl.NumberFormat("en-AE", { maximumFractionDigits: 0 });
 
 export function generateStaticParams() {
   return properties.map((p) => ({ slug: p.slug }));
@@ -20,10 +27,11 @@ export async function generateMetadata({
 }: PageProps<"/property/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const property = getProperty(slug);
-  if (!property) return { title: "Stay not found — DRP Holiday Homes" };
+  if (!property) return { title: "Stay not found" };
   return {
-    title: `${property.title}, ${property.area} — DRP Holiday Homes`,
-    description: property.blurb,
+    title: `${property.title}, ${property.area}`,
+    description: property.description.slice(0, 155),
+    openGraph: { images: [{ url: property.image }] },
   };
 }
 
@@ -34,44 +42,60 @@ export default async function PropertyPage({
   const property = getProperty(slug);
   if (!property) notFound();
 
-  const more = properties.filter((p) => p.slug !== slug).slice(0, 3);
-
   return (
     <>
       <Navbar />
-      <main className="flex-1">
-        <div className="relative h-[52vh] min-h-[380px] w-full">
-          <Image
-            src={property.image}
-            alt={`${property.title}, ${property.area}`}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-ink/30" />
-          <div className="container-drp absolute inset-x-0 bottom-0 pb-10 text-white">
-            <span className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-[0.14em] text-brand-400">
-              <IconPin className="h-4 w-4" />
-              {property.area}
+      <main className="flex-1 pb-24 lg:pb-0">
+        <div className="container-drp pt-24 md:pt-28">
+          <nav className="flex items-center gap-1.5 text-xs text-ink-60">
+            <Link href="/" className="hover:text-brand-600">
+              Home
+            </Link>
+            <span>/</span>
+            <Link href="/explore" className="hover:text-brand-600">
+              Explore
+            </Link>
+            <span>/</span>
+            <span className="text-ink-80">{property.title}</span>
+          </nav>
+
+          <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-[0.14em] text-brand-600">
+                <IconPin className="h-4 w-4" />
+                {property.area}
+              </span>
+              <h1 className="display mt-1 text-3xl font-semibold text-ink sm:text-4xl">
+                {property.title}
+              </h1>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-ink-05 px-3.5 py-2 text-sm font-semibold text-ink">
+              <IconStar className="h-4 w-4 text-brand" />
+              {property.rating}
+              <span className="font-normal text-ink-60">({property.reviews} reviews)</span>
             </span>
-            <h1 className="display mt-2 text-4xl sm:text-5xl">
-              {property.title}
-            </h1>
+          </div>
+
+          <div className="mt-6">
+            <PropertyGallery images={property.gallery} title={property.title} />
           </div>
         </div>
 
-        <section className="bg-canvas py-16 md:py-20">
+        <section className="bg-canvas py-12 md:py-16">
           <div className="container-drp grid gap-12 lg:grid-cols-[1.6fr_1fr]">
             <div>
-              <div className="flex flex-wrap gap-6 border-b border-ink-10 pb-6 text-sm text-ink-80">
+              <div className="flex flex-wrap gap-x-8 gap-y-3 border-b border-ink-10 pb-6 text-sm text-ink-80">
                 <span className="inline-flex items-center gap-2">
                   <IconBed className="h-5 w-5 text-brand-600" />
-                  {property.bedrooms} bedrooms
+                  {property.bedrooms} bedrooms · {property.bathrooms} baths
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <IconUsers className="h-5 w-5 text-brand-600" />
                   Sleeps {property.guests}
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <IconRuler className="h-5 w-5 text-brand-600" />
+                  {property.sizeSqft.toLocaleString()} sq ft
                 </span>
                 <span className="rounded-full bg-brand-soft px-3 py-1 font-semibold text-brand-600">
                   {property.tag}
@@ -82,102 +106,82 @@ export default async function PropertyPage({
                 About this home
               </h2>
               <p className="mt-4 text-base leading-relaxed text-ink-80">
-                {property.blurb}
-              </p>
-              <p className="mt-4 text-base leading-relaxed text-ink-80">
-                Like every home in the collection, this property is furnished by
-                the DRP design studio, professionally cleaned between stays, and
-                supported around the clock. Guests receive access to the DRP car
-                fleet and concierge for the duration of their stay.
+                {property.description}
               </p>
 
-              <div className="mt-8 rounded-card border border-ink-10 bg-ink-05 p-6 text-sm text-ink-60">
-                This is a preview page built with sample data. A full gallery,
-                amenity list, map and live availability calendar arrive in the
-                next release.
+              <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+                {property.highlights.map((h) => (
+                  <li key={h} className="flex items-start gap-2.5 text-sm text-ink-80">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+                    {h}
+                  </li>
+                ))}
+              </ul>
+
+              <h2 className="display mt-10 text-2xl font-semibold text-ink">
+                What this place offers
+              </h2>
+              <div className="mt-5">
+                <AmenitiesList amenities={property.amenities} />
               </div>
-            </div>
 
-            <aside className="lg:sticky lg:top-28 lg:self-start">
-              <div className="rounded-card border border-ink-10 bg-canvas p-6 shadow-soft">
-                <p className="text-sm text-ink-60">
-                  <span className="text-2xl font-semibold text-ink">
-                    AED {aed.format(property.pricePerNight)}
-                  </span>{" "}
-                  / night
-                </p>
+              <div className="mt-10 grid gap-8 sm:grid-cols-2">
+                <div>
+                  <h3 className="display text-lg font-semibold text-ink">House rules</h3>
+                  <ul className="mt-4 space-y-2 text-sm text-ink-80">
+                    {property.houseRules.map((r) => (
+                      <li key={r} className="flex items-start gap-2.5">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-20" />
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="display text-lg font-semibold text-ink">Check-in / check-out</h3>
+                  <dl className="mt-4 space-y-2 text-sm text-ink-80">
+                    <div className="flex justify-between border-b border-ink-10 pb-2">
+                      <dt>Check-in</dt>
+                      <dd className="font-semibold text-ink">after {property.checkIn}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Check-out</dt>
+                      <dd className="font-semibold text-ink">before {property.checkOut}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+
+              <h2 className="display mt-10 text-2xl font-semibold text-ink">Location</h2>
+              <p className="mt-2 text-sm text-ink-80">{property.area}, Dubai</p>
+              <MapEmbed
+                query={`${property.area}, Dubai, United Arab Emirates`}
+                label={property.area}
+                className="mt-4 h-72"
+              />
+
+              <div className="mt-10 rounded-card border border-ink-10 bg-ink-05 p-6 text-sm text-ink-80">
+                Every DRP home is furnished by our own design studio and
+                cleaned, inspected and restocked between stays. Guests also
+                get access to the DRP car fleet and a concierge for the
+                duration of their stay.
                 <Link
-                  href="/contact"
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+                  href="/about"
+                  className="ml-1 inline-flex items-center gap-1 font-semibold text-brand-600 hover:underline"
                 >
-                  Enquire about this stay
-                  <IconArrowRight className="h-4 w-4" />
+                  Read more about DRP
+                  <IconArrowRight className="h-3.5 w-3.5" />
                 </Link>
-                <a
-                  href={site.whatsappHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-ink-20 px-6 py-3.5 text-sm font-semibold text-ink transition-colors hover:border-brand hover:text-brand-600"
-                >
-                  Ask on WhatsApp
-                </a>
               </div>
-            </aside>
+            </div>
+
+            <BookingCard property={property} />
           </div>
         </section>
 
-        <section className="bg-ink-05 py-16 md:py-24">
-          <div className="container-drp">
-            <h2 className="display text-2xl font-semibold text-ink">
-              More homes to consider
-            </h2>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {more.map((p) => (
-                <PropertyMini key={p.id} slug={p.slug} title={p.title} area={p.area} image={p.image} />
-              ))}
-            </div>
-          </div>
-        </section>
+        <SimilarStays current={property} />
       </main>
       <Footer />
-      <FloatingWhatsApp />
     </>
-  );
-}
-
-function PropertyMini({
-  slug,
-  title,
-  area,
-  image,
-}: {
-  slug: string;
-  title: string;
-  area: string;
-  image: string;
-}) {
-  return (
-    <Link
-      href={`/property/${slug}`}
-      className="group overflow-hidden rounded-card border border-ink-10 bg-canvas shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
-    >
-      <div className="relative aspect-[4/3]">
-        <Image
-          src={image}
-          alt={title}
-          fill
-          sizes="(min-width: 1024px) 30vw, 90vw"
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-      </div>
-      <div className="p-5">
-        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-600">
-          {area}
-        </span>
-        <h3 className="display mt-1.5 text-base font-semibold text-ink">
-          {title}
-        </h3>
-      </div>
-    </Link>
   );
 }

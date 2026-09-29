@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { areas } from "@/data/areas";
-import { navLinks, site, socialLinks } from "@/data/site";
+import { navLinks, site, socialLinks } from "@/config/site";
 import { IconWhatsApp } from "./icons";
 
 export function Footer() {
@@ -56,7 +56,7 @@ export function Footer() {
               {areas.map((a) => (
                 <li key={a.slug}>
                   <Link
-                    href={`/explore?area=${a.slug}`}
+                    href={`/areas/${a.slug}`}
                     className="text-white/70 transition-colors hover:text-brand"
                   >
                     {a.name}
@@ -98,7 +98,7 @@ export function Footer() {
                   Message us on WhatsApp
                 </a>
               </li>
-              <li className="pt-1 text-white/45">{site.address}</li>
+              <li className="pt-1 text-white/45">{site.address.full}</li>
             </ul>
           </div>
         </div>
@@ -115,7 +115,7 @@ export function Footer() {
             <Link href="/" className="hover:text-white/70">
               Terms
             </Link>
-            <span>Licensed holiday home operator · Dubai DET</span>
+            <span>{site.license}</span>
           </p>
         </div>
       </div>

@@ -51,7 +51,7 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.08 }}
             className="display mt-6 text-4xl leading-[1.05] text-white sm:text-5xl md:text-6xl lg:text-[4.25rem]"
           >
-            Dubai's most trusted collection of curated short stays.
+            Dubai&rsquo;s most trusted collection of curated short stays.
           </motion.h1>
 
           <motion.p
