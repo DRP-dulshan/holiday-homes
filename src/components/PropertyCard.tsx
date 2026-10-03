@@ -7,10 +7,17 @@ const aed = new Intl.NumberFormat("en-AE", {
   maximumFractionDigits: 0,
 });
 
-export function PropertyCard({ property }: { property: Property }) {
+export function PropertyCard({
+  property,
+  query,
+}: {
+  property: Property;
+  /** Search context (dates, guests) carried through to the booking card. */
+  query?: string;
+}) {
   return (
     <Link
-      href={`/property/${property.slug}`}
+      href={`/property/${property.slug}${query ? `?${query}` : ""}`}
       className="group flex flex-col overflow-hidden rounded-card border border-ink-10 bg-canvas shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift"
     >
       <div className="relative aspect-[4/3] overflow-hidden">

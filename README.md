@@ -1,70 +1,136 @@
 # DRP Holiday Homes
 
-A premium marketing / showcase website for **DRP Holiday Homes** — the short-term
-rental division of D|R|P, a Dubai real estate brokerage.
+The website for **DRP Holiday Homes**, the short-term rental division of
+D|R|P, a Dubai real estate brokerage.
 
-This is a client-facing demo build: polished design and UX with realistic mock
-data. There is no live booking backend — the search widget and forms are
-interactive UI only.
+Guests can search homes by date, see live availability, request a booking,
+and look up or cancel it later. The team works from a password-protected
+dashboard where they confirm or decline requests, block dates and handle
+enquiries. Email notifications go out at each step.
+
+## Features
+
+**Guests**
+
+- Search by area, dates and party size from the home page or `/explore`.
+  When dates are given, homes that are already booked for them are hidden.
+- Property pages have a live availability calendar. Booked nights are
+  crossed out, and the minimum stay and maximum guest count are enforced.
+- `/book/[slug]` is the checkout: guest details, the price breakdown
+  (nightly rate, cleaning fee, Tourism Dirham fee) and the cancellation
+  policy. The server re-checks availability under a lock, so the same
+  nights can't be booked twice.
+- `/booking/[ref]` is the booking page. It's reached through a signed link
+  sent by email, or by looking up the reference and email at `/booking`.
+  Guests can see the status and cancel there.
+- Enquiry forms (contact, owners and property pages) are saved and emailed
+  to the team. They include a honeypot field and rate limiting against spam.
+- `/terms` and `/privacy` pages.
+
+**Team dashboard (`/admin`)**
+
+- Overview: requests to review, arrivals in the next 14 days, guests
+  currently staying, new enquiries and upcoming confirmed revenue.
+- Bookings: filter, search, and confirm, decline, cancel or re-open a
+  booking. The guest is emailed on each change.
+- Availability: an occupancy grid for every home over 35 days, and a form
+  to block dates (owner stays, maintenance, bookings taken elsewhere).
+- Enquiries: reply by email, mark as handled, or delete.
+- CSV export of bookings and enquiries.
+
+**Not included:** online card payment. A booking stays a *request* until
+the team confirms it and arranges payment directly. Online payment
+(Stripe, Network International, etc.) can be added to the confirmation
+step later.
 
 ## Stack
 
-- **Next.js 16** (App Router) + **TypeScript**
+- **Next.js 16** (App Router, Route Handlers, Server Actions) + **TypeScript**
 - **Tailwind CSS v4** (design tokens in `src/app/globals.css`)
-- **Framer Motion** for scroll reveals, the FAQ accordion, the testimonial
-  carousel and hero motion
-- `next/image` with remote images from Unsplash
+- **Framer Motion**, **react-hook-form** + **zod**
+- Storage: JSON files written atomically through a single write queue
+  (`src/lib/server/store.ts`). There is no database to set up.
+- Email: [Resend](https://resend.com) over HTTPS (optional)
 
 ## Getting started
 
 ```bash
 npm install
+cp .env.example .env.local   # optional in development
 npm run dev
 ```
 
-Open http://localhost:3000.
+Open http://localhost:3000. The team dashboard is at
+http://localhost:3000/admin, and the development password is `drp-admin`.
+
+Without email settings, every email is printed to the terminal, so you can
+test all the flows locally.
+
+## Configuration
+
+| Variable          | Purpose                                                                 |
+| ----------------- | ----------------------------------------------------------------------- |
+| `ADMIN_PASSWORD`  | Dashboard password. **Required in production**: the dashboard stays locked without it. |
+| `APP_SECRET`      | Signs booking links and admin sessions. If unset, one is generated in `DATA_DIR`. |
+| `DATA_DIR`        | Where data files live (default `./.data`). Must be on a persistent disk. |
+| `SITE_URL`        | Public URL used in email links.                                          |
+| `RESEND_API_KEY`, `MAIL_FROM` | Turn on real email delivery.                                 |
+| `NOTIFY_EMAIL`    | Inbox for team notifications (default: `site.email`).                   |
+
+Business details live in `src/config/site.ts`: phone, WhatsApp, emails,
+address and the **booking rules**: minimum and maximum nights, how far
+ahead guests can book, the Tourism Dirham fee and the cancellation window.
+The homes themselves are in `src/data/properties.ts`.
+
+## Deploying
+
+The data store writes to the local disk, so deploy somewhere with a
+**persistent filesystem**: a VPS, Docker with a volume, or Render or
+Railway with a disk. Run it as a single instance.
 
 ```bash
-npm run build   # production build
-npm start       # serve the production build
+npm run build
+ADMIN_PASSWORD=… APP_SECRET=… DATA_DIR=/var/lib/drp npm start
 ```
+
+Serverless hosts such as Vercel have an ephemeral filesystem, so bookings
+would be lost there. To host on one, swap the four functions in
+`src/lib/server/store.ts` for a hosted database (Postgres, Redis, etc.).
+Nothing else needs to change.
+
+Back up `DATA_DIR` regularly. It holds all bookings and enquiries.
 
 ## Project structure
 
 ```
 src/
   app/
-    page.tsx              Home — fully built single-page marketing site
-    explore/page.tsx      Explore Stays — full grid (filters stubbed)
-    property/[slug]/       Property detail — SSG from mock data
-    about/page.tsx
-    contact/page.tsx
-    globals.css           Brand design system (colours, fonts, shadows)
-  components/              PropertyCard, SectionHeading, FAQAccordion,
-                           SearchWidget, Navbar, Footer, Reveal, …
-  data/                    properties, areas, testimonials, faqs, site config
+    page.tsx                  Home
+    explore/                  Search + filters (availability-aware)
+    property/[slug]/          Property detail + booking card
+    book/[slug]/              Checkout
+    booking/                  Manage my booking (lookup, detail, cancel)
+    admin/                    Team dashboard (login, overview, bookings,
+                              availability, enquiries)
+    api/
+      bookings/               POST — create a booking request
+      enquiry/                POST — send an enquiry
+      properties/[slug]/availability/   GET — booked nights
+      admin/export/           GET — CSV export (admin only)
+    terms/, privacy/, about/, contact/, owners/, areas/[slug]/
+  components/                 UI (booking/ holds calendar, checkout, summary)
+  config/site.ts              Business details + booking rules
+  data/                       Properties, areas, testimonials, FAQs
+  lib/
+    dates.ts, pricing.ts      Shared date maths and price quotes
+    server/                   Store, bookings, enquiries, mailer, auth
 ```
 
-## Brand
+## Before launch
 
-| Token            | Value     | Use                                  |
-| ---------------- | --------- | ------------------------------------ |
-| `brand`          | `#f47b49` | CTAs, active states, accents         |
-| `ink`            | `#2e2e2e` | Headings, body, dark sections        |
-| `canvas`         | `#ffffff` | Backgrounds                          |
-| `ink-05…ink-90`  | tints     | Borders, muted text, section fills   |
-
-Headings use **Space Grotesk**, body copy uses **Inter** (both via
-`next/font`).
-
-## Deploying
-
-Deploys to Vercel with no configuration. `images.unsplash.com` is already
-allow-listed in `next.config.ts`.
-
-## Notes for the next round
-
-- Wire the search widget + Explore filters to real availability
-- Property detail: gallery, amenities, map, availability calendar
-- Connect the contact / enquiry form to a real inbox or CRM
-- Swap Unsplash placeholders for DRP's own photography
+- Confirm the phone, WhatsApp, emails and social links in `src/config/site.ts`.
+- Set `ADMIN_PASSWORD`, `APP_SECRET`, `DATA_DIR`, `SITE_URL` and the Resend
+  variables, and verify the sending domain in Resend.
+- Have `/terms` and `/privacy` reviewed against your DET licence and the
+  UAE PDPL.
+- Replace the Unsplash photos and the placeholder team profiles with DRP's own.

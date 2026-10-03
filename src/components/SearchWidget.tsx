@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { areas } from "@/data/areas";
+import { properties } from "@/data/properties";
+import { addDays } from "@/lib/dates";
+import { useToday } from "@/lib/useToday";
+
+const MAX_GUESTS = Math.max(...properties.map((p) => p.guests));
 import { IconCalendar, IconPin, IconSearch, IconUsers } from "./icons";
 
 /** Hero search widget — submitting navigates to /explore with the selection pre-applied. */
@@ -12,6 +17,7 @@ export function SearchWidget() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState("2");
+  const today = useToday();
 
   return (
     <form
@@ -19,8 +25,10 @@ export function SearchWidget() {
         e.preventDefault();
         const params = new URLSearchParams();
         if (area) params.set("area", area);
-        if (checkIn) params.set("checkIn", checkIn);
-        if (checkOut) params.set("checkOut", checkOut);
+        if (checkIn && checkOut && checkOut > checkIn) {
+          params.set("checkIn", checkIn);
+          params.set("checkOut", checkOut);
+        }
         if (guests && guests !== "1") params.set("guests", guests);
         const qs = params.toString();
         router.push(qs ? `/explore?${qs}` : "/explore");
@@ -47,7 +55,11 @@ export function SearchWidget() {
           <input
             type="date"
             value={checkIn}
-            onChange={(e) => setCheckIn(e.target.value)}
+            min={today}
+            onChange={(e) => {
+              setCheckIn(e.target.value);
+              if (checkOut && e.target.value >= checkOut) setCheckOut("");
+            }}
             className="w-full bg-transparent text-sm font-medium text-ink outline-none"
           />
         </Field>
@@ -56,7 +68,7 @@ export function SearchWidget() {
           <input
             type="date"
             value={checkOut}
-            min={checkIn || undefined}
+            min={checkIn ? addDays(checkIn, 1) : today}
             onChange={(e) => setCheckOut(e.target.value)}
             className="w-full bg-transparent text-sm font-medium text-ink outline-none"
           />
@@ -68,7 +80,7 @@ export function SearchWidget() {
             onChange={(e) => setGuests(e.target.value)}
             className="w-full bg-transparent text-sm font-medium text-ink outline-none"
           >
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+            {Array.from({ length: MAX_GUESTS }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>
                 {n} {n === 1 ? "guest" : "guests"}
               </option>
@@ -85,7 +97,7 @@ export function SearchWidget() {
         </button>
       </div>
       <p className="px-3 py-2 text-center text-xs text-white/70">
-        Real-time availability across every DRP address is confirmed when you enquire.
+        Live availability across every DRP home — book online in minutes.
       </p>
     </form>
   );

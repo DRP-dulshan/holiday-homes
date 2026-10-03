@@ -17,8 +17,10 @@ export const enquirySchema = z.object({
   enquiryType: z.enum(["stay", "list-property", "general"]),
   message: z.string().trim().min(10, "Tell us a little more (10 characters minimum)").max(2000),
   // Optional context carried silently from wherever the form was opened.
-  propertySlug: z.string().optional(),
-  source: z.string().optional(),
+  propertySlug: z.string().max(120).optional(),
+  source: z.string().max(120).optional(),
+  /** Honeypot — real people never fill this in. */
+  company: z.string().max(0).optional(),
 });
 
 export type EnquiryInput = z.infer<typeof enquirySchema>;

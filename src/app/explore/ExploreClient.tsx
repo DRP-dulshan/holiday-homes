@@ -10,6 +10,7 @@ import { SortSelect } from "@/components/explore/SortSelect";
 import { Modal } from "@/components/Modal";
 import { filtersToSearchParams, type ExploreFilters } from "@/lib/filters";
 import { IconArrowRight } from "@/components/icons";
+import { addDays, formatShortDate, todayIso } from "@/lib/dates";
 
 type ExploreClientProps = {
   filters: ExploreFilters;
@@ -22,16 +23,38 @@ export function ExploreClient({ filters, results, checkIn, checkOut }: ExploreCl
   const router = useRouter();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const pushFilters = (next: ExploreFilters) => {
+  const [draftIn, setDraftIn] = useState(checkIn ?? "");
+  const [draftOut, setDraftOut] = useState(checkOut ?? "");
+  const today = todayIso();
+
+  const pushFilters = (
+    next: ExploreFilters,
+    dates: { checkIn: string | null; checkOut: string | null } = { checkIn, checkOut },
+  ) => {
     const params = filtersToSearchParams(next);
-    if (checkIn) params.set("checkIn", checkIn);
-    if (checkOut) params.set("checkOut", checkOut);
+    if (dates.checkIn && dates.checkOut) {
+      params.set("checkIn", dates.checkIn);
+      params.set("checkOut", dates.checkOut);
+    }
     const qs = params.toString();
     router.replace(qs ? `/explore?${qs}` : "/explore", { scroll: false });
   };
 
   const onChange = (patch: Partial<ExploreFilters>) => pushFilters({ ...filters, ...patch });
-  const onClear = () => router.replace("/explore", { scroll: false });
+  const onClear = () => {
+    setDraftIn("");
+    setDraftOut("");
+    router.replace("/explore", { scroll: false });
+  };
+
+  // Carry dates + party size through to the property page's booking card.
+  const cardQuery = new URLSearchParams();
+  if (checkIn && checkOut) {
+    cardQuery.set("checkIn", checkIn);
+    cardQuery.set("checkOut", checkOut);
+  }
+  if (filters.guests) cardQuery.set("guests", String(filters.guests));
+  const cardQs = cardQuery.toString();
 
   const activeCount =
     filters.areas.length +
@@ -48,11 +71,70 @@ export function ExploreClient({ filters, results, checkIn, checkOut }: ExploreCl
         </aside>
 
         <div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (draftIn && draftOut && draftOut > draftIn) {
+                pushFilters(filters, { checkIn: draftIn, checkOut: draftOut });
+              }
+            }}
+            className="mb-6 flex flex-wrap items-end gap-3 rounded-2xl border border-ink-10 bg-ink-05 p-3"
+          >
+            <label className="min-w-[9rem] flex-1">
+              <span className="mb-1 block text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-ink-60">
+                Check-in
+              </span>
+              <input
+                type="date"
+                value={draftIn}
+                min={today}
+                onChange={(e) => {
+                  setDraftIn(e.target.value);
+                  if (draftOut && e.target.value >= draftOut) setDraftOut("");
+                }}
+                className="w-full rounded-xl border border-ink-20 bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-brand"
+              />
+            </label>
+            <label className="min-w-[9rem] flex-1">
+              <span className="mb-1 block text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-ink-60">
+                Check-out
+              </span>
+              <input
+                type="date"
+                value={draftOut}
+                min={draftIn ? addDays(draftIn, 1) : today}
+                onChange={(e) => setDraftOut(e.target.value)}
+                className="w-full rounded-xl border border-ink-20 bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-brand"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={!draftIn || !draftOut || draftOut <= draftIn}
+              className="btn btn-primary btn-sm"
+            >
+              Check availability
+            </button>
+            {checkIn && checkOut ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setDraftIn("");
+                  setDraftOut("");
+                  pushFilters(filters, { checkIn: null, checkOut: null });
+                }}
+                className="btn btn-ghost btn-sm"
+              >
+                Any dates
+              </button>
+            ) : null}
+          </form>
+
           {(checkIn && checkOut) || filters.guests ? (
             <div className="mb-6 rounded-2xl border border-brand/30 bg-brand-soft px-4 py-3 text-sm text-brand-600">
-              Showing stays{checkIn && checkOut ? ` for ${checkIn} → ${checkOut}` : ""}
-              {filters.guests ? ` for ${filters.guests}+ guests` : ""}. Availability for exact
-              dates is confirmed by the team when you enquire.
+              {checkIn && checkOut
+                ? `Showing homes available ${formatShortDate(checkIn)} → ${formatShortDate(checkOut)}`
+                : "Showing homes"}
+              {filters.guests ? ` that sleep ${filters.guests}+ guests` : ""}.
             </div>
           ) : null}
 
@@ -98,7 +180,7 @@ export function ExploreClient({ filters, results, checkIn, checkOut }: ExploreCl
                     exit={{ opacity: 0, y: -16 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
                   >
-                    <PropertyCard property={property} />
+                    <PropertyCard property={property} query={cardQs} />
                   </motion.div>
                 ))}
               </motion.div>
