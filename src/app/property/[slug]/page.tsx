@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PropertyGallery } from "@/components/PropertyGallery";
 import { AmenitiesList } from "@/components/AmenitiesList";
-import { BookingCard } from "@/components/BookingCard";
+import { BookingCard, BookingCardFallback } from "@/components/BookingCard";
 import { MapEmbed } from "@/components/MapEmbed";
 import { SimilarStays } from "@/components/SimilarStays";
 import {
@@ -175,7 +176,9 @@ export default async function PropertyPage({
               </div>
             </div>
 
-            <BookingCard property={property} />
+            <Suspense fallback={<BookingCardFallback />}>
+              <BookingCard property={property} />
+            </Suspense>
           </div>
         </section>
 

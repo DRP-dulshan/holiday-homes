@@ -36,6 +36,21 @@ export const site = {
     "https://www.google.com/maps?q=Palm+Jumeirah,+Dubai,+United+Arab+Emirates&output=embed",
 
   license: "Licensed holiday-home operator · Dubai DET / DTCM",
+  timeZone: "Asia/Dubai",
+};
+
+/** Booking rules enforced on both the booking widget and the server. */
+export const bookingRules = {
+  minNights: 2,
+  maxNights: 90,
+  /** How far ahead (in days) guests can book. */
+  maxAdvanceDays: 365,
+  /** AED per night — Dubai Tourism Dirham fee, charged per occupied night. */
+  tourismFeePerNight: 20,
+  /** Free cancellation if cancelled at least this many days before check-in. */
+  freeCancellationDays: 7,
+  /** Shown wherever the cancellation policy is summarised. */
+  lateCancellationNote: "After that, the first night is non-refundable.",
 };
 
 export const navLinks = [
@@ -48,6 +63,12 @@ export const navLinks = [
   { label: "Contact", href: "/contact" },
 ];
 
+export const footerLinks = [
+  { label: "Manage my booking", href: "/booking" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
+];
+
 export const socialLinks = [
   // TODO: link real profiles before launch — placeholders for the demo.
   { label: "Instagram", href: "https://instagram.com" },
@@ -57,5 +78,5 @@ export const socialLinks = [
 
 /** Build a wa.me link pre-filled with a message. */
 export function whatsappLink(message: string) {
-  return `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${site.whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
 }

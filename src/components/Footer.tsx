@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { areas } from "@/data/areas";
-import { navLinks, site, socialLinks } from "@/config/site";
+import { footerLinks, navLinks, site, socialLinks } from "@/config/site";
 import { IconWhatsApp } from "./icons";
 
 export function Footer() {
@@ -108,13 +108,12 @@ export function Footer() {
             © {new Date().getFullYear()} {site.name} — a division of{" "}
             {site.parent}. All rights reserved.
           </p>
-          <p className="flex gap-4">
-            <Link href="/" className="hover:text-white/70">
-              Privacy
-            </Link>
-            <Link href="/" className="hover:text-white/70">
-              Terms
-            </Link>
+          <p className="flex flex-wrap gap-4">
+            {footerLinks.map((l) => (
+              <Link key={l.href} href={l.href} className="hover:text-white/70">
+                {l.label}
+              </Link>
+            ))}
             <span>{site.license}</span>
           </p>
         </div>

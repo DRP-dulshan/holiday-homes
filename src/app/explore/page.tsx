@@ -6,6 +6,8 @@ import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { ExploreClient } from "./ExploreClient";
 import { properties } from "@/data/properties";
 import { applyFilters, filtersFromSearchParams } from "@/lib/filters";
+import { isIsoDate, todayIso } from "@/lib/dates";
+import { getUnavailableSlugs } from "@/lib/server/bookings";
 
 export const metadata: Metadata = {
   title: "Explore Stays",
@@ -24,9 +26,20 @@ export default async function ExplorePage({
   }
 
   const filters = filtersFromSearchParams(params);
-  const results = applyFilters(properties, filters);
-  const checkIn = params.get("checkIn");
-  const checkOut = params.get("checkOut");
+  let checkIn = params.get("checkIn");
+  let checkOut = params.get("checkOut");
+  const datesValid =
+    isIsoDate(checkIn) && isIsoDate(checkOut) && checkOut > checkIn && checkIn >= todayIso();
+  if (!datesValid) {
+    checkIn = null;
+    checkOut = null;
+  }
+
+  let results = applyFilters(properties, filters);
+  if (checkIn && checkOut) {
+    const taken = await getUnavailableSlugs(checkIn, checkOut);
+    results = results.filter((p) => !taken.has(p.slug));
+  }
 
   return (
     <>

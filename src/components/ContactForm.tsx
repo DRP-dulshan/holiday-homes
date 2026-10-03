@@ -22,6 +22,7 @@ export function ContactForm({
   messagePlaceholder = "Tell us your dates, preferred area and party size.",
 }: ContactFormProps) {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -34,13 +35,18 @@ export function ContactForm({
 
   const onSubmit = async (data: EnquiryInput) => {
     setStatus("idle");
+    setErrorMessage(null);
     try {
       const res = await fetch("/api/enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Request failed");
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setErrorMessage(typeof json.error === "string" ? json.error : null);
+        throw new Error("Request failed");
+      }
       setStatus("success");
       reset({ enquiryType: defaultEnquiryType, propertySlug, source, name: "", email: "", phone: "", message: "" });
     } catch {
@@ -58,8 +64,8 @@ export function ContactForm({
           Thank you — we&rsquo;ll be in touch.
         </h3>
         <p className="mt-2 max-w-sm text-sm text-ink-60">
-          A member of the DRP team will reply within a few hours. This is a
-          demo form — no enquiry is routed to a live inbox yet.
+          A member of the DRP team will reply within a few hours. We&rsquo;ve
+          sent a copy of your message to your inbox.
         </p>
         <button
           type="button"
@@ -137,11 +143,19 @@ export function ContactForm({
 
         {propertySlug ? <input type="hidden" {...register("propertySlug")} /> : null}
         <input type="hidden" {...register("source")} />
+        {/* Honeypot: hidden from people, tempting to bots. */}
+        <input
+          {...register("company")}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="absolute left-[-9999px] h-0 w-0 opacity-0"
+        />
 
         {status === "error" ? (
           <p className="text-sm text-red-600">
-            Something went wrong sending that — please try again, or message
-            us on WhatsApp instead.
+            {errorMessage ??
+              "Something went wrong sending that — please try again, or message us on WhatsApp instead."}
           </p>
         ) : null}
 
