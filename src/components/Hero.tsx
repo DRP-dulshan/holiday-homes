@@ -4,9 +4,7 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { SearchWidget } from "./SearchWidget";
 import { IconChevronDown } from "./icons";
-
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=2400&q=80";
+import heroImage from "@/assets/hero-villa.webp";
 
 export function Hero() {
   const reduce = useReducedMotion();
@@ -22,18 +20,19 @@ export function Hero() {
           transition={{ duration: 8, ease: "easeOut" }}
         >
           <Image
-            src={HERO_IMAGE}
-            alt="Dubai Marina skyline at dusk"
+            src={heroImage}
+            alt="White Mediterranean-style villa with a private pool and palm trees"
             fill
             priority
+            placeholder="blur"
             sizes="100vw"
-            className="object-cover"
+            className="object-cover object-[65%_center]"
           />
         </motion.div>
 
-        {/* Legibility gradients */}
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/40 to-ink/85" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/60 to-transparent" />
+        {/* Legibility gradients — keep the bright photo, darken only behind text */}
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/55 via-ink/10 to-ink/70" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/70 via-ink/30 to-transparent" />
       </div>
 
       <div className="container-drp relative z-10 w-full pt-28 pb-24 md:pt-32">
