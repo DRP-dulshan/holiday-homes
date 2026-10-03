@@ -292,7 +292,7 @@ function summary(b: Booking) {
     `Check-in: ${formatDate(b.checkIn)}`,
     `Check-out: ${formatDate(b.checkOut)}`,
     `Nights: ${q.nights} · Guests: ${b.guests}`,
-    `Total: AED ${aed.format(q.total)} (AED ${aed.format(q.nightlyRate)} × ${q.nights} nights, cleaning AED ${aed.format(q.cleaningFee)}, Tourism Dirham AED ${aed.format(q.tourismFee)})`,
+    `Total: AED ${aed.format(q.total)} (AED ${aed.format(q.nightlyRate)} × ${q.nights} nights${q.cleaningFee ? `, cleaning AED ${aed.format(q.cleaningFee)}` : ""}, Tourism Dirham AED ${aed.format(q.tourismFee)})`,
   ].join("\n");
 }
 

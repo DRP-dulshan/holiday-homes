@@ -7,7 +7,7 @@ export const faqs: Faq[] = [
   {
     question: "How do I book a stay with DRP Holiday Homes?",
     answer:
-      "Send an enquiry through the site or message us on WhatsApp with your dates, preferred area and party size. A member of the team confirms availability, shares options that fit, and handles the booking and secure payment directly with you.",
+      "Pick a home, choose your dates on its live availability calendar and send a booking request — it takes a couple of minutes. The team confirms your stay, usually within a few hours, and arranges payment with you directly. You can also message us on WhatsApp and we'll suggest homes that fit.",
   },
   {
     question: "What's included in every DRP home?",
@@ -22,12 +22,12 @@ export const faqs: Faq[] = [
   {
     question: "What is your cancellation policy?",
     answer:
-      "Most stays can be cancelled free of charge up to 14 days before check-in, with a partial refund up to 7 days before. Exact terms are confirmed in writing at the time of booking, as they can vary by home and season.",
+      "Stays can be cancelled free of charge up to 7 days before check-in from the Manage my booking page. After that, the first night is non-refundable. Full details are in our booking terms.",
   },
   {
     question: "Which areas of Dubai do you cover?",
     answer:
-      "Our current collection spans Palm Jumeirah, Dubai Marina, JBR, Downtown Dubai, Business Bay and Jumeirah Village Circle. We add homes in new communities regularly, so ask us if you have a specific address in mind.",
+      "Our current collection spans Palm Jumeirah, Dubai Marina, Jumeirah Village Triangle (JVT), Business Bay, DIFC, Jumeirah Village Circle (JVC), Dubai Sports City and Meydan. We add homes in new communities regularly, so ask us if you have a specific address in mind.",
   },
   {
     question: "Do guests really get access to a car and concierge?",

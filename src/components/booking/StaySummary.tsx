@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { Property } from "@/data/properties";
+import { bedroomLabel, type Property } from "@/data/properties";
 import { formatDate } from "@/lib/dates";
 import { aed, type Quote } from "@/lib/pricing";
 import { IconStar } from "../icons";
@@ -31,10 +31,16 @@ export function StaySummary({
             {property.area}
           </p>
           <p className="display mt-1 font-semibold text-ink">{property.title}</p>
-          <p className="mt-1 inline-flex items-center gap-1 text-xs text-ink-60">
-            <IconStar className="h-3.5 w-3.5 text-brand" />
-            {property.rating} · {property.reviews} reviews
-          </p>
+          {property.rating ? (
+            <p className="mt-1 inline-flex items-center gap-1 text-xs text-ink-60">
+              <IconStar className="h-3.5 w-3.5 text-brand" />
+              {property.rating} · {property.reviews} reviews
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-ink-60">
+              {bedroomLabel(property.bedrooms)} · sleeps {property.guests}
+            </p>
+          )}
         </div>
       </div>
 
@@ -64,10 +70,12 @@ export function StaySummary({
           </span>
           <span>AED {aed.format(quote.subtotal)}</span>
         </div>
-        <div className="flex justify-between">
-          <span>Cleaning fee</span>
-          <span>AED {aed.format(quote.cleaningFee)}</span>
-        </div>
+        {quote.cleaningFee > 0 ? (
+          <div className="flex justify-between">
+            <span>Cleaning fee</span>
+            <span>AED {aed.format(quote.cleaningFee)}</span>
+          </div>
+        ) : null}
         <div className="flex justify-between">
           <span>Tourism Dirham fee</span>
           <span>AED {aed.format(quote.tourismFee)}</span>

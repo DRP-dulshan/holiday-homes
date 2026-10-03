@@ -1,19 +1,26 @@
 import type { ComponentType } from "react";
 import {
+  IconBag,
+  IconBall,
   IconBroom,
   IconCar,
   IconElevator,
   IconEye,
+  IconFlame,
   IconGym,
   IconHeadset,
   IconLaptop,
   IconLeaf,
+  IconLock,
   IconParking,
   IconPaw,
   IconPool,
   IconShield,
   IconSmartHome,
+  IconSnowflake,
   IconSofa,
+  IconSteam,
+  IconUtensils,
   IconWasher,
   IconWaves,
   IconWifi,
@@ -41,7 +48,15 @@ export type AmenityId =
   | "security"
   | "elevator"
   | "smartHome"
-  | "furnished";
+  | "furnished"
+  | "airCon"
+  | "kitchen"
+  | "sauna"
+  | "steamRoom"
+  | "bbq"
+  | "smartLock"
+  | "mallAccess"
+  | "basketball";
 
 export const AMENITIES: Record<
   AmenityId,
@@ -54,7 +69,7 @@ export const AMENITIES: Record<
   skylineView: { label: "Skyline / Burj view", icon: IconEye },
   canalView: { label: "Canal view", icon: IconEye },
   garden: { label: "Private garden", icon: IconLeaf },
-  parking: { label: "Private parking", icon: IconParking },
+  parking: { label: "Free parking", icon: IconParking },
   gym: { label: "Shared gym", icon: IconGym },
   beachAccess: { label: "Beach access", icon: IconWaves },
   wifi: { label: "Fast Wi-Fi", icon: IconWifi },
@@ -68,4 +83,12 @@ export const AMENITIES: Record<
   elevator: { label: "Direct elevator access", icon: IconElevator },
   smartHome: { label: "Smart home controls", icon: IconSmartHome },
   furnished: { label: "Designer furnished", icon: IconSofa },
+  airCon: { label: "Air conditioning", icon: IconSnowflake },
+  kitchen: { label: "Fully equipped kitchen", icon: IconUtensils },
+  sauna: { label: "Sauna", icon: IconFlame },
+  steamRoom: { label: "Steam room", icon: IconSteam },
+  bbq: { label: "BBQ area", icon: IconFlame },
+  smartLock: { label: "Smart-lock self check-in", icon: IconLock },
+  mallAccess: { label: "Direct mall access", icon: IconBag },
+  basketball: { label: "Basketball court", icon: IconBall },
 };

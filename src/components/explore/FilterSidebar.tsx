@@ -1,12 +1,12 @@
 "use client";
 
 import { areas } from "@/data/areas";
-import { propertyTypes, priceBounds } from "@/data/properties";
+import { listedPropertyTypes, priceBounds } from "@/data/properties";
 import { FILTER_AMENITY_GROUPS, type ExploreFilters } from "@/lib/filters";
 
 const aed = new Intl.NumberFormat("en-AE", { maximumFractionDigits: 0 });
-const GUEST_OPTIONS = [0, 1, 2, 4, 6, 8];
-const BEDROOM_OPTIONS = [0, 1, 2, 3, 4];
+const GUEST_OPTIONS = [0, 2, 3, 4, 5, 6];
+const BEDROOM_OPTIONS = [0, 1, 2, 3];
 
 type FilterSidebarProps = {
   filters: ExploreFilters;
@@ -52,7 +52,7 @@ export function FilterSidebar({ filters, onChange, onClear }: FilterSidebarProps
           Property type
         </legend>
         <div className="mt-3 flex flex-col gap-2.5">
-          {propertyTypes.map((t) => (
+          {listedPropertyTypes.map((t) => (
             <label key={t.value} className="flex items-center gap-2.5 text-sm text-ink-80">
               <input
                 type="checkbox"

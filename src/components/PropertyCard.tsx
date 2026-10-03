@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Property } from "@/data/properties";
+import { bedroomLabel, type Property } from "@/data/properties";
 import { IconArrowUpRight, IconBed, IconStar, IconUsers } from "./icons";
 
 const aed = new Intl.NumberFormat("en-AE", {
@@ -44,16 +44,18 @@ export function PropertyCard({
           <h3 className="display text-lg font-semibold text-ink">
             {property.title}
           </h3>
-          <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-ink">
-            <IconStar className="h-3.5 w-3.5 text-brand" />
-            {property.rating}
-          </span>
+          {property.rating ? (
+            <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-ink">
+              <IconStar className="h-3.5 w-3.5 text-brand" />
+              {property.rating}
+            </span>
+          ) : null}
         </div>
 
         <div className="mt-4 flex items-center gap-5 text-sm text-ink-80">
           <span className="inline-flex items-center gap-1.5">
             <IconBed className="h-4 w-4 text-ink-60" />
-            {property.bedrooms} bed
+            {bedroomLabel(property.bedrooms, true)}
           </span>
           <span className="inline-flex items-center gap-1.5">
             <IconUsers className="h-4 w-4 text-ink-60" />

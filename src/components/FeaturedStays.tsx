@@ -5,14 +5,14 @@ import { SectionHeading } from "./SectionHeading";
 import { Reveal } from "./Reveal";
 import { IconArrowRight } from "./icons";
 
-// One flagship home per area for the homepage grid — the full collection lives at /explore.
+// A spread of homes across areas for the homepage grid — the full collection lives at /explore.
 const FEATURED_SLUGS = [
-  "palm-signature-villa",
-  "marina-cayan-designer-loft",
-  "jbr-family-beach-apartment",
-  "downtown-opera-district-penthouse",
-  "business-bay-corner-penthouse",
-  "jvc-circle-villa",
+  "st-regis-residences-30th-floor-palm-jumeirah",
+  "difc-penthouse-city-skyline-signature-living",
+  "shoreline-palm-jumeirah-garden-view-paradise",
+  "sparkle-towers-marina-stunning-views-jbr-beach",
+  "seven-palm-1br-west-beach-living-at-his-finest",
+  "stylish-1br-with-balcony-heart-of-business-bay",
 ];
 
 export function FeaturedStays() {

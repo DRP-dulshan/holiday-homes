@@ -5,7 +5,8 @@ import { areas } from "@/data/areas";
 
 const AREA_SLUG_BY_NAME = new Map(areas.map((a) => [a.name, a.slug]));
 
-export type SortKey = "recommended" | "price-asc" | "price-desc" | "rating";
+export type SortKey = "recommended" | "price-asc" | "price-desc";
+const SORT_KEYS: SortKey[] = ["recommended", "price-asc", "price-desc"];
 
 export type ExploreFilters = {
   areas: string[];
@@ -22,13 +23,13 @@ export type ExploreFilters = {
 /** Filter-facing amenity groups — a property matches if it has ANY id in the group. */
 export const FILTER_AMENITY_GROUPS: { id: string; label: string; match: AmenityId[] }[] = [
   { id: "pool", label: "Pool", match: ["pool", "sharedPool"] },
-  { id: "view", label: "Sea / marina / skyline view", match: ["seaView", "marinaView", "skylineView", "canalView"] },
   { id: "beachAccess", label: "Beach access", match: ["beachAccess"] },
-  { id: "parking", label: "Parking", match: ["parking"] },
+  { id: "sauna", label: "Sauna / steam room", match: ["sauna", "steamRoom"] },
   { id: "gym", label: "Gym", match: ["gym"] },
-  { id: "garden", label: "Private garden", match: ["garden"] },
-  { id: "petsAllowed", label: "Pets allowed", match: ["petsAllowed"] },
-  { id: "workspace", label: "Workspace", match: ["workspace"] },
+  { id: "smartLock", label: "Self check-in", match: ["smartLock"] },
+  { id: "parking", label: "Free parking", match: ["parking"] },
+  { id: "bbq", label: "BBQ area", match: ["bbq"] },
+  { id: "mallAccess", label: "Direct mall access", match: ["mallAccess"] },
 ];
 
 export const defaultFilters: ExploreFilters = {
@@ -53,7 +54,7 @@ export function filtersFromSearchParams(params: URLSearchParams): ExploreFilters
     priceMin: Number(params.get("priceMin") ?? priceBounds.min) || priceBounds.min,
     priceMax: Number(params.get("priceMax") ?? priceBounds.max) || priceBounds.max,
     amenities: csv(params.get("amenities")),
-    sort: (params.get("sort") as SortKey) || "recommended",
+    sort: SORT_KEYS.find((k) => k === params.get("sort")) ?? "recommended",
   };
 }
 
@@ -92,11 +93,9 @@ export function applyFilters(properties: Property[], f: ExploreFilters): Propert
     case "price-desc":
       list = [...list].sort((a, b) => b.pricePerNight - a.pricePerNight);
       break;
-    case "rating":
-      list = [...list].sort((a, b) => b.rating - a.rating);
-      break;
     default:
-      list = [...list].sort((a, b) => b.reviews - a.reviews);
+      // "Recommended" keeps the curated catalog order.
+      break;
   }
   return list;
 }
