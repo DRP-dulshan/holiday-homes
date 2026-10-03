@@ -10,7 +10,7 @@ export function Footer() {
       <div className="container-drp py-16">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
-            <Logo tone="light" />
+            <Logo tone="light" size="lg" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/60">
               {site.tagline} Designed, furnished and managed in-house — a
               division of {site.parent}.

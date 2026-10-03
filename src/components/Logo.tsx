@@ -2,51 +2,49 @@ import Image from "next/image";
 import Link from "next/link";
 
 type LogoProps = {
+  /** "dark" = charcoal logo for light backgrounds, "light" = white logo for dark ones. */
   tone?: "light" | "dark";
   className?: string;
-  /** Rendered height in px; width follows the mark's fixed aspect ratio. */
-  height?: number;
+  size?: "sm" | "md" | "lg";
 };
 
-// Intrinsic size of the source mark (public/brand/logo-mark-*.png) — passing
-// the true natural dimensions lets `width: auto` below derive an exact,
-// warning-free proportional width instead of a rounded approximation.
-const NATURAL_WIDTH = 937;
-const NATURAL_HEIGHT = 360;
+// Intrinsic size of the official lockups in public/brand/ — passing the true
+// natural dimensions lets `w-auto` derive an exact proportional width.
+const NATURAL_WIDTH = 1984;
+const NATURAL_HEIGHT = 1059;
+
+const HEIGHTS = {
+  sm: "h-10",
+  md: "h-11 md:h-14",
+  lg: "h-20 md:h-24",
+};
 
 /**
- * D|R|P mark (from the brand logo file) paired with the "Holiday Homes"
- * division label. The white mark is used over dark backgrounds (hero,
- * footer); the ink mark is used once the nav turns solid/white on scroll.
+ * Official DRP Holiday Homes lockup (D|R|P mark + "Holiday Homes" wordmark).
+ * The white version sits over dark backgrounds (hero, footer); the charcoal
+ * version is used on light backgrounds and once the nav turns solid.
  */
-export function Logo({ tone = "dark", className, height = 30 }: LogoProps) {
-  const src = tone === "dark" ? "/brand/logo-mark-dark.png" : "/brand/logo-mark-white.png";
-  const sub = tone === "dark" ? "text-ink-60" : "text-white/70";
+export function Logo({ tone = "dark", className, size = "md" }: LogoProps) {
+  const src =
+    tone === "dark"
+      ? "/brand/holiday-homes-logo-dark.png"
+      : "/brand/holiday-homes-logo-white.png";
 
   return (
     <Link
       href="/"
-      className={["group inline-flex items-center gap-3", className].join(" ")}
+      className={["inline-flex shrink-0 items-center", className].join(" ")}
       aria-label="DRP Holiday Homes — home"
     >
       <Image
         src={src}
-        alt="D|R|P"
+        alt="DRP Holiday Homes"
         width={NATURAL_WIDTH}
         height={NATURAL_HEIGHT}
         priority
-        style={{ height, width: "auto" }}
+        sizes="200px"
+        className={`${HEIGHTS[size]} w-auto`}
       />
-      <span
-        className={[
-          "hidden text-[0.68rem] font-medium uppercase leading-tight tracking-[0.2em] sm:block",
-          sub,
-        ].join(" ")}
-      >
-        Holiday
-        <br />
-        Homes
-      </span>
     </Link>
   );
 }

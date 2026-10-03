@@ -17,7 +17,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       <header className="border-b border-ink-10 bg-canvas">
         <div className="container-drp flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-6">
-            <Logo tone="dark" />
+            <Logo tone="dark" size="sm" />
             <span className="hidden rounded-full bg-ink px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-white sm:inline">
               Team
             </span>
