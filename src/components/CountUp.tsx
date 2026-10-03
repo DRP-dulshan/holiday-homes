@@ -26,11 +26,16 @@ export function CountUp({
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const reduce = useReducedMotion();
-  const [display, setDisplay] = useState(reduce ? value : 0);
+  // Always start from 0 so server and client render the same markup.
+  const [display, setDisplay] = useState(0);
 
   useEffect(() => {
-    if (!inView || reduce) return;
+    if (!inView) return;
     let raf: number;
+    if (reduce) {
+      raf = requestAnimationFrame(() => setDisplay(value));
+      return () => cancelAnimationFrame(raf);
+    }
     const start = performance.now();
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / (duration * 1000));
@@ -43,12 +48,10 @@ export function CountUp({
     return () => cancelAnimationFrame(raf);
   }, [inView, reduce, value, duration]);
 
-  const shown = reduce ? value : display;
-
   return (
     <span ref={ref} className={className}>
       {prefix}
-      {shown.toFixed(decimals)}
+      {display.toFixed(decimals)}
       {suffix}
     </span>
   );

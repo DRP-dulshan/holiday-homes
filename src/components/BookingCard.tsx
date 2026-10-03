@@ -176,10 +176,12 @@ export function BookingCard({ property }: { property: Property }) {
             </span>
             <span>AED {aed.format(quote.subtotal)}</span>
           </div>
-          <div className="flex justify-between">
-            <span>Cleaning fee</span>
-            <span>AED {aed.format(quote.cleaningFee)}</span>
-          </div>
+          {quote.cleaningFee > 0 ? (
+            <div className="flex justify-between">
+              <span>Cleaning fee</span>
+              <span>AED {aed.format(quote.cleaningFee)}</span>
+            </div>
+          ) : null}
           <div className="flex justify-between">
             <span>Tourism Dirham fee</span>
             <span>AED {aed.format(quote.tourismFee)}</span>

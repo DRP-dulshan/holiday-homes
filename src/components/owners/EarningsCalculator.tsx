@@ -2,27 +2,33 @@
 
 import { useMemo, useState } from "react";
 import { areas } from "@/data/areas";
-import { propertyTypes, type PropertyType } from "@/data/properties";
+import { properties, propertyTypes, type PropertyType } from "@/data/properties";
 
 const aed = new Intl.NumberFormat("en-AE", { maximumFractionDigits: 0 });
 
-// Illustrative base nightly rates (AED) per area, calibrated loosely against
-// the DRP collection — clearly presented as an estimate, not a quote.
-const AREA_BASE: Record<string, number> = {
-  "palm-jumeirah": 1300,
-  "dubai-marina": 820,
-  jbr: 780,
-  "downtown-dubai": 950,
-  "business-bay": 650,
-  jvc: 420,
-};
-
 const TYPE_FACTOR: Record<PropertyType, number> = {
+  studio: 0.85,
   apartment: 1,
   townhouse: 1.15,
   villa: 1.55,
   penthouse: 1.9,
 };
+
+const sizeFactor = (type: PropertyType, bedrooms: number) =>
+  TYPE_FACTOR[type] * (1 + bedrooms * 0.12);
+const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+
+// Base nightly rate per area, normalised from the DRP collection's own
+// "from" prices — presented as an estimate, not a quote.
+const normalised = (list: typeof properties) =>
+  mean(list.map((p) => p.pricePerNight / sizeFactor(p.type, p.bedrooms)));
+const OVERALL_BASE = normalised(properties);
+const AREA_BASE: Record<string, number> = Object.fromEntries(
+  areas.map((a) => {
+    const homes = properties.filter((p) => p.area === a.name);
+    return [a.slug, homes.length ? normalised(homes) : OVERALL_BASE];
+  }),
+);
 
 const OCCUPANCY_LOW = 0.6;
 const OCCUPANCY_HIGH = 0.82;
@@ -33,8 +39,8 @@ export function EarningsCalculator() {
   const [bedrooms, setBedrooms] = useState(2);
 
   const { low, high, nightly } = useMemo(() => {
-    const base = AREA_BASE[areaSlug] ?? 700;
-    const nightly = Math.round(base * TYPE_FACTOR[type] * (1 + bedrooms * 0.12));
+    const base = AREA_BASE[areaSlug] ?? OVERALL_BASE;
+    const nightly = Math.round(base * sizeFactor(type, bedrooms));
     const low = Math.round((nightly * 30 * OCCUPANCY_LOW) / 100) * 100;
     const high = Math.round((nightly * 30 * OCCUPANCY_HIGH) / 100) * 100;
     return { low, high, nightly };

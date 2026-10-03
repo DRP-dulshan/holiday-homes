@@ -7,6 +7,8 @@ import { PageHero } from "@/components/PageHero";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import { CountUp } from "@/components/CountUp";
+import { areas } from "@/data/areas";
+import { properties } from "@/data/properties";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import {
   IconArrowRight,
@@ -23,9 +25,9 @@ export const metadata: Metadata = {
 };
 
 const stats = [
-  { value: 90, suffix: "+", label: "Homes under management" },
-  { value: 6, suffix: "", label: "Dubai neighbourhoods" },
-  { value: 4.9, suffix: "", decimals: 1, label: "Average guest rating" },
+  { value: properties.length, suffix: "", label: "Holiday homes" },
+  { value: areas.length, suffix: "", label: "Dubai neighbourhoods" },
+  { value: Math.min(...properties.map((p) => p.pricePerNight)), suffix: "", label: "AED per night, from" },
   { value: 24, suffix: "/7", label: "Guest support" },
 ];
 
@@ -127,7 +129,7 @@ export default function AboutPage() {
             {stats.map((s, i) => (
               <Reveal key={s.label} delay={i * 0.08}>
                 <p className="display text-4xl font-bold text-brand-400">
-                  <CountUp value={s.value} suffix={s.suffix} decimals={s.decimals ?? 0} />
+                  <CountUp value={s.value} suffix={s.suffix} />
                 </p>
                 <p className="mt-2 text-sm text-white/60">{s.label}</p>
               </Reveal>

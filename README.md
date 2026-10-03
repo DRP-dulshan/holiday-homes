@@ -80,7 +80,12 @@ test all the flows locally.
 Business details live in `src/config/site.ts`: phone, WhatsApp, emails,
 address and the **booking rules**: minimum and maximum nights, how far
 ahead guests can book, the Tourism Dirham fee and the cancellation window.
-The homes themselves are in `src/data/properties.ts`.
+The homes are in `src/data/properties.ts`. They were imported from the
+DRP listings at https://dubairapidproperties.com/holiday-home/: title,
+description, price, bedrooms, bathrooms, guests, amenities, house rules and
+photos. The photos are served from `dubairapidproperties.com` (allow-listed
+in `next.config.ts`). Add a home by adding an entry there; its area must
+match one in `src/data/areas.ts`.
 
 ## Deploying
 
@@ -133,4 +138,5 @@ src/
   variables, and verify the sending domain in Resend.
 - Have `/terms` and `/privacy` reviewed against your DET licence and the
   UAE PDPL.
-- Replace the Unsplash photos and the placeholder team profiles with DRP's own.
+- Replace the remaining Unsplash area photos and the placeholder team
+  profiles with DRP's own.

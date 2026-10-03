@@ -17,7 +17,7 @@ import {
   IconStar,
   IconUsers,
 } from "@/components/icons";
-import { getProperty, properties } from "@/data/properties";
+import { bedroomLabel, getProperty, properties } from "@/data/properties";
 
 export function generateStaticParams() {
   return properties.map((p) => ({ slug: p.slug }));
@@ -64,17 +64,27 @@ export default async function PropertyPage({
             <div>
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-[0.14em] text-brand-600">
                 <IconPin className="h-4 w-4" />
-                {property.area}
+                {property.building ? `${property.building} · ${property.area}` : property.area}
               </span>
               <h1 className="display mt-1 text-3xl font-semibold text-ink sm:text-4xl">
                 {property.title}
               </h1>
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-ink-05 px-3.5 py-2 text-sm font-semibold text-ink">
-              <IconStar className="h-4 w-4 text-brand" />
-              {property.rating}
-              <span className="font-normal text-ink-60">({property.reviews} reviews)</span>
-            </span>
+            {property.rating ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-ink-05 px-3.5 py-2 text-sm font-semibold text-ink">
+                <IconStar className="h-4 w-4 text-brand" />
+                {property.rating}
+                <span className="font-normal text-ink-60">({property.reviews} reviews)</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-ink-05 px-3.5 py-2 text-sm text-ink-80">
+                From{" "}
+                <span className="font-semibold text-ink">
+                  AED {property.pricePerNight.toLocaleString("en-AE")}
+                </span>{" "}
+                / night
+              </span>
+            )}
           </div>
 
           <div className="mt-6">
@@ -88,16 +98,19 @@ export default async function PropertyPage({
               <div className="flex flex-wrap gap-x-8 gap-y-3 border-b border-ink-10 pb-6 text-sm text-ink-80">
                 <span className="inline-flex items-center gap-2">
                   <IconBed className="h-5 w-5 text-brand-600" />
-                  {property.bedrooms} bedrooms · {property.bathrooms} baths
+                  {bedroomLabel(property.bedrooms)} · {property.bathrooms}{" "}
+                  {property.bathrooms === 1 ? "bath" : "baths"}
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <IconUsers className="h-5 w-5 text-brand-600" />
                   Sleeps {property.guests}
                 </span>
-                <span className="inline-flex items-center gap-2">
-                  <IconRuler className="h-5 w-5 text-brand-600" />
-                  {property.sizeSqft.toLocaleString()} sq ft
-                </span>
+                {property.sizeSqft ? (
+                  <span className="inline-flex items-center gap-2">
+                    <IconRuler className="h-5 w-5 text-brand-600" />
+                    {property.sizeSqft.toLocaleString()} sq ft
+                  </span>
+                ) : null}
                 <span className="rounded-full bg-brand-soft px-3 py-1 font-semibold text-brand-600">
                   {property.tag}
                 </span>

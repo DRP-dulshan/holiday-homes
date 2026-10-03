@@ -23,7 +23,7 @@ export const testimonials: Testimonial[] = [
   },
   {
     name: "Priya S.",
-    stay: "Downtown Dubai · 8 nights",
+    stay: "DIFC · 8 nights",
     quote:
       "I travel to Dubai for work every few months and now I only book through DRP. Same standard every time, and the concierge sorts everything before I even land.",
     rating: 5,

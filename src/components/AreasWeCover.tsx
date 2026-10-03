@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { areas } from "@/data/areas";
+import { areas, homesInArea } from "@/data/areas";
 import { SectionHeading } from "./SectionHeading";
 import { Reveal } from "./Reveal";
 import { IconArrowUpRight } from "./icons";
@@ -11,8 +11,8 @@ export function AreasWeCover() {
       <div className="container-drp">
         <SectionHeading
           eyebrow="Areas we cover"
-          title="Six of Dubai's best-connected neighbourhoods."
-          intro="From beachfront on the Palm to the canal-side calm of Business Bay — choose the setting, and we'll match the home."
+          title="Where you'll find us in Dubai."
+          intro="From St. Regis on the Palm to the canal-side calm of Business Bay — choose the setting, and we'll match the home."
         />
       </div>
 
@@ -46,7 +46,7 @@ export function AreasWeCover() {
                 </div>
                 <p className="mt-1.5 text-sm text-white/75">{area.note}</p>
                 <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-brand-400">
-                  {area.homes} homes
+                  {homesInArea(area.name)} {homesInArea(area.name) === 1 ? "home" : "homes"}
                 </p>
               </div>
             </Link>
