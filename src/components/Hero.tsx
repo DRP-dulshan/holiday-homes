@@ -12,26 +12,29 @@ export function Hero() {
   const reduce = useReducedMotion();
 
   return (
-    <section className="relative flex min-h-[100svh] items-center overflow-hidden bg-ink">
-      <motion.div
-        className="absolute inset-0"
-        initial={reduce ? undefined : { scale: 1.08 }}
-        animate={reduce ? undefined : { scale: 1 }}
-        transition={{ duration: 8, ease: "easeOut" }}
-      >
-        <Image
-          src={HERO_IMAGE}
-          alt="Dubai Marina skyline at dusk"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-      </motion.div>
+    <section className="relative z-10 flex min-h-[100svh] items-center bg-ink">
+      {/* Only the background is clipped, so search dropdowns can overflow the hero. */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute inset-0"
+          initial={reduce ? undefined : { scale: 1.08 }}
+          animate={reduce ? undefined : { scale: 1 }}
+          transition={{ duration: 8, ease: "easeOut" }}
+        >
+          <Image
+            src={HERO_IMAGE}
+            alt="Dubai Marina skyline at dusk"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        </motion.div>
 
-      {/* Legibility gradients */}
-      <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/40 to-ink/85" />
-      <div className="absolute inset-0 bg-gradient-to-r from-ink/60 to-transparent" />
+        {/* Legibility gradients */}
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/40 to-ink/85" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/60 to-transparent" />
+      </div>
 
       <div className="container-drp relative z-10 w-full pt-28 pb-24 md:pt-32">
         <div className="max-w-3xl">
@@ -64,16 +67,16 @@ export function Hero() {
             end-to-end, and paired with a private car fleet and concierge. Not a
             marketplace — a boutique hospitality brand.
           </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 28 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.26 }}
-            className="mt-10 max-w-4xl"
-          >
-            <SearchWidget />
-          </motion.div>
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.26 }}
+          className="relative z-20 mt-10 max-w-5xl"
+        >
+          <SearchWidget />
+        </motion.div>
       </div>
 
       <motion.a
