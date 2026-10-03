@@ -18,7 +18,7 @@ export default async function AdminLoginPage({ searchParams }: PageProps<"/admin
     <main className="flex flex-1 items-center justify-center bg-ink-05 px-4 py-16">
       <div className="w-full max-w-sm">
         <div className="flex justify-center">
-          <Logo tone="dark" />
+          <Logo tone="dark" size="lg" />
         </div>
         <div className="mt-8 rounded-card border border-ink-10 bg-canvas p-6 shadow-soft sm:p-8">
           <h1 className="display text-xl font-semibold text-ink">Team dashboard</h1>
