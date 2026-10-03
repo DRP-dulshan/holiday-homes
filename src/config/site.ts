@@ -11,11 +11,11 @@ export const site = {
   url: "https://drpholidayhomes.ae",
 
   // TODO: confirm the live phone number before launch — placeholder for the demo.
-  phoneDisplay: "+971 4 000 0000",
-  phoneHref: "tel:+97140000000",
+  phoneDisplay: "+971 4 529 4904",
+  phoneHref: "tel:+97145294904",
   // TODO: confirm the live WhatsApp number before launch — placeholder for the demo.
-  whatsappNumber: "97140000000",
-  whatsappHref: "https://wa.me/97140000000",
+  whatsappNumber: "971 56 777 0272",
+  whatsappHref: "https://wa.me/971567770272",
   // TODO: confirm the live inbox before launch — placeholder for the demo.
   email: "stay@drpholidayhomes.ae",
   ownersEmail: "owners@drpholidayhomes.ae",
