@@ -62,9 +62,7 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.16 }}
             className="mt-6 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg"
           >
-            Every home designed and furnished by our own studio, managed
-            end-to-end, and paired with a private car fleet and concierge. Not a
-            marketplace — a boutique hospitality brand.
+            Designed and managed entirely in-house, each home features a private car fleet and concierge. Not a marketplace — a boutique hospitality brand..
           </motion.p>
         </div>
 
