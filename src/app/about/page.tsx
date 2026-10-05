@@ -87,7 +87,7 @@ export default function AboutPage() {
         />
 
         <section className="bg-canvas py-16 md:py-24">
-          <div className="container-drp grid gap-12 lg:grid-cols-2 lg:items-center">
+          <div className="container-drp flex justify-center gap-16">
             <Reveal>
               <div className="relative aspect-[4/3] overflow-hidden rounded-card">
                 <Image
