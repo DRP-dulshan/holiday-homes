@@ -26,7 +26,7 @@ export function FeaturedStays() {
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionHeading
             eyebrow="Featured stays"
-            title="A few homes from the current collection."
+            title="A few homes from the our collection."
             intro="Hand-picked across Dubai's most sought-after addresses — each one designed, furnished and managed by DRP."
           />
           <Reveal delay={0.1}>

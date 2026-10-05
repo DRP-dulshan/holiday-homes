@@ -53,7 +53,7 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.16 }}
             className="mt-6 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg"
           >
-            Designed and managed entirely in-house, each home features a private car fleet and concierge. Not a marketplace — a boutique hospitality brand.
+            Your Dubai Stay, Elevated. Handpicked holiday homes in Dubai’s most desirable locations, with seamless service and exceptional comfort.
           </motion.p>
         </div>
 

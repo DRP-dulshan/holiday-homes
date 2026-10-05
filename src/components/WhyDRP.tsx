@@ -32,7 +32,7 @@ export function WhyDRP() {
         <SectionHeading
           eyebrow="Why DRP Holiday Homes"
           title="A hospitality company, not a listings site."
-          intro="The difference is in what we own and control — the design, the management, the transport and the standard held across every address."
+          intro="The difference is in what we own and control — the design, the management, the car  and the standard held across every address."
         />
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
