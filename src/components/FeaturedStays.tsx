@@ -42,7 +42,7 @@ export function FeaturedStays() {
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((property, i) => (
-            <Reveal key={property.id} delay={(i % 3) * 0.08}>
+            <Reveal key={property.id} delay={(i % 3) * 0.08} className="h-full">
               <PropertyCard property={property} />
             </Reveal>
           ))}

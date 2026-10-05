@@ -179,6 +179,7 @@ export function ExploreClient({ filters, results, checkIn, checkOut }: ExploreCl
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -16 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="h-full"
                   >
                     <PropertyCard property={property} query={cardQs} />
                   </motion.div>

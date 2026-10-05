@@ -100,7 +100,7 @@ export default async function AreaPage({ params }: PageProps<"/areas/[slug]">) {
             {stays.length > 0 ? (
               <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {stays.map((p, i) => (
-                  <Reveal key={p.slug} delay={(i % 3) * 0.08}>
+                  <Reveal key={p.slug} delay={(i % 3) * 0.08} className="h-full">
                     <PropertyCard property={p} />
                   </Reveal>
                 ))}

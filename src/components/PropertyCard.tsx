@@ -18,7 +18,7 @@ export function PropertyCard({
   return (
     <Link
       href={`/property/${property.slug}${query ? `?${query}` : ""}`}
-      className="group flex flex-col overflow-hidden rounded-card border border-ink-10 bg-canvas shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift"
+      className="group flex h-full flex-col overflow-hidden rounded-card border border-ink-10 bg-canvas shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift"
     >
       <div className="relative aspect-[4/3] overflow-hidden">
         <Image
@@ -41,7 +41,11 @@ export function PropertyCard({
           {property.area}
         </span>
         <div className="mt-2 flex items-start justify-between gap-2">
-          <h3 className="display text-lg font-semibold text-ink">
+          {/* Two lines max, fixed height — keeps every card's rows aligned. */}
+          <h3
+            title={property.title}
+            className="display line-clamp-2 min-h-[3.5rem] text-lg leading-7 font-semibold text-ink"
+          >
             {property.title}
           </h3>
           {property.rating ? (
@@ -52,7 +56,7 @@ export function PropertyCard({
           ) : null}
         </div>
 
-        <div className="mt-4 flex items-center gap-5 text-sm text-ink-80">
+        <div className="mt-4 mb-6 flex items-center gap-5 text-sm text-ink-80">
           <span className="inline-flex items-center gap-1.5">
             <IconBed className="h-4 w-4 text-ink-60" />
             {bedroomLabel(property.bedrooms, true)}
@@ -63,7 +67,7 @@ export function PropertyCard({
           </span>
         </div>
 
-        <div className="mt-6 flex items-end justify-between border-t border-ink-10 pt-4">
+        <div className="mt-auto flex items-end justify-between border-t border-ink-10 pt-4">
           <p className="text-sm text-ink-60">
             <span className="text-base font-semibold text-ink">
               AED {aed.format(property.pricePerNight)}
