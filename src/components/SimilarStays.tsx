@@ -26,7 +26,7 @@ export function SimilarStays({ current }: { current: Property }) {
         </p>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {picks.map((p, i) => (
-            <Reveal key={p.slug} delay={i * 0.06}>
+            <Reveal key={p.slug} delay={i * 0.06} className="h-full">
               <PropertyCard property={p} />
             </Reveal>
           ))}
