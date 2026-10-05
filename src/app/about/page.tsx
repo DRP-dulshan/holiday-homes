@@ -70,9 +70,9 @@ const values = [
 ];
 
 const team = [
-  { initials: "TT", name: "Tara Topic.", role: "Manager of Holiday Homes" },
+  { initials: "TT", name: "Tara Topic", role: "Manager of Holiday Homes" },
   { initials: "AA", name: "Anne Aristan", role: "Administrator" },
-  { initials: "DC", name: "Delia Cuadrante.", role: "Houskeeping Manager" },
+  { initials: "DC", name: "Delia Cuadrante", role: "Houskeeping Manager" },
 ];
 
 export default function AboutPage() {
