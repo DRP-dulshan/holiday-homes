@@ -87,7 +87,7 @@ export default function AboutPage() {
         />
 
         <section className="bg-canvas py-16 md:py-24">
-          <div className="container-drp flex justify-center gap-16">
+          <div className="container-drp grid gap-12 lg:grid-cols-2 lg:items-center">
             <Reveal>
               <div className="relative aspect-[4/3] overflow-hidden rounded-card">
                 <Image
@@ -183,7 +183,7 @@ export default function AboutPage() {
               title="A small team you'll actually talk to."
               intro="Placeholder profiles for this demo — real photos and bios go here before launch."
             />
-            <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mx-auto mt-14 grid max-w-4xl gap-8 sm:grid-cols-3">
               {team.map((m, i) => (
                 <Reveal key={m.name} delay={i * 0.06} className="text-center">
                   <span className="display mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-brand-soft text-2xl font-semibold text-brand-600">
