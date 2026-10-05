@@ -43,6 +43,13 @@ export const defaultFilters: ExploreFilters = {
   sort: "recommended",
 };
 
+const clampPrice = (v: string | null, fallback: number) => {
+  const n = Number(v);
+  return v && Number.isFinite(n)
+    ? Math.min(priceBounds.max, Math.max(priceBounds.min, n))
+    : fallback;
+};
+
 const csv = (v: string | null) => (v ? v.split(",").filter(Boolean) : []);
 
 export function filtersFromSearchParams(params: URLSearchParams): ExploreFilters {
@@ -51,8 +58,8 @@ export function filtersFromSearchParams(params: URLSearchParams): ExploreFilters
     types: csv(params.get("type")) as PropertyType[],
     bedrooms: Number(params.get("bedrooms") ?? 0) || 0,
     guests: Number(params.get("guests") ?? 0) || 0,
-    priceMin: Number(params.get("priceMin") ?? priceBounds.min) || priceBounds.min,
-    priceMax: Number(params.get("priceMax") ?? priceBounds.max) || priceBounds.max,
+    priceMin: clampPrice(params.get("priceMin"), priceBounds.min),
+    priceMax: clampPrice(params.get("priceMax"), priceBounds.max),
     amenities: csv(params.get("amenities")),
     sort: SORT_KEYS.find((k) => k === params.get("sort")) ?? "recommended",
   };

@@ -1,10 +1,10 @@
 "use client";
 
 import { areas } from "@/data/areas";
-import { listedPropertyTypes, priceBounds } from "@/data/properties";
+import { listedPropertyTypes, priceBounds, PRICE_STEP } from "@/data/properties";
+import { PriceRange } from "./PriceRange";
 import { FILTER_AMENITY_GROUPS, type ExploreFilters } from "@/lib/filters";
 
-const aed = new Intl.NumberFormat("en-AE", { maximumFractionDigits: 0 });
 const GUEST_OPTIONS = [0, 2, 3, 4, 5, 6];
 const BEDROOM_OPTIONS = [0, 1, 2, 3];
 
@@ -104,34 +104,17 @@ export function FilterSidebar({ filters, onChange, onClear }: FilterSidebarProps
       <fieldset>
         <legend className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-ink-60">
           <span>Price per night</span>
-          <span className="normal-case text-ink-80">
-            AED {aed.format(filters.priceMin)} – {aed.format(filters.priceMax)}
-          </span>
         </legend>
-        <div className="mt-4 space-y-3">
-          <input
-            type="range"
+        <div className="mt-3">
+          {/* Remounts when the URL filters change (e.g. "Clear all"). */}
+          <PriceRange
+            key={`${filters.priceMin}-${filters.priceMax}`}
             min={priceBounds.min}
             max={priceBounds.max}
-            step={50}
-            value={filters.priceMin}
-            onChange={(e) =>
-              onChange({ priceMin: Math.min(Number(e.target.value), filters.priceMax) })
-            }
-            className="w-full accent-brand"
-            aria-label="Minimum price per night"
-          />
-          <input
-            type="range"
-            min={priceBounds.min}
-            max={priceBounds.max}
-            step={50}
-            value={filters.priceMax}
-            onChange={(e) =>
-              onChange({ priceMax: Math.max(Number(e.target.value), filters.priceMin) })
-            }
-            className="w-full accent-brand"
-            aria-label="Maximum price per night"
+            step={PRICE_STEP}
+            valueMin={filters.priceMin}
+            valueMax={filters.priceMax}
+            onCommit={({ min, max }) => onChange({ priceMin: min, priceMax: max })}
           />
         </div>
       </fieldset>

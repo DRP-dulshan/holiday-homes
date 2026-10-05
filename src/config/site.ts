@@ -41,7 +41,7 @@ export const site = {
 
 /** Booking rules enforced on both the booking widget and the server. */
 export const bookingRules = {
-  minNights: 2,
+  minNights: 1,
   maxNights: 90,
   /** How far ahead (in days) guests can book. */
   maxAdvanceDays: 365,

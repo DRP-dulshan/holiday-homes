@@ -229,7 +229,9 @@ export function SearchWidget() {
                         · {formatShortDate(checkIn)} – {formatShortDate(checkOut)}
                       </>
                     ) : (
-                      `Minimum stay ${bookingRules.minNights} nights`
+                      bookingRules.minNights > 1
+                        ? `Minimum stay ${bookingRules.minNights} nights`
+                        : "Pick your check-in and check-out dates"
                     )}
                   </p>
                   <div className="flex items-center gap-2">

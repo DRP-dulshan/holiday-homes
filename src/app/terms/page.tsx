@@ -37,7 +37,10 @@ export default function TermsPage() {
                 only confirmed once we email you a confirmation.
               </p>
               <p>
-                Stays have a minimum of {bookingRules.minNights} nights and can be requested up to{" "}
+                {bookingRules.minNights > 1
+                  ? `Stays have a minimum of ${bookingRules.minNights} nights and can`
+                  : "Stays can"}{" "}
+                be requested up to{" "}
                 {bookingRules.maxAdvanceDays} days in advance. Stays longer than{" "}
                 {bookingRules.maxNights} nights are arranged directly with the team.
               </p>
