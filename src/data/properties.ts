@@ -865,9 +865,13 @@ export const listedPropertyTypes = propertyTypes.filter((t) =>
   properties.some((p) => p.type === t.value),
 );
 
+/** Price filter step (AED). The bounds are rounded out to whole steps so the
+ * slider can reach both ends exactly. */
+export const PRICE_STEP = 10;
+
 export const priceBounds = {
-  min: Math.min(...properties.map((p) => p.pricePerNight)),
-  max: Math.max(...properties.map((p) => p.pricePerNight)),
+  min: Math.floor(Math.min(...properties.map((p) => p.pricePerNight)) / PRICE_STEP) * PRICE_STEP,
+  max: Math.ceil(Math.max(...properties.map((p) => p.pricePerNight)) / PRICE_STEP) * PRICE_STEP,
 };
 
 /** "Studio" or "2 bedrooms". */

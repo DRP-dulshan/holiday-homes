@@ -193,7 +193,8 @@ export function BookingCard({ property }: { property: Property }) {
         </div>
       ) : (
         <p className="mt-5 border-t border-ink-10 pt-4 text-sm text-ink-60">
-          Add your dates to see the total. Minimum stay {bookingRules.minNights} nights.
+          Add your dates to see the total.
+          {bookingRules.minNights > 1 ? ` Minimum stay ${bookingRules.minNights} nights.` : ""}
         </p>
       )}
 
