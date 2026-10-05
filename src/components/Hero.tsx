@@ -37,15 +37,6 @@ export function Hero() {
 
       <div className="container-drp relative z-10 w-full pt-28 pb-24 md:pt-32">
         <div className="max-w-3xl">
-          <motion.span
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.16em] text-white/85 backdrop-blur"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-            A division of D|R|P · Dubai
-          </motion.span>
 
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -62,7 +53,7 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.16 }}
             className="mt-6 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg"
           >
-            Designed and managed entirely in-house, each home features a private car fleet and concierge. Not a marketplace — a boutique hospitality brand..
+            Designed and managed entirely in-house, each home features a private car fleet and concierge. Not a marketplace — a boutique hospitality brand.
           </motion.p>
         </div>
 
