@@ -21,7 +21,7 @@ export function FeaturedStays() {
   ).filter((p): p is NonNullable<typeof p> => Boolean(p));
 
   return (
-    <section id="stays" className="bg-ink-05 py-24 md:py-32">
+    <section id="stays" className="bg-canvas py-24 md:py-32">
       <div className="container-drp">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionHeading

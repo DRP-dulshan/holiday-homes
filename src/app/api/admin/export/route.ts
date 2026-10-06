@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/server/admin-auth";
 import { listBookings } from "@/lib/server/bookings";
+import { describeCar } from "@/lib/booking-schema";
 import { listEnquiries } from "@/lib/server/enquiries";
 
 function toCsv(rows: (string | number | undefined)[][]) {
@@ -48,12 +49,12 @@ export async function GET(request: Request) {
       [
         "Reference", "Status", "Created", "Property", "Area", "Check-in", "Check-out",
         "Nights", "Guests", "Guest name", "Email", "Phone", "Country", "Total (AED)",
-        "Arrival time", "Requests",
+        "Arrival time", "Requests", "Rental car",
       ],
       ...rows.map((b) => [
         b.ref, b.status, b.createdAt, b.propertyTitle, b.area, b.checkIn, b.checkOut,
         b.quote.nights, b.guests, b.guest.name, b.guest.email, b.guest.phone, b.guest.country,
-        b.quote.total, b.arrivalTime, b.specialRequests,
+        b.quote.total, b.arrivalTime, b.specialRequests, b.car ? describeCar(b.car) : "",
       ]),
     ]);
   }

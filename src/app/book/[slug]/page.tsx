@@ -74,6 +74,7 @@ export default async function BookPage({ params, searchParams }: PageProps<"/boo
             <div className="mt-8 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
               <CheckoutForm
                 propertySlug={property.slug}
+                propertyTitle={property.title}
                 checkIn={checkIn}
                 checkOut={checkOut}
                 guests={guests}

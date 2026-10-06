@@ -10,7 +10,7 @@ import {
   type DateRange,
 } from "@/lib/dates";
 import { aed, quoteStay, validateStay, type Quote } from "@/lib/pricing";
-import type { BookingRequestInput } from "@/lib/booking-schema";
+import { describeCar, type BookingRequestInput, type CarRequest } from "@/lib/booking-schema";
 import { newId, newReference, sign, verify } from "./crypto";
 import { absoluteUrl, sendMail, teamInbox } from "./mailer";
 import { mutate, readAll } from "./store";
@@ -30,6 +30,8 @@ export type Booking = {
   guest: { name: string; email: string; phone: string; country?: string };
   arrivalTime?: string;
   specialRequests?: string;
+  /** Present when the guest asked for a rental car. */
+  car?: CarRequest;
   quote: Quote;
   status: BookingStatus;
   history: { status: BookingStatus; at: string; by: Actor; note?: string }[];
@@ -183,6 +185,9 @@ export async function createBooking(input: BookingRequestInput): Promise<Booking
       },
       arrivalTime: input.arrivalTime || undefined,
       specialRequests: input.specialRequests || undefined,
+      car: input.needCar
+        ? { type: input.carType ?? "any", pickup: input.carPickup ?? "airport" }
+        : undefined,
       quote: quoteStay(property, input.checkIn, input.checkOut),
       status: "pending",
       history: [{ status: "pending", at: now, by: "guest" }],
@@ -307,7 +312,7 @@ async function notifyNewBooking(b: Booking) {
 
 Thank you for choosing ${site.name}. We've received your booking request and the team is checking it now — you'll get a confirmation from us shortly, usually within a few hours.
 
-${summary(b)}
+${summary(b)}${b.car ? `\n\nRental car requested: ${describeCar(b.car)}. We'll send car options and rates with your confirmation.` : ""}
 
 No payment has been taken. Once your stay is confirmed we'll arrange payment with you directly.
 
@@ -325,7 +330,7 @@ ${summary(b)}
 
 Guest: ${b.guest.name}
 Email: ${b.guest.email}
-Phone: ${b.guest.phone}${b.guest.country ? `\nCountry: ${b.guest.country}` : ""}${b.arrivalTime ? `\nArrival time: ${b.arrivalTime}` : ""}${b.specialRequests ? `\nRequests: ${b.specialRequests}` : ""}
+Phone: ${b.guest.phone}${b.guest.country ? `\nCountry: ${b.guest.country}` : ""}${b.arrivalTime ? `\nArrival time: ${b.arrivalTime}` : ""}${b.specialRequests ? `\nRequests: ${b.specialRequests}` : ""}${b.car ? `\nRental car: ${describeCar(b.car)}` : ""}
 
 Review it in the dashboard: ${absoluteUrl("/admin/bookings")}`,
     }),

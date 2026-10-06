@@ -3,6 +3,7 @@ import Link from "next/link";
 import { StatusBadge } from "@/components/booking/StatusBadge";
 import { formatShortDate } from "@/lib/dates";
 import { aed } from "@/lib/pricing";
+import { describeCar } from "@/lib/booking-schema";
 import { requireAdmin } from "@/lib/server/admin-auth";
 import { listBookings, type BookingStatus } from "@/lib/server/bookings";
 import { adminInput, BookingStatusForm } from "../../AdminForms";
@@ -136,8 +137,11 @@ export default async function AdminBookingsPage({ searchParams }: PageProps<"/ad
                 </div>
               </dl>
 
-              {b.arrivalTime || b.specialRequests ? (
+              {b.arrivalTime || b.specialRequests || b.car ? (
                 <div className="mt-4 rounded-xl bg-ink-05 p-3 text-sm text-ink-80">
+                  {b.car ? (
+                    <p className="font-semibold text-brand-600">Rental car: {describeCar(b.car)}</p>
+                  ) : null}
                   {b.arrivalTime ? <p><strong>Arrival:</strong> {b.arrivalTime}</p> : null}
                   {b.specialRequests ? (
                     <p className="whitespace-pre-line"><strong>Requests:</strong> {b.specialRequests}</p>
