@@ -70,10 +70,9 @@ const values = [
 ];
 
 const team = [
-  { initials: "AR", name: "Amina R.", role: "Guest Experience Lead" },
-  { initials: "OK", name: "Omar K.", role: "Head of Property Management" },
-  { initials: "LS", name: "Lena S.", role: "Interior Design Lead" },
-  { initials: "TM", name: "Tariq M.", role: "Owner Relations" },
+  { initials: "TT", name: "Tara Topic", role: "Manager of Holiday Homes" },
+  { initials: "AA", name: "Anne Aristan", role: "Administrator" },
+  { initials: "DC", name: "Delia Cuadrante", role: "Houskeeping Manager" },
 ];
 
 export default function AboutPage() {
@@ -184,7 +183,7 @@ export default function AboutPage() {
               title="A small team you'll actually talk to."
               intro="Placeholder profiles for this demo — real photos and bios go here before launch."
             />
-            <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mx-auto mt-14 grid max-w-4xl gap-8 sm:grid-cols-3">
               {team.map((m, i) => (
                 <Reveal key={m.name} delay={i * 0.06} className="text-center">
                   <span className="display mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-brand-soft text-2xl font-semibold text-brand-600">

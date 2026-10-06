@@ -17,7 +17,7 @@ export const site = {
   whatsappNumber: "971 56 777 0272",
   whatsappHref: "https://wa.me/971567770272",
   // TODO: confirm the live inbox before launch — placeholder for the demo.
-  email: "stay@drpholidayhomes.ae",
+  email: "lettings@dubairapidproperties.com",
   ownersEmail: "owners@drpholidayhomes.ae",
 
   address: {
