@@ -20,6 +20,8 @@ enquiries. Email notifications go out at each step.
   (nightly rate, cleaning fee, Tourism Dirham fee) and the cancellation
   policy. The server re-checks availability under a lock, so the same
   nights can't be booked twice.
+  Guests can also ask for a **rental car** (type and airport or home
+  pick-up). The team sees it in the dashboard and emails.
 - `/booking/[ref]` is the booking page. It's reached through a signed link
   sent by email, or by looking up the reference and email at `/booking`.
   Guests can see the status and cancel there.
@@ -48,8 +50,9 @@ step later.
 - **Next.js 16** (App Router, Route Handlers, Server Actions) + **TypeScript**
 - **Tailwind CSS v4** (design tokens in `src/app/globals.css`)
 - **Framer Motion**, **react-hook-form** + **zod**
-- Storage: JSON files written atomically through a single write queue
-  (`src/lib/server/store.ts`). There is no database to set up.
+- Storage (`src/lib/server/store.ts`): **Upstash Redis** over its REST API
+  when configured (needed on Vercel), otherwise JSON files on disk. Every
+  write runs under a lock, so the same nights can't be booked twice.
 - Email: [Resend](https://resend.com) over HTTPS (optional)
 
 ## Getting started
@@ -71,8 +74,9 @@ test all the flows locally.
 | Variable          | Purpose                                                                 |
 | ----------------- | ----------------------------------------------------------------------- |
 | `ADMIN_PASSWORD`  | Dashboard password. **Required in production**: the dashboard stays locked without it. |
-| `APP_SECRET`      | Signs booking links and admin sessions. If unset, one is generated in `DATA_DIR`. |
-| `DATA_DIR`        | Where data files live (default `./.data`). Must be on a persistent disk. |
+| `APP_SECRET`      | Signs booking links and admin sessions. If unset, one is generated and stored. |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Upstash Redis (set automatically by Vercel's Upstash integration). `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` also work. **Required on Vercel.** |
+| `DATA_DIR`        | File storage folder when Redis isn't configured (default `./.data`). Must be on a persistent disk. |
 | `SITE_URL`        | Public URL used in email links.                                          |
 | `RESEND_API_KEY`, `MAIL_FROM` | Turn on real email delivery.                                 |
 | `NOTIFY_EMAIL`    | Inbox for team notifications (default: `site.email`).                   |
@@ -89,21 +93,35 @@ match one in `src/data/areas.ts`.
 
 ## Deploying
 
-The data store writes to the local disk, so deploy somewhere with a
-**persistent filesystem**: a VPS, Docker with a volume, or Render or
-Railway with a disk. Run it as a single instance.
+### Vercel
+
+Vercel's filesystem is read-only, so bookings and enquiries are stored in
+Upstash Redis (the free tier is plenty):
+
+1. In the Vercel dashboard, open the project → **Storage** → **Create
+   Database** → **Upstash for Redis**, and connect it to the project. This
+   adds `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+2. Under **Settings → Environment Variables**, add `ADMIN_PASSWORD` and
+   `APP_SECRET` (and the email variables if you want real emails).
+3. Redeploy.
+
+Without Redis, the site still works but can't save requests: the checkout
+then offers a **Send my request on WhatsApp** button with the full request
+filled in, and the server log says what to configure.
+
+### A server with a disk
+
+Without Redis, data is written to JSON files, so use a host with a
+**persistent filesystem** (a VPS, Docker with a volume, or Render or Railway
+with a disk):
 
 ```bash
 npm run build
 ADMIN_PASSWORD=… APP_SECRET=… DATA_DIR=/var/lib/drp npm start
 ```
 
-Serverless hosts such as Vercel have an ephemeral filesystem, so bookings
-would be lost there. To host on one, swap the four functions in
-`src/lib/server/store.ts` for a hosted database (Postgres, Redis, etc.).
-Nothing else needs to change.
-
-Back up `DATA_DIR` regularly. It holds all bookings and enquiries.
+Back up `DATA_DIR` (or the Redis database) regularly. It holds all bookings
+and enquiries.
 
 ## Project structure
 
@@ -134,7 +152,7 @@ src/
 ## Before launch
 
 - Confirm the phone, WhatsApp, emails and social links in `src/config/site.ts`.
-- Set `ADMIN_PASSWORD`, `APP_SECRET`, `DATA_DIR`, `SITE_URL` and the Resend
+- Connect Upstash Redis (on Vercel), and set `ADMIN_PASSWORD`, `APP_SECRET`, `SITE_URL` and the Resend
   variables, and verify the sending domain in Resend.
 - Have `/terms` and `/privacy` reviewed against your DET licence and the
   UAE PDPL.

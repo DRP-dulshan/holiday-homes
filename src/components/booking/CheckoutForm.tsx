@@ -3,30 +3,59 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { guestDetailsSchema, type GuestDetailsInput } from "@/lib/booking-schema";
-import { IconArrowRight, IconLock } from "../icons";
+import {
+  CAR_PICKUPS,
+  CAR_TYPES,
+  describeCar,
+  guestDetailsSchema,
+  type GuestDetailsInput,
+} from "@/lib/booking-schema";
+import { whatsappLink } from "@/config/site";
+import { IconArrowRight, IconCar, IconLock, IconWhatsApp } from "../icons";
 
 type Props = {
   propertySlug: string;
+  propertyTitle: string;
   checkIn: string;
   checkOut: string;
   guests: number;
 };
 
-export function CheckoutForm({ propertySlug, checkIn, checkOut, guests }: Props) {
+export function CheckoutForm({ propertySlug, propertyTitle, checkIn, checkOut, guests }: Props) {
   const router = useRouter();
-  const [serverError, setServerError] = useState<{ message: string; unavailable: boolean } | null>(
-    null,
-  );
+  const [serverError, setServerError] = useState<{
+    message: string;
+    unavailable: boolean;
+    /** WhatsApp link carrying the whole request, when saving online failed. */
+    fallback?: string;
+  } | null>(null);
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<GuestDetailsInput>({
     resolver: zodResolver(guestDetailsSchema),
+    defaultValues: { needCar: false, carType: "any", carPickup: "airport" },
   });
+  const needCar = useWatch({ control, name: "needCar" });
+
+  // Everything the team needs, so a request can still reach them if the site can't save it.
+  const whatsappFallback = (d: GuestDetailsInput) =>
+    whatsappLink(
+      [
+        `Hi DRP, I'd like to book ${propertyTitle}.`,
+        `Dates: ${checkIn} to ${checkOut} · Guests: ${guests}`,
+        `Name: ${d.name} · Email: ${d.email} · Phone: ${d.phone}`,
+        d.arrivalTime ? `Arrival: ${d.arrivalTime}` : "",
+        d.needCar ? `Rental car: ${describeCar({ type: d.carType ?? "any", pickup: d.carPickup ?? "airport" })}` : "",
+        d.specialRequests ? `Requests: ${d.specialRequests}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
 
   const onSubmit = async (data: GuestDetailsInput) => {
     setServerError(null);
@@ -38,17 +67,22 @@ export function CheckoutForm({ propertySlug, checkIn, checkOut, guests }: Props)
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.ok) {
+        const serverSide = res.status >= 500;
         setServerError({
-          message: json.error ?? "Something went wrong — please try again.",
+          message: serverSide
+            ? "We couldn't save your request online right now — send it to us on WhatsApp instead and the team will confirm it there."
+            : (json.error ?? "Something went wrong — please try again."),
           unavailable: json.code === "unavailable",
+          fallback: serverSide ? whatsappFallback(data) : undefined,
         });
         return;
       }
       router.push(`${json.url}&new=1`);
     } catch {
       setServerError({
-        message: "We couldn't reach the server — check your connection and try again.",
+        message: "We couldn't reach the server — check your connection, or send your request on WhatsApp.",
         unavailable: false,
+        fallback: whatsappFallback(data),
       });
     }
   };
@@ -117,6 +151,48 @@ export function CheckoutForm({ propertySlug, checkIn, checkOut, guests }: Props)
           />
         </Field>
 
+        <fieldset className="rounded-2xl border border-ink-10 bg-ink-05 p-4">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              {...register("needCar")}
+              className="mt-1 h-4 w-4 shrink-0 accent-[var(--color-brand)]"
+            />
+            <span>
+              <span className="flex items-center gap-2 text-sm font-semibold text-ink">
+                <IconCar className="h-4 w-4 text-brand-600" />
+                Do you need a rental car?
+              </span>
+              <span className="mt-0.5 block text-xs text-ink-60">
+                DRP guests get special rates on our private car fleet. We&rsquo;ll send car
+                options and prices with your confirmation — nothing is charged now.
+              </span>
+            </span>
+          </label>
+          {needCar ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <Field label="Car type">
+                <select {...register("carType")} className={inputClass(false)}>
+                  {CAR_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Pick-up">
+                <select {...register("carPickup")} className={inputClass(false)}>
+                  {CAR_PICKUPS.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+          ) : null}
+        </fieldset>
+
         {/* Honeypot: hidden from people, tempting to bots. */}
         <input
           {...register("company")}
@@ -161,6 +237,17 @@ export function CheckoutForm({ propertySlug, checkIn, checkOut, guests }: Props)
                   Pick new dates
                 </Link>
               </>
+            ) : null}
+            {serverError.fallback ? (
+              <a
+                href={serverError.fallback}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-primary btn-sm mt-3 w-full"
+              >
+                <IconWhatsApp className="h-4 w-4" />
+                Send my request on WhatsApp
+              </a>
             ) : null}
           </div>
         ) : null}

@@ -8,6 +8,7 @@ import { IconBadgeCheck, IconWhatsApp } from "@/components/icons";
 import { bookingRules, site, whatsappLink } from "@/config/site";
 import { getProperty } from "@/data/properties";
 import { formatDate, todayIso } from "@/lib/dates";
+import { describeCar } from "@/lib/booking-schema";
 import {
   bookingToken,
   cancellationTerms,
@@ -130,6 +131,14 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                   <Detail label="Phone" value={booking.guest.phone} />
                   {booking.guest.country ? <Detail label="Country" value={booking.guest.country} /> : null}
                   {booking.arrivalTime ? <Detail label="Arrival" value={booking.arrivalTime} /> : null}
+                  {booking.car ? (
+                    <div className="sm:col-span-2">
+                      <Detail
+                        label="Rental car"
+                        value={`${describeCar(booking.car)} — the team will send options and rates.`}
+                      />
+                    </div>
+                  ) : null}
                   {booking.specialRequests ? (
                     <div className="sm:col-span-2">
                       <Detail label="Requests" value={booking.specialRequests} />

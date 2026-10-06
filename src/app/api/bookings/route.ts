@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { bookingRequestSchema } from "@/lib/booking-schema";
 import { BookingError, bookingUrl, createBooking } from "@/lib/server/bookings";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { StorageNotConfiguredError } from "@/lib/server/store";
 
 export async function POST(request: Request) {
   if (!rateLimit(`booking:${clientIp(request.headers)}`, 10, 10 * 60_000)) {
@@ -39,10 +40,19 @@ export async function POST(request: Request) {
       const status = err.code === "unavailable" ? 409 : err.code === "not-found" ? 404 : 400;
       return NextResponse.json({ ok: false, error: err.message, code: err.code }, { status });
     }
-    console.error("[booking] failed:", err);
+    if (err instanceof StorageNotConfiguredError) {
+      console.error(`[booking] ${err.message}`);
+    } else {
+      console.error("[booking] failed:", err);
+    }
+    // The checkout offers a WhatsApp fallback for this code, so no request is lost.
     return NextResponse.json(
-      { ok: false, error: "Something went wrong — please try again or contact us." },
-      { status: 500 },
+      {
+        ok: false,
+        code: "server",
+        error: "We couldn't save your request online right now.",
+      },
+      { status: 503 },
     );
   }
 }

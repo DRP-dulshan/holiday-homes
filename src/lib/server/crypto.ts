@@ -11,7 +11,10 @@ let cached: Promise<string> | null = null;
 function getSecret() {
   const fromEnv = process.env.APP_SECRET?.trim();
   if (fromEnv && fromEnv.length >= 16) return Promise.resolve(fromEnv);
-  cached ??= readOrCreateText(".secret", () => randomBytes(32).toString("hex"));
+  cached ??= readOrCreateText(".secret", () => randomBytes(32).toString("hex")).catch((err) => {
+    cached = null; // don't cache a failure — retry on the next request
+    throw err;
+  });
   return cached;
 }
 
