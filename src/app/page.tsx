@@ -16,8 +16,8 @@ export default function Home() {
       <Navbar overHero />
       <main className="flex-1">
         <Hero />
-        <WhyDRP />
         <FeaturedStays />
+        <WhyDRP />
         <AreasWeCover />
         <DRPPromise />
         <Testimonials />

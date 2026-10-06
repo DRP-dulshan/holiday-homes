@@ -27,7 +27,7 @@ const pillars = [
 
 export function WhyDRP() {
   return (
-    <section id="why-drp" className="relative bg-canvas py-24 md:py-32">
+    <section id="why-drp" className="relative bg-ink-05 py-24 md:py-32">
       <div className="container-drp">
         <SectionHeading
           eyebrow="Why DRP Holiday Homes"
