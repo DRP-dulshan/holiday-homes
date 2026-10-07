@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { bookingRules, site } from "@/config/site";
+import { paymentsEnabled } from "@/lib/server/stripe";
 
 export const metadata: Metadata = {
   title: "Booking Terms",
@@ -11,11 +12,12 @@ export const metadata: Metadata = {
 // Standard holiday-home terms — have these reviewed against your DET licence
 // conditions and by legal counsel before launch.
 export default function TermsPage() {
+  const payOnline = paymentsEnabled();
   return (
     <LegalPage
       eyebrow="Booking terms"
       title="Terms of stay."
-      updated="3 October 2026"
+      updated="7 October 2026"
       intro={`The terms that apply when you book a home with ${site.name}. Please read them before you request a booking.`}
       sections={[
         {
@@ -57,11 +59,20 @@ export default function TermsPage() {
                 {bookingRules.tourismFeePerNight} per night. The total shown when you request a
                 booking is the total you pay.
               </p>
-              <p>
-                No payment is taken on the website. Once your stay is confirmed, the team
-                arranges payment with you directly; the booking is secured once payment is
-                received.
-              </p>
+              {payOnline ? (
+                <p>
+                  The full amount is paid by card when you book, through our payment provider
+                  Stripe; we never see or store your card details. Your dates are held for 30
+                  minutes while you pay, and your booking is confirmed as soon as payment is
+                  received. Refunds go back to the card you paid with.
+                </p>
+              ) : (
+                <p>
+                  No payment is taken on the website. Once your stay is confirmed, the team
+                  arranges payment with you directly; the booking is secured once payment is
+                  received.
+                </p>
+              )}
             </>
           ),
         },

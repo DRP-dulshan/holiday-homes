@@ -4,15 +4,18 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { StaySummary } from "@/components/booking/StaySummary";
 import { StatusBadge } from "@/components/booking/StatusBadge";
-import { IconBadgeCheck, IconWhatsApp } from "@/components/icons";
+import { IconArrowRight, IconBadgeCheck, IconLock, IconWhatsApp } from "@/components/icons";
 import { bookingRules, site, whatsappLink } from "@/config/site";
 import { getProperty } from "@/data/properties";
 import { formatDate, todayIso } from "@/lib/dates";
 import { describeCar } from "@/lib/booking-schema";
+import { aed } from "@/lib/pricing";
 import {
   bookingToken,
   cancellationTerms,
   getBooking,
+  paymentWindow,
+  refreshPayment,
   verifyBookingToken,
 } from "@/lib/server/bookings";
 import { CancelBookingButton, LookupForm } from "../BookingForms";
@@ -29,8 +32,12 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
   const sp = await searchParams;
   const token = first(sp.t);
   const isNew = first(sp.new) === "1";
+  const returnedFromStripe = !!first(sp.session_id);
+  const leftCheckout = first(sp.payment) === "cancelled";
 
-  const booking = (await verifyBookingToken(ref, token)) ? await getBooking(ref) : null;
+  const found = (await verifyBookingToken(ref, token)) ? await getBooking(ref) : null;
+  // Back from Stripe (or still unpaid): check the payment now rather than wait for the webhook.
+  const booking = found ? await refreshPayment(found) : null;
   const property = booking ? getProperty(booking.propertySlug) : undefined;
 
   if (!booking || !property) {
@@ -56,12 +63,69 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
 
   const terms = cancellationTerms(booking);
   const canCancel = booking.status !== "cancelled" && booking.checkIn > todayIso();
+  const payment = booking.payment;
+  const paid = payment?.status === "paid";
+  const payWindow = paymentWindow(booking);
+  const payBy = payWindow?.deadline.toLocaleTimeString("en-GB", {
+    timeZone: "Asia/Dubai",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const firstName = booking.guest.name.split(" ")[0];
+  const retryHref = `/book/${property.slug}?checkIn=${booking.checkIn}&checkOut=${booking.checkOut}&guests=${booking.guests}`;
 
   return (
     <>
       <Navbar />
       <main className="flex-1 bg-ink-05 pb-20">
         <div className="container-drp pt-24 md:pt-28">
+          {returnedFromStripe && paid && booking.status === "confirmed" ? (
+            <Notice tone="success" title={`Payment received — you're booked, ${firstName}!`}>
+              Your stay is confirmed and a confirmation is on its way to {booking.guest.email}. Keep your
+              reference: <strong>{booking.ref}</strong>.
+            </Notice>
+          ) : null}
+
+          {payWindow ? (
+            <Notice
+              tone="info"
+              title={
+                leftCheckout
+                  ? "Payment not completed"
+                  : returnedFromStripe
+                    ? "We're confirming your payment…"
+                    : "Complete your payment to confirm"
+              }
+            >
+              {returnedFromStripe && !leftCheckout
+                ? "This usually takes a few seconds — refresh the page in a moment. If your payment didn't go through, you can try again below. "
+                : null}
+              Your dates are held until {payBy} (Dubai time). Your stay is confirmed as soon as
+              payment goes through.
+              <div className="mt-3 flex flex-wrap gap-2">
+                <a href={payWindow.url} className="btn btn-primary btn-sm">
+                  <IconLock className="h-4 w-4" />
+                  Pay AED {aed.format(booking.quote.total)} securely
+                </a>
+              </div>
+            </Notice>
+          ) : booking.status === "awaiting_payment" ? (
+            <Notice tone="info" title="Checking your payment…">
+              Refresh this page in a moment. If the payment didn&rsquo;t go through, the dates are
+              released automatically.
+            </Notice>
+          ) : null}
+
+          {booking.status === "cancelled" && payment && !paid ? (
+            <Notice tone="neutral" title="The payment wasn't completed">
+              The checkout closed before payment, so nothing was charged and the dates were released.{" "}
+              <Link href={retryHref} className="inline-flex items-center gap-1 font-semibold underline">
+                Try booking again
+                <IconArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </Notice>
+          ) : null}
+
           {isNew ? (
             <div className="mb-8 flex items-start gap-4 rounded-card border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
               <IconBadgeCheck className="mt-0.5 h-6 w-6 shrink-0" />
@@ -95,13 +159,45 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                 <ol className="mt-4 space-y-4 text-sm text-ink-80">
                   {booking.status === "cancelled" ? (
                     <li>
-                      This booking was cancelled. If you&rsquo;d still like to stay with us,{" "}
+                      This booking was cancelled.
+                    {paid
+                      ? " Any refund due under the cancellation policy goes back to the card you paid with."
+                      : ""}{" "}
+                    If you&rsquo;d still like to stay with us,{" "}
                       <Link href={`/property/${property.slug}`} className="font-semibold text-brand-600 hover:underline">
                         check new dates
                       </Link>
                       .
                     </li>
                   ) : (
+                    payment ? (
+                    <>
+                      <Step done label="Dates held for you" detail={formatDate(booking.createdAt.slice(0, 10))} />
+                      <Step
+                        done={paid}
+                        label="Payment"
+                        detail={
+                          paid
+                            ? `AED ${aed.format(payment.amount ?? booking.quote.total)} paid by card${payment.paidAt ? ` on ${formatDate(payment.paidAt.slice(0, 10))}` : ""}.`
+                            : "Pay securely on Stripe to confirm your stay."
+                        }
+                      />
+                      <Step
+                        done={booking.status === "confirmed"}
+                        label="Stay confirmed"
+                        detail={
+                          booking.status === "confirmed"
+                            ? "Confirmation sent by email."
+                            : "Confirmed automatically once payment goes through."
+                        }
+                      />
+                      <Step
+                        done={false}
+                        label="Check-in details"
+                        detail={`Access codes and directions are sent before ${formatDate(booking.checkIn)}.`}
+                      />
+                    </>
+                    ) : (
                     <>
                       <Step done label="Request received" detail={formatDate(booking.createdAt.slice(0, 10))} />
                       <Step
@@ -119,6 +215,7 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                         detail={`Access codes and directions are sent before ${formatDate(booking.checkIn)}.`}
                       />
                     </>
+                    )
                   )}
                 </ol>
               </section>
@@ -194,6 +291,31 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
       </main>
       <Footer />
     </>
+  );
+}
+
+function Notice({
+  tone,
+  title,
+  children,
+}: {
+  tone: "success" | "info" | "neutral";
+  title: string;
+  children: React.ReactNode;
+}) {
+  const styles = {
+    success: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    info: "border-sky-200 bg-sky-50 text-sky-900",
+    neutral: "border-ink-10 bg-canvas text-ink-80",
+  }[tone];
+  return (
+    <div className={`mb-8 flex items-start gap-4 rounded-card border p-5 ${styles}`}>
+      {tone === "success" ? <IconBadgeCheck className="mt-0.5 h-6 w-6 shrink-0" /> : null}
+      <div>
+        <p className="font-semibold">{title}</p>
+        <div className="mt-1 text-sm">{children}</div>
+      </div>
+    </div>
   );
 }
 

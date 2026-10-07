@@ -3,10 +3,10 @@
 The website for **DRP Holiday Homes**, the short-term rental division of
 D|R|P, a Dubai real estate brokerage.
 
-Guests can search homes by date, see live availability, request a booking,
-and look up or cancel it later. The team works from a password-protected
-dashboard where they confirm or decline requests, block dates and handle
-enquiries. Email notifications go out at each step.
+Guests can search homes by date, see live availability, book and pay by card
+through Stripe, and look up or cancel their booking later. The team works from
+a password-protected dashboard where they manage bookings, block dates and
+handle enquiries. Email notifications go out at each step.
 
 ## Features
 
@@ -20,11 +20,19 @@ enquiries. Email notifications go out at each step.
   (nightly rate, cleaning fee, Tourism Dirham fee) and the cancellation
   policy. The server re-checks availability under a lock, so the same
   nights can't be booked twice.
+- **Payment (Stripe Checkout).** With Stripe configured, "Continue to
+  payment" holds the dates and sends the guest to Stripe's hosted payment
+  page for the full amount in AED. Once paid, the booking is confirmed
+  automatically and the guest and team are emailed. If the guest doesn't
+  pay within 30 minutes, the checkout expires and the dates are released.
+  Without Stripe keys, a booking is a *request* the team confirms and
+  arranges payment for directly.
   Guests can also ask for a **rental car** (type and airport or home
   pick-up). The team sees it in the dashboard and emails.
 - `/booking/[ref]` is the booking page. It's reached through a signed link
   sent by email, or by looking up the reference and email at `/booking`.
-  Guests can see the status and cancel there.
+  Guests can see the status and payment, finish an unpaid payment, and
+  cancel there.
 - Owners fill in one form at the top of `/owners` (area, type, bedrooms, furnishing,
   status, timing), then leave their details. No income estimate is shown;
   the team follows up with a proposal after a walkthrough.
@@ -37,16 +45,16 @@ enquiries. Email notifications go out at each step.
 - Overview: requests to review, arrivals in the next 14 days, guests
   currently staying, new enquiries and upcoming confirmed revenue.
 - Bookings: filter, search, and confirm, decline, cancel or re-open a
-  booking. The guest is emailed on each change.
+  booking. The guest is emailed on each change. Paid bookings link to the
+  payment in Stripe; cancelling a paid booking emails the team that a
+  refund is due (refunds are issued from the Stripe dashboard).
 - Availability: an occupancy grid for every home over 35 days, and a form
   to block dates (owner stays, maintenance, bookings taken elsewhere).
 - Enquiries: reply by email, mark as handled, or delete.
 - CSV export of bookings and enquiries.
 
-**Not included:** online card payment. A booking stays a *request* until
-the team confirms it and arranges payment directly. Online payment
-(Stripe, Network International, etc.) can be added to the confirmation
-step later.
+Refunds are not automatic: the cancellation policy decides how much is
+refunded, so the team issues them from the Stripe dashboard.
 
 ## Stack
 
@@ -56,6 +64,7 @@ step later.
 - Storage (`src/lib/server/store.ts`): **Upstash Redis** over its REST API
   when configured (needed on Vercel), otherwise JSON files on disk. Every
   write runs under a lock, so the same nights can't be booked twice.
+- Payments: [Stripe Checkout](https://stripe.com/payments/checkout) (`stripe` SDK)
 - Email: [Resend](https://resend.com) over HTTPS (optional)
 
 ## Getting started
@@ -83,6 +92,8 @@ test all the flows locally.
 | `SITE_URL`        | Public URL used in email links.                                          |
 | `RESEND_API_KEY`, `MAIL_FROM` | Turn on real email delivery.                                 |
 | `NOTIFY_EMAIL`    | Inbox for team notifications (default: `site.email`).                   |
+| `STRIPE_SECRET_KEY` | Turns on online payment (`sk_test_…` to test, `sk_live_…` for real payments). |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret (`whsec_…`) of the Stripe webhook below.            |
 
 Business details live in `src/config/site.ts`: phone, WhatsApp, emails,
 address and the **booking rules**: minimum and maximum nights, how far
@@ -112,6 +123,26 @@ Without Redis, the site still works but can't save requests: the checkout
 then offers a **Send my request on WhatsApp** button with the full request
 filled in, and the server log says what to configure.
 
+### Stripe
+
+1. In the [Stripe dashboard](https://dashboard.stripe.com), under
+   **Developers → API keys**, copy the secret key into `STRIPE_SECRET_KEY`.
+2. Under **Developers → Webhooks**, add an endpoint at
+   `https://<your-site>/api/stripe/webhook` with the events
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+   `checkout.session.async_payment_failed` and `checkout.session.expired`.
+   Copy its signing secret into `STRIPE_WEBHOOK_SECRET`.
+3. Set `SITE_URL` to the public address, then redeploy.
+
+Start with test keys and pay with the card `4242 4242 4242 4242` (any future
+date and CVC), then switch to live keys and a live webhook. The guest's
+booking page also checks the payment with Stripe when they return, so a
+late webhook never leaves a paid booking unconfirmed.
+
+To test locally, run `stripe listen --forward-to localhost:3000/api/stripe/webhook`
+with the [Stripe CLI](https://stripe.com/docs/stripe-cli) and use the
+`whsec_…` it prints.
+
 ### A server with a disk
 
 Without Redis, data is written to JSON files, so use a host with a
@@ -139,7 +170,8 @@ src/
     admin/                    Team dashboard (login, overview, bookings,
                               availability, enquiries)
     api/
-      bookings/               POST — create a booking request
+      bookings/               POST — create a booking (and its Stripe checkout)
+      stripe/webhook/         POST — Stripe payment events
       enquiry/                POST — send an enquiry
       properties/[slug]/availability/   GET — booked nights
       admin/export/           GET — CSV export (admin only)
@@ -157,6 +189,7 @@ src/
 - Confirm the phone, WhatsApp, emails and social links in `src/config/site.ts`.
 - Connect Upstash Redis (on Vercel), and set `ADMIN_PASSWORD`, `APP_SECRET`, `SITE_URL` and the Resend
   variables, and verify the sending domain in Resend.
+- Add the Stripe keys and webhook (live mode), and make one real test booking.
 - Have `/terms` and `/privacy` reviewed against your DET licence and the
   UAE PDPL.
 - Replace the remaining Unsplash area photos and the placeholder team

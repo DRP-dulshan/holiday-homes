@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     <LegalPage
       eyebrow="Privacy"
       title="Your privacy."
-      updated="3 October 2026"
+      updated="7 October 2026"
       intro="What we collect when you use this website, why, and the choices you have."
       sections={[
         {
@@ -51,7 +51,8 @@ export default function PrivacyPage() {
           body: (
             <p>
               We don&rsquo;t sell your data. We share it only with service providers that help
-              us run the business (such as our email and hosting providers), with authorities
+              us run the business (such as our payment, email and hosting providers — card payments
+              are handled by Stripe, and we never see your full card details), with authorities
               where the law requires it, and with the property owner where needed to host your
               stay.
             </p>

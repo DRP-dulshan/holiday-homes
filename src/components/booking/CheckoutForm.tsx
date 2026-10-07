@@ -21,10 +21,24 @@ type Props = {
   checkIn: string;
   checkOut: string;
   guests: number;
+  /** Pay on Stripe Checkout now, instead of sending a request for the team to confirm. */
+  payOnline: boolean;
+  /** Amount due, for the button label. */
+  totalLabel: string;
 };
 
-export function CheckoutForm({ propertySlug, propertyTitle, checkIn, checkOut, guests }: Props) {
+export function CheckoutForm({
+  propertySlug,
+  propertyTitle,
+  checkIn,
+  checkOut,
+  guests,
+  payOnline,
+  totalLabel,
+}: Props) {
   const router = useRouter();
+  // Stays true while the browser leaves for Stripe, so the button can't be pressed twice.
+  const [redirecting, setRedirecting] = useState(false);
   const [serverError, setServerError] = useState<{
     message: string;
     unavailable: boolean;
@@ -69,12 +83,20 @@ export function CheckoutForm({ propertySlug, propertyTitle, checkIn, checkOut, g
       if (!res.ok || !json.ok) {
         const serverSide = res.status >= 500;
         setServerError({
-          message: serverSide
-            ? "We couldn't save your request online right now — send it to us on WhatsApp instead and the team will confirm it there."
-            : (json.error ?? "Something went wrong — please try again."),
+          message:
+            json.code === "payment"
+              ? `${json.error} You can also book on WhatsApp.`
+              : serverSide
+                ? "We couldn't save your request online right now — send it to us on WhatsApp instead and the team will confirm it there."
+                : (json.error ?? "Something went wrong — please try again."),
           unavailable: json.code === "unavailable",
           fallback: serverSide ? whatsappFallback(data) : undefined,
         });
+        return;
+      }
+      if (json.checkoutUrl) {
+        setRedirecting(true);
+        window.location.assign(json.checkoutUrl);
         return;
       }
       router.push(`${json.url}&new=1`);
@@ -165,7 +187,10 @@ export function CheckoutForm({ propertySlug, propertyTitle, checkIn, checkOut, g
               </span>
               <span className="mt-0.5 block text-xs text-ink-60">
                 DRP guests get special rates on our private car fleet. We&rsquo;ll send car
-                options and prices with your confirmation — nothing is charged now.
+                options and prices by email{" "}
+                {payOnline
+                  ? "— the car is arranged and paid separately."
+                  : "with your confirmation — nothing is charged now."}
               </span>
             </span>
           </label>
@@ -252,13 +277,25 @@ export function CheckoutForm({ propertySlug, propertyTitle, checkIn, checkOut, g
           </div>
         ) : null}
 
-        <button type="submit" disabled={isSubmitting} className="btn btn-primary mt-2 w-full">
-          {isSubmitting ? "Sending request…" : "Request to book"}
-          {!isSubmitting ? <IconArrowRight className="h-4 w-4" /> : null}
+        <button
+          type="submit"
+          disabled={isSubmitting || redirecting}
+          className="btn btn-primary mt-2 w-full"
+        >
+          {payOnline
+            ? isSubmitting || redirecting
+              ? "Opening secure payment…"
+              : `Continue to payment · ${totalLabel}`
+            : isSubmitting
+              ? "Sending request…"
+              : "Request to book"}
+          {!isSubmitting && !redirecting ? <IconArrowRight className="h-4 w-4" /> : null}
         </button>
         <p className="flex items-center justify-center gap-1.5 text-center text-xs text-ink-60">
-          <IconLock className="h-3.5 w-3.5" />
-          No payment now — the team confirms your stay first, then arranges payment with you.
+          <IconLock className="h-3.5 w-3.5 shrink-0" />
+          {payOnline
+            ? "Secure card payment by Stripe. Your dates are held for 30 minutes while you pay, and your stay is confirmed as soon as payment goes through."
+            : "No payment now — the team confirms your stay first, then arranges payment with you."}
         </p>
       </div>
     </form>

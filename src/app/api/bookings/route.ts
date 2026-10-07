@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { bookingRequestSchema } from "@/lib/booking-schema";
-import { BookingError, bookingUrl, createBooking } from "@/lib/server/bookings";
+import { BookingError, bookingUrl, createBooking, startCheckout } from "@/lib/server/bookings";
+import { paymentsEnabled } from "@/lib/server/stripe";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { StorageNotConfiguredError } from "@/lib/server/store";
 
@@ -29,8 +30,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Request rejected." }, { status: 400 });
   }
 
+  const payOnline = paymentsEnabled();
   try {
-    const booking = await createBooking(parsed.data);
+    const booking = await createBooking(parsed.data, { payOnline });
+    if (payOnline) {
+      try {
+        const checkoutUrl = await startCheckout(booking, new URL(request.url).origin);
+        return NextResponse.json({ ok: true, ref: booking.ref, checkoutUrl }, { status: 201 });
+      } catch (err) {
+        console.error("[booking] couldn't open Stripe checkout:", err);
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "payment",
+            error: "We couldn't open the secure payment page just now. Please try again in a minute.",
+          },
+          { status: 502 },
+        );
+      }
+    }
     return NextResponse.json(
       { ok: true, ref: booking.ref, url: await bookingUrl(booking.ref) },
       { status: 201 },

@@ -9,8 +9,9 @@ import { IconArrowRight } from "@/components/icons";
 import { bookingRules } from "@/config/site";
 import { getProperty } from "@/data/properties";
 import { addDays, formatDate, isIsoDate } from "@/lib/dates";
-import { quoteStay, validateStay } from "@/lib/pricing";
+import { aed, quoteStay, validateStay } from "@/lib/pricing";
 import { isAvailable } from "@/lib/server/bookings";
+import { paymentsEnabled } from "@/lib/server/stripe";
 
 export const metadata: Metadata = {
   title: "Complete your booking",
@@ -34,6 +35,7 @@ export default async function BookPage({ params, searchParams }: PageProps<"/boo
     ? validateStay(property, checkIn, checkOut, guests)
     : "Choose your dates to continue.";
   const available = !problem && (await isAvailable(property.slug, checkIn, checkOut));
+  const payOnline = paymentsEnabled();
 
   return (
     <>
@@ -46,7 +48,7 @@ export default async function BookPage({ params, searchParams }: PageProps<"/boo
             </Link>
           </nav>
           <h1 className="display mt-4 text-3xl font-semibold text-ink sm:text-4xl">
-            {available ? "Request to book" : "Let’s fix your dates"}
+            {available ? (payOnline ? "Confirm and pay" : "Request to book") : "Let’s fix your dates"}
           </h1>
 
           {problem || !available ? (
@@ -78,6 +80,8 @@ export default async function BookPage({ params, searchParams }: PageProps<"/boo
                 checkIn={checkIn}
                 checkOut={checkOut}
                 guests={guests}
+                payOnline={payOnline}
+                totalLabel={`AED ${aed.format(quoteStay(property, checkIn, checkOut).total)}`}
               />
               <div className="lg:sticky lg:top-28 lg:self-start">
                 <StaySummary

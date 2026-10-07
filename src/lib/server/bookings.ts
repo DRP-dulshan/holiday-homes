@@ -14,8 +14,21 @@ import { describeCar, type BookingRequestInput, type CarRequest } from "@/lib/bo
 import { newId, newReference, sign, verify } from "./crypto";
 import { absoluteUrl, sendMail, teamInbox } from "./mailer";
 import { mutate, readAll } from "./store";
+import {
+  CHECKOUT_MINUTES,
+  createCheckoutSession,
+  dashboardPaymentUrl,
+  expireCheckoutSession,
+  paymentsEnabled,
+  retrieveCheckoutSession,
+  type CheckoutSession,
+} from "./stripe";
 
-export type BookingStatus = "pending" | "confirmed" | "cancelled";
+/**
+ * - awaiting_payment: the guest is paying on Stripe; the dates are held until `payment.holdUntil`.
+ * - pending: a request the team still has to confirm (when online payment is off).
+ */
+export type BookingStatus = "awaiting_payment" | "pending" | "confirmed" | "cancelled";
 export type Actor = "guest" | "admin" | "system";
 
 export type Booking = {
@@ -33,10 +46,29 @@ export type Booking = {
   /** Present when the guest asked for a rental car. */
   car?: CarRequest;
   quote: Quote;
+  /** Present when the guest was sent to Stripe Checkout. */
+  payment?: Payment;
   status: BookingStatus;
   history: { status: BookingStatus; at: string; by: Actor; note?: string }[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type Payment = {
+  provider: "stripe";
+  status: "open" | "paid" | "expired";
+  /** While unpaid, the dates are held until this time (ISO). */
+  holdUntil: string;
+  sessionId?: string;
+  /** The Stripe Checkout page, while it's open. */
+  url?: string;
+  livemode?: boolean;
+  /** Amount paid in AED. */
+  amount?: number;
+  paidAt?: string;
+  paymentIntentId?: string;
+  /** A paid booking was cancelled: the team refunds it from the Stripe dashboard. */
+  refundDue?: boolean;
 };
 
 /** Dates the team has closed manually (owner stays, maintenance…). */
@@ -62,7 +94,13 @@ export class BookingError extends Error {
   }
 }
 
-const holdsDates = (b: Booking) => b.status !== "cancelled";
+/** Unpaid holds outlive the Checkout Session by a few minutes, so a late payment still finds its dates. */
+const HOLD_MINUTES = CHECKOUT_MINUTES + 5;
+
+const holdExpired = (b: Booking, now = Date.now()) =>
+  b.status === "awaiting_payment" && !!b.payment && Date.parse(b.payment.holdUntil) < now;
+
+const holdsDates = (b: Booking) => b.status !== "cancelled" && !holdExpired(b);
 
 function takenRanges(slug: string, bookings: Booking[], blocks: Block[]): DateRange[] {
   return [
@@ -146,7 +184,15 @@ export async function listBlocks() {
 /* Writes                                                              */
 /* ------------------------------------------------------------------ */
 
-export async function createBooking(input: BookingRequestInput): Promise<Booking> {
+/**
+ * Saves a booking under the store lock, so the same nights can't be taken twice.
+ * With `payOnline` the dates are held while the guest pays on Stripe (see
+ * `startCheckout`); otherwise it's a request for the team to confirm.
+ */
+export async function createBooking(
+  input: BookingRequestInput,
+  { payOnline = false }: { payOnline?: boolean } = {},
+): Promise<Booking> {
   const property = getProperty(input.propertySlug);
   if (!property) throw new BookingError("That home no longer exists.", "not-found");
 
@@ -166,7 +212,9 @@ export async function createBooking(input: BookingRequestInput): Promise<Booking
 
     let ref = newReference();
     while (bookings.some((b) => b.ref === ref)) ref = newReference();
-    const now = new Date().toISOString();
+    const now = new Date();
+    const at = now.toISOString();
+    const status: BookingStatus = payOnline ? "awaiting_payment" : "pending";
 
     const created: Booking = {
       id: newId(),
@@ -189,17 +237,196 @@ export async function createBooking(input: BookingRequestInput): Promise<Booking
         ? { type: input.carType ?? "any", pickup: input.carPickup ?? "airport" }
         : undefined,
       quote: quoteStay(property, input.checkIn, input.checkOut),
-      status: "pending",
-      history: [{ status: "pending", at: now, by: "guest" }],
-      createdAt: now,
-      updatedAt: now,
+      payment: payOnline
+        ? {
+            provider: "stripe",
+            status: "open",
+            holdUntil: new Date(now.getTime() + HOLD_MINUTES * 60_000).toISOString(),
+          }
+        : undefined,
+      status,
+      history: [{ status, at, by: "guest" }],
+      createdAt: at,
+      updatedAt: at,
     };
     bookings.push(created);
     return created;
   });
 
-  await notifyNewBooking(booking);
+  // A paid booking is announced once Stripe confirms the payment.
+  if (!payOnline) await notifyNewBooking(booking);
   return booking;
+}
+
+/**
+ * Opens a Stripe Checkout Session for a booking that is awaiting payment and
+ * returns its URL. If Stripe can't be reached the hold is released.
+ */
+export async function startCheckout(booking: Booking, origin: string) {
+  const page = `${origin}/booking/${booking.ref}?t=${await bookingToken(booking.ref)}`;
+  try {
+    const session = await createCheckoutSession({
+      ref: booking.ref,
+      propertySlug: booking.propertySlug,
+      propertyTitle: booking.propertyTitle,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      guests: booking.guests,
+      email: booking.guest.email,
+      quote: booking.quote,
+      // Stripe fills in {CHECKOUT_SESSION_ID} on the way back.
+      successUrl: `${page}&session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${page}&payment=cancelled`,
+    });
+    if (!session.url) throw new Error("Stripe returned no checkout URL.");
+    await mutate<Booking, void>(BOOKINGS, (bookings) => {
+      const b = bookings.find((x) => x.ref === booking.ref);
+      if (!b?.payment) return;
+      b.payment.sessionId = session.id;
+      b.payment.url = session.url ?? undefined;
+      b.payment.livemode = session.livemode;
+      b.payment.holdUntil = new Date(
+        session.expires_at * 1000 + (HOLD_MINUTES - CHECKOUT_MINUTES) * 60_000,
+      ).toISOString();
+    });
+    return session.url;
+  } catch (err) {
+    await mutate<Booking, void>(BOOKINGS, (bookings) => {
+      const b = bookings.find((x) => x.ref === booking.ref);
+      if (!b || b.status !== "awaiting_payment") return;
+      const at = new Date().toISOString();
+      b.status = "cancelled";
+      if (b.payment) b.payment.status = "expired";
+      b.updatedAt = at;
+      b.history.push({ status: "cancelled", at, by: "system", note: "Payment could not be started" });
+    });
+    throw err;
+  }
+}
+
+/** When the guest's Stripe checkout closes, and whether they can still pay. */
+export function paymentWindow(b: Booking) {
+  if (b.status !== "awaiting_payment" || !b.payment?.url) return null;
+  const deadline = new Date(Date.parse(b.payment.holdUntil) - (HOLD_MINUTES - CHECKOUT_MINUTES) * 60_000);
+  return deadline.getTime() > Date.now() ? { url: b.payment.url, deadline } : null;
+}
+
+type PaymentOutcome = "paid" | "paid-unavailable" | "paid-recorded" | "expired" | null;
+
+/**
+ * Brings a booking in line with its Stripe Checkout Session: confirms it once
+ * paid, or releases the dates when the session expired unpaid. Safe to call
+ * any number of times (webhook retries, the guest's return page).
+ */
+export async function applyCheckoutSession(
+  session: CheckoutSession,
+  { failed = false }: { failed?: boolean } = {},
+) {
+  const ref = session.metadata?.ref ?? session.client_reference_id;
+  if (!ref) return null;
+  const paid = session.payment_status === "paid" || session.payment_status === "no_payment_required";
+  // A completed but unpaid session is still processing (bank debits) unless Stripe says it failed.
+  if (!paid && session.status !== "expired" && !failed) return getBooking(ref);
+
+  let outcome = null as PaymentOutcome;
+  const booking = await mutate<Booking, Booking | null>(BOOKINGS, async (bookings, read) => {
+    const b = bookings.find((x) => x.ref === ref);
+    // Ignore sessions this booking no longer tracks, and anything already settled.
+    if (!b?.payment || b.payment.sessionId !== session.id || b.payment.status === "paid") return b ?? null;
+    const at = new Date().toISOString();
+    b.updatedAt = at;
+
+    if (!paid) {
+      b.payment.status = "expired";
+      b.payment.url = undefined;
+      if (b.status === "awaiting_payment") {
+        b.status = "cancelled";
+        b.history.push({
+          status: "cancelled",
+          at,
+          by: "system",
+          note: failed ? "Payment failed" : "Payment not completed in time",
+        });
+        outcome = "expired";
+      }
+      return b;
+    }
+
+    b.payment.status = "paid";
+    b.payment.url = undefined;
+    b.payment.paidAt = at;
+    b.payment.amount = (session.amount_total ?? 0) / 100;
+    b.payment.livemode = session.livemode;
+    b.payment.paymentIntentId =
+      typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
+
+    if (b.status === "pending" || b.status === "confirmed") {
+      outcome = "paid-recorded";
+      return b;
+    }
+    // Normally the hold kept the dates. If it lapsed (or the guest cancelled
+    // while paying) and someone else booked them, the payment must be refunded.
+    const blocks = await read<Block>(BLOCKS);
+    const others = bookings.filter((x) => x.ref !== ref);
+    const clash = takenRanges(b.propertySlug, others, blocks).some((r) =>
+      rangesOverlap(r, { start: b.checkIn, end: b.checkOut }),
+    );
+    if (clash) {
+      b.status = "cancelled";
+      b.payment.refundDue = true;
+      b.history.push({ status: "cancelled", at, by: "system", note: "Paid after the dates were taken — refund due" });
+      outcome = "paid-unavailable";
+    } else {
+      b.status = "confirmed";
+      b.history.push({ status: "confirmed", at, by: "system", note: "Paid online (Stripe)" });
+      outcome = "paid";
+    }
+    return b;
+  });
+
+  if (booking && outcome) await notifyPayment(booking, outcome);
+  return booking;
+}
+
+/**
+ * Checks Stripe for a booking that's still awaiting payment — used when the
+ * guest returns from Checkout and on the dashboard, so the site stays correct
+ * even if a webhook is late or not configured.
+ */
+export async function refreshPayment(booking: Booking): Promise<Booking> {
+  const id = booking.payment?.sessionId;
+  if (booking.status !== "awaiting_payment" || !id || !paymentsEnabled()) return booking;
+  try {
+    let session = await retrieveCheckoutSession(id);
+    if (session.status === "open" && holdExpired(booking)) session = await expireCheckoutSession(id);
+    return (await applyCheckoutSession(session)) ?? booking;
+  } catch (err) {
+    console.error(`[payment] couldn't refresh ${booking.ref}:`, err);
+    return booking;
+  }
+}
+
+/** Settles every unpaid hold that has run out (one Stripe call each). */
+export async function settleExpiredHolds() {
+  const rows = await readAll<Booking>(BOOKINGS);
+  const now = Date.now();
+  await Promise.all(
+    rows
+      .filter((b) => holdExpired(b, now))
+      .map(async (b) => {
+        if (b.payment?.sessionId) return refreshPayment(b);
+        // Checkout never opened: just release the dates.
+        await mutate<Booking, void>(BOOKINGS, (bookings) => {
+          const x = bookings.find((y) => y.ref === b.ref);
+          if (!x || !holdExpired(x)) return;
+          const at = new Date().toISOString();
+          x.status = "cancelled";
+          if (x.payment) x.payment.status = "expired";
+          x.updatedAt = at;
+          x.history.push({ status: "cancelled", at, by: "system", note: "Payment not completed in time" });
+        });
+      }),
+  );
 }
 
 export async function setBookingStatus(
@@ -208,10 +435,20 @@ export async function setBookingStatus(
   by: Actor,
   note?: string,
 ): Promise<Booking> {
+  // Close an open checkout first, so the guest can't pay after the team (or they)
+  // moved the booking on. If they already paid, record that before going further.
+  const current = await getBooking(ref);
+  if (current?.payment?.status === "open" && current.payment.sessionId && paymentsEnabled()) {
+    const session = await expireCheckoutSession(current.payment.sessionId);
+    if (session.payment_status !== "unpaid") await applyCheckoutSession(session);
+  }
+
+  let changed = false as boolean;
   const updated = await mutate<Booking, Booking>(BOOKINGS, async (bookings, read) => {
     const booking = bookings.find((b) => b.ref === ref);
     if (!booking) throw new BookingError("Booking not found.", "not-found");
     if (booking.status === status) return booking;
+    changed = true;
     if (booking.status === "cancelled") {
       // Re-opening a cancelled booking must not double-book the dates.
       const blocks = await read<Block>(BLOCKS);
@@ -226,10 +463,15 @@ export async function setBookingStatus(
     booking.status = status;
     booking.updatedAt = now;
     booking.history.push({ status, at: now, by, note: note || undefined });
+    if (booking.payment?.status === "paid") booking.payment.refundDue = status === "cancelled";
+    else if (booking.payment?.status === "open") {
+      booking.payment.status = "expired";
+      booking.payment.url = undefined;
+    }
     return booking;
   });
 
-  await notifyStatusChange(updated, by);
+  if (changed) await notifyStatusChange(updated, by);
   return updated;
 }
 
@@ -301,6 +543,22 @@ function summary(b: Booking) {
   ].join("\n");
 }
 
+function guestDetails(b: Booking) {
+  return `Guest: ${b.guest.name}
+Email: ${b.guest.email}
+Phone: ${b.guest.phone}${b.guest.country ? `\nCountry: ${b.guest.country}` : ""}${b.arrivalTime ? `\nArrival time: ${b.arrivalTime}` : ""}${b.specialRequests ? `\nRequests: ${b.specialRequests}` : ""}${b.car ? `\nRental car: ${describeCar(b.car)}` : ""}`;
+}
+
+function paymentLine(b: Booking) {
+  const p = b.payment;
+  if (p?.status !== "paid") return "";
+  const link = p.paymentIntentId ? `\nStripe: ${dashboardPaymentUrl(p.paymentIntentId, !!p.livemode)}` : "";
+  return `Paid online: AED ${aed.format(p.amount ?? b.quote.total)}${p.paidAt ? ` on ${formatDate(p.paidAt.slice(0, 10))}` : ""}${link}`;
+}
+
+const carNote = (b: Booking) =>
+  b.car ? `\n\nRental car requested: ${describeCar(b.car)}. We'll send car options and rates separately.` : "";
+
 async function notifyNewBooking(b: Booking) {
   const manage = absoluteUrl(await bookingUrl(b.ref));
   await Promise.all([
@@ -312,7 +570,7 @@ async function notifyNewBooking(b: Booking) {
 
 Thank you for choosing ${site.name}. We've received your booking request and the team is checking it now — you'll get a confirmation from us shortly, usually within a few hours.
 
-${summary(b)}${b.car ? `\n\nRental car requested: ${describeCar(b.car)}. We'll send car options and rates with your confirmation.` : ""}
+${summary(b)}${carNote(b)}
 
 No payment has been taken. Once your stay is confirmed we'll arrange payment with you directly.
 
@@ -328,11 +586,90 @@ Questions? Reply to this email, call ${site.phoneDisplay} or WhatsApp ${site.wha
 
 ${summary(b)}
 
-Guest: ${b.guest.name}
-Email: ${b.guest.email}
-Phone: ${b.guest.phone}${b.guest.country ? `\nCountry: ${b.guest.country}` : ""}${b.arrivalTime ? `\nArrival time: ${b.arrivalTime}` : ""}${b.specialRequests ? `\nRequests: ${b.specialRequests}` : ""}${b.car ? `\nRental car: ${describeCar(b.car)}` : ""}
+${guestDetails(b)}
 
 Review it in the dashboard: ${absoluteUrl("/admin/bookings")}`,
+    }),
+  ]);
+}
+
+async function notifyPayment(b: Booking, outcome: NonNullable<PaymentOutcome>) {
+  if (outcome === "expired") return; // the guest left checkout; nothing was booked
+  const manage = absoluteUrl(await bookingUrl(b.ref));
+  const dashboard = absoluteUrl(`/admin/bookings?q=${b.ref}`);
+
+  if (outcome === "paid-recorded") {
+    await sendMail({
+      to: teamInbox(),
+      subject: `Payment received for ${b.ref} — ${b.propertyTitle}`,
+      text: `The guest paid online for a booking that was already ${b.status}.\n\n${summary(b)}\n${paymentLine(b)}\n\n${dashboard}`,
+    });
+    return;
+  }
+
+  if (outcome === "paid-unavailable") {
+    await Promise.all([
+      sendMail({
+        to: b.guest.email,
+        subject: `About your payment — ${b.ref}`,
+        replyTo: site.email,
+        text: `Hi ${b.guest.name},
+
+Thank you for your payment. Unfortunately your checkout took longer than the time we could hold ${b.propertyTitle} for, and the dates were booked by another guest in the meantime.
+
+Our team will contact you shortly to offer a similar home or refund your payment in full.
+
+${summary(b)}
+
+Questions? Reply to this email, call ${site.phoneDisplay} or WhatsApp ${site.whatsappNumber}.`,
+      }),
+      sendMail({
+        to: teamInbox(),
+        subject: `ACTION: refund or rebook ${b.ref} — paid after dates were taken`,
+        replyTo: b.guest.email,
+        text: `A guest paid after their hold had lapsed and the dates were booked by someone else. Contact them to rebook, or refund the payment in Stripe.
+
+${summary(b)}
+${paymentLine(b)}
+
+${guestDetails(b)}
+
+${dashboard}`,
+      }),
+    ]);
+    return;
+  }
+
+  await Promise.all([
+    sendMail({
+      to: b.guest.email,
+      subject: `Your stay is confirmed — ${b.ref}`,
+      replyTo: site.email,
+      text: `Hi ${b.guest.name},
+
+Thank you for booking with ${site.name} — your payment was received and your stay at ${b.propertyTitle} is confirmed.
+
+${summary(b)}
+${paymentLine(b).replace(/\nStripe:.*$/, "")}${carNote(b)}
+
+Check-in is from ${getProperty(b.propertySlug)?.checkIn ?? "15:00"}. We'll share access details and directions before you arrive.
+
+View or cancel your booking: ${manage}
+
+Questions? Reply to this email, call ${site.phoneDisplay} or WhatsApp ${site.whatsappNumber}.`,
+    }),
+    sendMail({
+      to: teamInbox(),
+      subject: `New paid booking ${b.ref} — ${b.propertyTitle}`,
+      replyTo: b.guest.email,
+      text: `New booking paid online — it's confirmed automatically.
+
+${summary(b)}
+${paymentLine(b)}
+
+${guestDetails(b)}
+
+${dashboard}`,
     }),
   ]);
 }
@@ -355,6 +692,9 @@ Check-in is from ${getProperty(b.propertySlug)?.checkIn ?? "15:00"}. We'll share
 Your booking: ${manage}`,
     });
   } else if (b.status === "cancelled") {
+    const paid = b.payment?.status === "paid";
+    // An unpaid checkout was never a booking for the guest or the team — no emails.
+    if (!paid && b.history.at(-2)?.status === "awaiting_payment") return;
     await Promise.all([
       sendMail({
         to: b.guest.email,
@@ -362,15 +702,17 @@ Your booking: ${manage}`,
         replyTo: site.email,
         text: `Hi ${b.guest.name},
 
-Your booking ${b.ref} for ${b.propertyTitle} (${formatDate(b.checkIn)} – ${formatDate(b.checkOut)}) has been cancelled${by === "guest" ? " as requested" : ""}.
+Your booking ${b.ref} for ${b.propertyTitle} (${formatDate(b.checkIn)} – ${formatDate(b.checkOut)}) has been cancelled${by === "guest" ? " as requested" : ""}.${paid ? `\n\nAny refund due under our cancellation policy will be returned to the card you paid with. The team will confirm the amount by email.` : ""}
 
 If this wasn't expected, reply to this email or call ${site.phoneDisplay}.`,
       }),
-      by === "guest"
+      by === "guest" || paid
         ? sendMail({
             to: teamInbox(),
-            subject: `Guest cancelled ${b.ref} — ${b.propertyTitle}`,
-            text: `${b.guest.name} cancelled their booking.\n\n${summary(b)}`,
+            subject: `${paid ? "REFUND DUE: " : ""}${by === "guest" ? "Guest cancelled" : "Cancelled"} ${b.ref} — ${b.propertyTitle}`,
+            text: `${by === "guest" ? `${b.guest.name} cancelled their booking.` : "The booking was cancelled."}${paid ? `\n\nThis booking was paid online. Refund what's due under the cancellation policy (free until ${formatDate(cancellationTerms(b).freeUntil)}) from the Stripe dashboard.` : ""}
+
+${summary(b)}${paid ? `\n${paymentLine(b)}` : ""}`,
           })
         : Promise.resolve(true),
     ]);

@@ -39,6 +39,11 @@ export function LoginForm({ next }: { next?: string }) {
 }
 
 const ACTIONS = {
+  // The guest is on Stripe Checkout; "Confirm" is for a payment taken another way.
+  awaiting_payment: [
+    { status: "confirmed", label: "Confirm", className: "btn-secondary" },
+    { status: "cancelled", label: "Cancel", className: "btn-secondary" },
+  ],
   pending: [
     { status: "confirmed", label: "Confirm", className: "btn-primary" },
     { status: "cancelled", label: "Decline", className: "btn-secondary" },
