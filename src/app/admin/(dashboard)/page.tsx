@@ -3,12 +3,13 @@ import { StatusBadge } from "@/components/booking/StatusBadge";
 import { addDays, formatShortDate, todayIso } from "@/lib/dates";
 import { aed } from "@/lib/pricing";
 import { requireAdmin } from "@/lib/server/admin-auth";
-import { listBookings } from "@/lib/server/bookings";
+import { listBookings, settleExpiredHolds } from "@/lib/server/bookings";
 import { listEnquiries } from "@/lib/server/enquiries";
 import { BookingStatusForm } from "../AdminForms";
 
 export default async function AdminOverviewPage() {
   await requireAdmin();
+  await settleExpiredHolds();
   const [bookings, enquiries] = await Promise.all([listBookings(), listEnquiries()]);
   const today = todayIso();
   const in14 = addDays(today, 14);

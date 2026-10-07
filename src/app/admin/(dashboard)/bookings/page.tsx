@@ -5,13 +5,15 @@ import { formatShortDate } from "@/lib/dates";
 import { aed } from "@/lib/pricing";
 import { describeCar } from "@/lib/booking-schema";
 import { requireAdmin } from "@/lib/server/admin-auth";
-import { listBookings, type BookingStatus } from "@/lib/server/bookings";
+import { listBookings, settleExpiredHolds, type BookingStatus } from "@/lib/server/bookings";
+import { dashboardPaymentUrl } from "@/lib/server/stripe";
 import { adminInput, BookingStatusForm } from "../../AdminForms";
 
 export const metadata: Metadata = { title: "Bookings" };
 
 const FILTERS: { value: "" | BookingStatus; label: string }[] = [
   { value: "", label: "All" },
+  { value: "awaiting_payment", label: "Awaiting payment" },
   { value: "pending", label: "Pending" },
   { value: "confirmed", label: "Confirmed" },
   { value: "cancelled", label: "Cancelled" },
@@ -23,6 +25,7 @@ export default async function AdminBookingsPage({ searchParams }: PageProps<"/ad
   const status = typeof sp.status === "string" ? sp.status : "";
   const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
 
+  await settleExpiredHolds();
   const all = await listBookings();
   const rows = all.filter((b) => {
     if (status && b.status !== status) return false;
@@ -134,6 +137,26 @@ export default async function AdminBookingsPage({ searchParams }: PageProps<"/ad
                   <dt className="text-xs text-ink-60">Total</dt>
                   <dd className="font-semibold text-ink">AED {aed.format(b.quote.total)}</dd>
                   <dd className="text-ink-60">AED {aed.format(b.quote.nightlyRate)}/night</dd>
+                  {b.payment?.status === "paid" ? (
+                    <dd className={b.payment.refundDue ? "font-semibold text-red-600" : "text-emerald-700"}>
+                      {b.payment.refundDue ? "Paid — refund due" : "Paid online"}
+                      {b.payment.paymentIntentId ? (
+                        <>
+                          {" · "}
+                          <a
+                            href={dashboardPaymentUrl(b.payment.paymentIntentId, !!b.payment.livemode)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline"
+                          >
+                            Stripe
+                          </a>
+                        </>
+                      ) : null}
+                    </dd>
+                  ) : b.status === "awaiting_payment" ? (
+                    <dd className="text-sky-700">On Stripe checkout</dd>
+                  ) : null}
                 </div>
               </dl>
 

@@ -7,7 +7,7 @@ export const faqs: Faq[] = [
   {
     question: "How do I book a stay with DRP Holiday Homes?",
     answer:
-      "Pick a home, choose your dates on its live availability calendar and send a booking request — it takes a couple of minutes. The team confirms your stay, usually within a few hours, and arranges payment with you directly. You can also message us on WhatsApp and we'll suggest homes that fit.",
+      "Pick a home, choose your dates on its live availability calendar and book online — it takes a couple of minutes. You pay securely by card through Stripe, and your confirmation arrives by email straight away. You can also message us on WhatsApp and we'll suggest homes that fit.",
   },
   {
     question: "What's included in every DRP home?",

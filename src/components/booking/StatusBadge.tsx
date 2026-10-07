@@ -1,4 +1,5 @@
 const styles = {
+  awaiting_payment: "bg-sky-50 text-sky-800 ring-sky-200",
   pending: "bg-amber-50 text-amber-800 ring-amber-200",
   confirmed: "bg-emerald-50 text-emerald-800 ring-emerald-200",
   cancelled: "bg-ink-05 text-ink-60 ring-ink-20",
@@ -7,6 +8,7 @@ const styles = {
 } as const;
 
 const labels: Record<keyof typeof styles, string> = {
+  awaiting_payment: "Awaiting payment",
   pending: "Awaiting confirmation",
   confirmed: "Confirmed",
   cancelled: "Cancelled",
