@@ -48,7 +48,7 @@ export default async function BookPage({ params, searchParams }: PageProps<"/boo
             </Link>
           </nav>
           <h1 className="display mt-4 text-3xl font-semibold text-ink sm:text-4xl">
-            {available ? (payOnline ? "Confirm and pay" : "Request to book") : "Let’s fix your dates"}
+            {available ? (payOnline ? "Confirm and pay" : "Book now") : "Let’s fix your dates"}
           </h1>
 
           {problem || !available ? (
