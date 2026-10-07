@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
-import { OwnerQuiz } from "@/components/owners/OwnerQuiz";
+import { OwnerForm } from "@/components/owners/OwnerForm";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import {
   IconBadgeCheck,
@@ -85,13 +85,21 @@ export default function OwnersPage() {
         <PageHero
           eyebrow="For property owners"
           title="Turn your Dubai property into a fully managed holiday home."
-          intro="DRP handles design, furnishing, pricing, guests and maintenance end-to-end — you get one point of contact and a monthly statement, not a second job."
+          intro="Tell us about your property below and leave your details — the team will arrange a walkthrough and send a written proposal."
         />
 
-        <section className="bg-canvas py-16 md:py-24">
+        <section id="get-started" className="bg-canvas py-12 md:py-16">
+          <div className="container-drp max-w-5xl">
+            <Reveal>
+              <OwnerForm />
+            </Reveal>
+          </div>
+        </section>
+
+        <section className="bg-ink-05 py-16 md:py-24">
           <div className="container-drp">
             <SectionHeading
-              eyebrow="Full-service management"
+              eyebrow="Why DRP Holiday Homes"
               title="Everything a hands-off owner needs, in-house."
               intro="Nothing is outsourced to a stranger — the same team that designs the home also manages the guests who stay in it."
             />
@@ -133,24 +141,6 @@ export default function OwnersPage() {
           </div>
         </section>
 
-        <section id="get-started" className="bg-canvas py-16 md:py-24">
-          <div className="container-drp grid gap-12 lg:grid-cols-[1fr_1.1fr]">
-            <Reveal>
-              <h2 className="display text-2xl font-semibold text-ink">
-                Tell us about your property
-              </h2>
-              <p className="mt-4 text-ink-80">
-                Answer a few quick questions and leave your details. The team
-                will review your property and follow up to arrange a
-                walkthrough and a written proposal — usually within a couple of
-                business days.
-              </p>
-            </Reveal>
-            <Reveal delay={0.1}>
-              <OwnerQuiz />
-            </Reveal>
-          </div>
-        </section>
       </main>
       <Footer />
       <FloatingWhatsApp />
