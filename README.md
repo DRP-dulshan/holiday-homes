@@ -25,6 +25,9 @@ enquiries. Email notifications go out at each step.
 - `/booking/[ref]` is the booking page. It's reached through a signed link
   sent by email, or by looking up the reference and email at `/booking`.
   Guests can see the status and cancel there.
+- Owners fill in a short quiz on `/owners` (area, type, bedrooms, furnishing,
+  status, timing), then leave their details. No income estimate is shown;
+  the team follows up with a proposal after a walkthrough.
 - Enquiry forms (contact, owners and property pages) are saved and emailed
   to the team. They include a honeypot field and rate limiting against spam.
 - `/terms` and `/privacy` pages.
