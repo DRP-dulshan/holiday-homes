@@ -5,7 +5,10 @@ export type Testimonial = {
   rating: number;
 };
 
-/** Sample content for the demo — names and quotes are illustrative. */
+/**
+ * Sample content — names and quotes are illustrative, so the home page does NOT show them.
+ * Replace with real guest reviews (with permission) and re-add <Testimonials /> to src/app/page.tsx.
+ */
 export const testimonials: Testimonial[] = [
   {
     name: "Aisha R.",

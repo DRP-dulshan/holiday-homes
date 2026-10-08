@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { enquirySchema, enquiryTypes, type EnquiryInput } from "@/lib/enquiry-schema";
-import { IconArrowRight, IconBadgeCheck } from "./icons";
+import { whatsappLink } from "@/config/site";
+import { IconArrowRight, IconBadgeCheck, IconWhatsApp } from "./icons";
 
 type ContactFormProps = {
   defaultEnquiryType?: EnquiryInput["enquiryType"];
@@ -26,6 +27,7 @@ export function ContactForm({
   const {
     register,
     handleSubmit,
+    getValues,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<EnquiryInput>({
@@ -153,10 +155,30 @@ export function ContactForm({
         />
 
         {status === "error" ? (
-          <p className="text-sm text-red-600">
+          <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">
             {errorMessage ??
-              "Something went wrong sending that — please try again, or message us on WhatsApp instead."}
-          </p>
+              "We couldn't send that right now — please try again, or send it to us on WhatsApp."}
+            <a
+              href={whatsappLink(
+                (() => {
+                  const v = getValues();
+                  return [
+                    "Hi DRP, I'd like to get in touch.",
+                    v.message,
+                    `Name: ${v.name} · Email: ${v.email} · Phone: ${v.phone}`,
+                  ]
+                    .filter(Boolean)
+                    .join("\n");
+                })(),
+              )}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-primary btn-sm mt-3 w-full"
+            >
+              <IconWhatsApp className="h-4 w-4" />
+              Send on WhatsApp
+            </a>
+          </div>
         ) : null}
 
         <button

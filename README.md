@@ -186,11 +186,14 @@ src/
 
 ## Before launch
 
-- Confirm the phone, WhatsApp, emails and social links in `src/config/site.ts`.
+- Phone and WhatsApp in `src/config/site.ts` match dubairapidproperties.com; confirm the
+  email and add the real Instagram / LinkedIn URLs to `socialLinks` (only Facebook is listed).
 - Connect Upstash Redis (on Vercel), and set `ADMIN_PASSWORD`, `APP_SECRET`, `SITE_URL` and the Resend
-  variables, and verify the sending domain in Resend.
+  variables, and verify the sending domain in Resend. Until Redis is connected, the
+  dashboard says so and guests are offered WhatsApp instead of the online forms.
 - Add the Stripe keys and webhook (live mode), and make one real test booking.
 - Have `/terms` and `/privacy` reviewed against your DET licence and the
   UAE PDPL.
-- Replace the remaining Unsplash area photos and the placeholder team
-  profiles with DRP's own.
+- Guest reviews: `src/data/testimonials.ts` holds sample text, so the home page doesn't show
+  it. Replace it with real reviews (with permission) and add `<Testimonials />` back to `src/app/page.tsx`.
+- Some area photos are Unsplash stock; replace them with DRP's own when available.

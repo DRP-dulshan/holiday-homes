@@ -1,6 +1,6 @@
 import "server-only";
 import Stripe from "stripe";
-import { site } from "@/config/site";
+import { site, siteUrl } from "@/config/site";
 import { formatDate } from "@/lib/dates";
 import type { Quote } from "@/lib/pricing";
 
@@ -23,7 +23,7 @@ export function stripe() {
     const base = process.env.STRIPE_API_BASE?.trim();
     const url = base ? new URL(base) : null;
     client = new Stripe(key, {
-      appInfo: { name: site.name, url: site.url },
+      appInfo: { name: site.name, url: siteUrl() },
       maxNetworkRetries: 2,
       ...(url
         ? {

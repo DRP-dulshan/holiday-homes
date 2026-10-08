@@ -32,6 +32,9 @@ export const DATA_DIR = process.env.DATA_DIR
 
 export class StorageNotConfiguredError extends Error {}
 
+/** False on Vercel without Redis: nothing can be saved, so the dashboard explains how to fix it. */
+export const storageReady = () => storageBackend === "redis" || !process.env.VERCEL;
+
 /* ------------------------------------------------------------------ */
 /* Redis (Upstash REST API)                                            */
 /* ------------------------------------------------------------------ */

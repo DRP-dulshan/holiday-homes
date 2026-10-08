@@ -72,7 +72,7 @@ const values = [
 const team = [
   { initials: "TT", name: "Tara Topic", role: "Manager of Holiday Homes" },
   { initials: "AA", name: "Anne Aristan", role: "Administrator" },
-  { initials: "DC", name: "Delia Cuadrante", role: "Houskeeping Manager" },
+  { initials: "DC", name: "Delia Cuadrante", role: "Housekeeping Manager" },
 ];
 
 export default function AboutPage() {
@@ -181,7 +181,7 @@ export default function AboutPage() {
             <SectionHeading
               eyebrow="The team"
               title="A small team you'll actually talk to."
-              intro="Placeholder profiles for this demo — real photos and bios go here before launch."
+              intro="The people behind DRP Holiday Homes, from design and guest support to housekeeping."
             />
             <div className="mx-auto mt-14 grid max-w-4xl gap-8 sm:grid-cols-3">
               {team.map((m, i) => (

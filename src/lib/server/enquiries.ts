@@ -35,7 +35,7 @@ export async function createEnquiry(input: EnquiryInput) {
 
   await Promise.all([
     sendMail({
-      to: enquiry.enquiryType === "list-property" ? site.ownersEmail : teamInbox(),
+      to: teamInbox(),
       subject: `${typeLabel}: ${enquiry.name}${property ? ` — ${property.title}` : ""}`,
       replyTo: enquiry.email,
       text: `New website enquiry (${typeLabel}).
