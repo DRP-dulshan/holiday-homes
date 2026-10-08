@@ -25,17 +25,15 @@ export const site = {
     line2: "Palm Jumeirah",
     city: "Dubai",
     country: "United Arab Emirates",
-    full: "Golden Mile 9, Palm Jumeirah, Dubai, United Arab Emirates",
+    full: "DRP, Golden Mile 9, Palm Jumeirah, Dubai, United Arab Emirates",
   },
   officeHours: [
     { days: "Monday – Friday", hours: "9:00am – 7:00pm" },
     { days: "Saturday", hours: "10:00am – 6:00pm" },
     { days: "Sunday", hours: "Guest support only (24/7 via WhatsApp)" },
   ],
-  /** The DRP office on Google Maps (https://maps.app.goo.gl/nKcmR3nHjoRJ7CZv8). */
-  mapUrl: "https://maps.app.goo.gl/nKcmR3nHjoRJ7CZv8",
-  /** Embeds the exact place listing (by its Maps CID), so it shows the DRP name and reviews. */
-  mapEmbedSrc: "https://www.google.com/maps?cid=6323933139520786281&output=embed",
+  mapEmbedSrc:
+    "https://www.google.com/maps?q=Palm+Jumeirah,+Dubai,+United+Arab+Emirates&output=embed",
 
   license: "Licensed holiday-home operator · Dubai DET / DTCM",
   timeZone: "Asia/Dubai",
