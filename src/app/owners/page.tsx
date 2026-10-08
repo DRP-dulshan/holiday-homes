@@ -6,10 +6,13 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import { OwnerForm } from "@/components/owners/OwnerForm";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
+import { site, whatsappLink } from "@/config/site";
 import {
   IconBadgeCheck,
   IconBroom,
+  IconCalendar,
   IconHeadset,
+  IconLock,
   IconShield,
   IconSofa,
   IconSparkle,
@@ -20,6 +23,29 @@ export const metadata: Metadata = {
   description:
     "Full-service holiday-home management in Dubai: in-house design and furnishing, professional photography, dynamic pricing, housekeeping, guest communication and DTCM licensing support.",
 };
+
+const assurances = [
+  {
+    icon: IconCalendar,
+    title: "We reply within two business days",
+    body: "A real person from the team calls or WhatsApps you.",
+  },
+  {
+    icon: IconBadgeCheck,
+    title: "Free, no-obligation walkthrough",
+    body: "We visit, assess the space and send a written proposal.",
+  },
+  {
+    icon: IconShield,
+    title: "Licensed and fully managed",
+    body: "DTCM licensing, guests, housekeeping and reporting handled for you.",
+  },
+  {
+    icon: IconLock,
+    title: "Your details stay private",
+    body: "Used only to contact you about your property.",
+  },
+];
 
 const pillars = [
   {
@@ -89,8 +115,48 @@ export default function OwnersPage() {
         />
 
         <section id="get-started" className="bg-canvas py-12 md:py-16">
-          <div className="container-drp max-w-5xl">
-            <Reveal>
+          <div className="container-drp grid gap-10 lg:grid-cols-[1fr_1.55fr] lg:gap-14">
+            <Reveal className="order-2 lg:sticky lg:top-28 lg:order-1 lg:self-start">
+              <h2 className="display text-2xl font-semibold text-ink sm:text-3xl">
+                A free walkthrough and a written proposal.
+              </h2>
+              <p className="mt-3 text-ink-80">
+                Two minutes to tell us about your home. We take it from there.
+              </p>
+              <ul className="mt-6 space-y-4">
+                {assurances.map((a) => (
+                  <li key={a.title} className="flex gap-3">
+                    <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-600">
+                      <a.icon className="h-5 w-5" />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold text-ink">{a.title}</span>
+                      <span className="text-sm text-ink-60">{a.body}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 rounded-card border border-ink-10 bg-ink-05 p-5 text-sm">
+                <p className="font-semibold text-ink">Prefer to talk it through?</p>
+                <p className="mt-1 text-ink-80">
+                  Call{" "}
+                  <a href={site.phoneHref} className="font-semibold text-brand-600 hover:underline">
+                    {site.phoneDisplay}
+                  </a>{" "}
+                  or{" "}
+                  <a
+                    href={whatsappLink("Hi DRP, I'd like to list my property.")}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-brand-600 hover:underline"
+                  >
+                    message us on WhatsApp
+                  </a>
+                  .
+                </p>
+              </div>
+            </Reveal>
+            <Reveal delay={0.08} className="order-1 lg:order-2">
               <OwnerForm />
             </Reveal>
           </div>
