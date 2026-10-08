@@ -33,6 +33,7 @@ export function AreasWeCover() {
                 fill
                 sizes="(min-width: 1024px) 30vw, 80vw"
                 className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                style={area.imagePosition ? { objectPosition: area.imagePosition } : undefined}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/35 to-ink/10" />
               <div className="absolute inset-x-0 bottom-0 p-6">
@@ -46,7 +47,9 @@ export function AreasWeCover() {
                 </div>
                 <p className="mt-1.5 text-sm text-white/75">{area.note}</p>
                 <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-brand-400">
-                  {homesInArea(area.name)} {homesInArea(area.name) === 1 ? "home" : "homes"}
+                  {homesInArea(area.name) === 0
+                    ? "Coming soon"
+                    : `${homesInArea(area.name)} ${homesInArea(area.name) === 1 ? "home" : "homes"}`}
                 </p>
               </div>
             </Link>

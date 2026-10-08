@@ -48,6 +48,7 @@ export default async function AreaPage({ params }: PageProps<"/areas/[slug]">) {
             priority
             sizes="100vw"
             className="object-cover object-center"
+            style={area.imagePosition ? { objectPosition: area.imagePosition } : undefined}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-ink/40" />
           <div className="container-drp absolute inset-x-0 bottom-0 pb-10 text-white">

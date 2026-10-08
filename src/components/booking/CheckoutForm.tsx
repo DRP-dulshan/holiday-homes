@@ -285,10 +285,10 @@ export function CheckoutForm({
           {payOnline
             ? isSubmitting || redirecting
               ? "Opening secure payment…"
-              : `Continue to payment · ${totalLabel}`
+              : `Book now · ${totalLabel}`
             : isSubmitting
-              ? "Sending request…"
-              : "Request to book"}
+              ? "Booking…"
+              : "Book now"}
           {!isSubmitting && !redirecting ? <IconArrowRight className="h-4 w-4" /> : null}
         </button>
         <p className="flex items-center justify-center gap-1.5 text-center text-xs text-ink-60">

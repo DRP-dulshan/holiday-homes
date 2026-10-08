@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { bookingRules } from "@/config/site";
-import { areas } from "@/data/areas";
+import { areas, areasWithHomes } from "@/data/areas";
 import { properties } from "@/data/properties";
 import { addDays, formatShortDate, nightsBetween } from "@/lib/dates";
 import { useToday } from "@/lib/useToday";
@@ -186,7 +186,7 @@ export function SearchWidget() {
                       }}
                     />
                   </li>
-                  {areas.map((a) => (
+                  {areasWithHomes.map((a) => (
                     <li key={a.slug}>
                       <AreaOption
                         selected={area === a.slug}

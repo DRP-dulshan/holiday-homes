@@ -20,8 +20,8 @@ handle enquiries. Email notifications go out at each step.
   (nightly rate, cleaning fee, Tourism Dirham fee) and the cancellation
   policy. The server re-checks availability under a lock, so the same
   nights can't be booked twice.
-- **Payment (Stripe Checkout).** With Stripe configured, "Continue to
-  payment" holds the dates and sends the guest to Stripe's hosted payment
+- **Payment (Stripe Checkout).** With Stripe configured, "Book now"
+  holds the dates and sends the guest to Stripe's hosted payment
   page for the full amount in AED. Once paid, the booking is confirmed
   automatically and the guest and team are emailed. If the guest doesn't
   pay within 30 minutes, the checkout expires and the dates are released.

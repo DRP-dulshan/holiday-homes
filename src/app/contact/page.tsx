@@ -97,7 +97,7 @@ export default function ContactPage() {
               </dl>
 
               <MapEmbed
-                query={site.address.full}
+                src={site.mapEmbedSrc}
                 label="the DRP office"
                 className="mt-6 h-56"
               />
