@@ -6,6 +6,8 @@ export type Area = {
   image: string;
   /** Location-specific alt text for the area card image. */
   alt: string;
+  /** CSS object-position for the photo when it is cropped to a banner or card. */
+  imagePosition?: string;
   note: string;
   /** Longer guide copy for the area's own page: what it's known for, who it suits. */
   guide: string;
@@ -13,9 +15,10 @@ export type Area = {
 };
 
 /**
- * Every neighbourhood with at least one DRP home. Palm Jumeirah, Dubai Marina,
- * Business Bay and JVC use Unsplash photographs verified to show the location;
+ * Every neighbourhood DRP covers. Palm Jumeirah, Dubai Marina, Business Bay,
+ * JVC and Downtown use Unsplash photographs verified to show the location;
  * the others use photos from DRP's own listings in that community.
+ * Downtown has no published home yet, so its card says "Coming soon".
  */
 export const areas: Area[] = [
   {
@@ -104,8 +107,23 @@ export const areas: Area[] = [
       "Meydan (Mohammed Bin Rashid City) is a newer district of mid-rise residences and promenades, a short drive from Downtown Dubai. DRP's studio is in Azizi Riviera, a waterfront community with pools, gyms and shops at street level.",
     bestFor: "Business travellers and couples who want a modern base near the centre",
   },
+  {
+    name: "Downtown Dubai",
+    slug: "downtown-dubai",
+    image:
+      "https://images.unsplash.com/photo-1634007626524-f47fa37810a7?auto=format&fit=crop&w=1600&q=80",
+    alt: "The Burj Khalifa rising above the illuminated Downtown Dubai skyline at dusk, with the Sheikh Zayed Road interchange below",
+    imagePosition: "50% 55%",
+    note: "Burj Khalifa, Dubai Mall and the fountains",
+    guide:
+      "Downtown Dubai is the city's centrepiece — the Burj Khalifa, The Dubai Mall, the Dubai Fountain and Opera District, all within walking distance of one another. It is the most connected address in Dubai, with the Metro, Business Bay and DIFC minutes away. We're preparing our first Downtown homes; message us and we'll tell you as soon as one is ready.",
+    bestFor: "First-time visitors and short city breaks who want to be in the middle of it all",
+  },
 ];
 
 /** Number of DRP homes in an area. */
 export const homesInArea = (areaName: string) =>
   properties.filter((p) => p.area === areaName).length;
+
+/** Areas with at least one published home — the ones worth offering as a search filter. */
+export const areasWithHomes = areas.filter((a) => homesInArea(a.name) > 0);

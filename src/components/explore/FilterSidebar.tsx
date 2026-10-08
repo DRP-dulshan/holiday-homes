@@ -1,6 +1,6 @@
 "use client";
 
-import { areas } from "@/data/areas";
+import { areasWithHomes } from "@/data/areas";
 import { listedPropertyTypes, priceBounds, PRICE_STEP } from "@/data/properties";
 import { PriceRange } from "./PriceRange";
 import { FILTER_AMENITY_GROUPS, type ExploreFilters } from "@/lib/filters";
@@ -33,7 +33,7 @@ export function FilterSidebar({ filters, onChange, onClear }: FilterSidebarProps
           Area
         </legend>
         <div className="mt-3 flex flex-col gap-2.5">
-          {areas.map((a) => (
+          {areasWithHomes.map((a) => (
             <label key={a.slug} className="flex items-center gap-2.5 text-sm text-ink-80">
               <input
                 type="checkbox"
