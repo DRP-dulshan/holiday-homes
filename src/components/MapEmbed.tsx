@@ -1,12 +1,15 @@
 type MapEmbedProps = {
-  query: string;
+  /** A search to show on the map. Ignored when `src` is given. */
+  query?: string;
+  /** A full embed URL, for a specific place. */
+  src?: string;
   label: string;
   className?: string;
 };
 
 /** Simple, key-less Google Maps embed (no API key required). */
-export function MapEmbed({ query, label, className }: MapEmbedProps) {
-  const src = `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+export function MapEmbed({ query = "", src: place, label, className }: MapEmbedProps) {
+  const src = place ?? `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
   return (
     <div
       className={["overflow-hidden rounded-card border border-ink-10", className].join(" ")}

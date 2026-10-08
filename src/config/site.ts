@@ -32,8 +32,10 @@ export const site = {
     { days: "Saturday", hours: "10:00am – 6:00pm" },
     { days: "Sunday", hours: "Guest support only (24/7 via WhatsApp)" },
   ],
-  mapEmbedSrc:
-    "https://www.google.com/maps?q=Palm+Jumeirah,+Dubai,+United+Arab+Emirates&output=embed",
+  /** The DRP office on Google Maps (https://maps.app.goo.gl/nKcmR3nHjoRJ7CZv8). */
+  mapUrl: "https://maps.app.goo.gl/nKcmR3nHjoRJ7CZv8",
+  /** Embeds the exact place listing (by its Maps CID), so it shows the DRP name and reviews. */
+  mapEmbedSrc: "https://www.google.com/maps?cid=6323933139520786281&output=embed",
 
   license: "Licensed holiday-home operator · Dubai DET / DTCM",
   timeZone: "Asia/Dubai",
