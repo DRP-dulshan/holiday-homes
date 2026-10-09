@@ -18,6 +18,11 @@ export type Property = {
   slug: string;
   title: string;
   area: string;
+  /** The building's exact position, from the team's Google Maps pin. */
+  lat?: number;
+  lng?: number;
+  /** The team's Google Maps link for the building. */
+  mapsUrl?: string;
   /** Building or community name, when the listing gives one. */
   building?: string;
   type: PropertyType;
@@ -75,6 +80,9 @@ export const seedProperties: Property[] = [
   {
     id: "stylish-1br-with-balcony-heart-of-business-bay",
     slug: "stylish-1br-with-balcony-heart-of-business-bay",
+    lat: 25.1809122,
+    lng: 55.2633658,
+    mapsUrl: "https://maps.app.goo.gl/nEpXz1hUkqy7Bgwx6",
     title: "Stylish 1BR with Balcony — Heart of Business Bay",
     area: "Business Bay",
     type: "apartment",
@@ -111,6 +119,9 @@ export const seedProperties: Property[] = [
   {
     id: "luxury-new-1br-in-jvc-resort-pool-sauna-smart-check-in",
     slug: "luxury-new-1br-in-jvc-resort-pool-sauna-smart-check-in",
+    lat: 25.0654846,
+    lng: 55.2018386,
+    mapsUrl: "https://maps.app.goo.gl/6PHVRQbtpK84uLCAA",
     title: "Luxury New 1BR in JVC — Resort Pool, Sauna & Smart Check-In",
     area: "JVC",
     type: "apartment",
@@ -151,6 +162,9 @@ export const seedProperties: Property[] = [
   {
     id: "luxury-palm-escape-st-regis-residences-1br",
     slug: "luxury-palm-escape-st-regis-residences-1br",
+    lat: 25.1137872,
+    lng: 55.139872,
+    mapsUrl: "https://maps.app.goo.gl/KHZmPAoewmSa9bDH7",
     title: "Luxury Palm Escape — St. Regis Residences 1BR",
     area: "Palm Jumeirah",
     building: "St. Regis Residences",
@@ -186,6 +200,9 @@ export const seedProperties: Property[] = [
   {
     id: "chic-brand-new-studio-with-resort-facilities",
     slug: "chic-brand-new-studio-with-resort-facilities",
+    lat: 25.0358376,
+    lng: 55.2213161,
+    mapsUrl: "https://maps.app.goo.gl/vTfc87NqX6RmnVp4A",
     title: "Chic Brand New Studio with Resort Facilities",
     area: "Dubai Sports City",
     type: "studio",
@@ -222,6 +239,9 @@ export const seedProperties: Property[] = [
   {
     id: "vintage-charm-at-marina-and-jbr-beach",
     slug: "vintage-charm-at-marina-and-jbr-beach",
+    lat: 25.070202,
+    lng: 55.1338328,
+    mapsUrl: "https://maps.app.goo.gl/UnAXwpxmZGuSYz59A",
     title: "Vintage Charm at Marina and JBR Beach",
     area: "Dubai Marina",
     building: "Zumurud Tower",
@@ -279,6 +299,9 @@ export const seedProperties: Property[] = [
   {
     id: "shoreline-palm-jumeirah-garden-view-paradise",
     slug: "shoreline-palm-jumeirah-garden-view-paradise",
+    lat: 25.1112584,
+    lng: 55.1434493,
+    mapsUrl: "https://maps.app.goo.gl/xMqVYARfrCenpyeh8",
     title: "Shoreline Palm Jumeirah Garden View Paradise",
     area: "Palm Jumeirah",
     building: "Shoreline Apartments",
@@ -336,6 +359,9 @@ export const seedProperties: Property[] = [
   {
     id: "sparkle-towers-marina-stunning-views-jbr-beach",
     slug: "sparkle-towers-marina-stunning-views-jbr-beach",
+    lat: 25.0719298,
+    lng: 55.1315539,
+    mapsUrl: "https://maps.app.goo.gl/QAwH93PUR4rJX9wv8",
     title: "Sparkle Towers Marina stunning Views JBR Beach",
     area: "Dubai Marina",
     building: "Sparkle Towers",
@@ -383,6 +409,9 @@ export const seedProperties: Property[] = [
   {
     id: "sparkle-towers-elegant-charming-bright-views",
     slug: "sparkle-towers-elegant-charming-bright-views",
+    lat: 25.0719298,
+    lng: 55.1315539,
+    mapsUrl: "https://maps.app.goo.gl/QAwH93PUR4rJX9wv8",
     title: "Sparkle Towers Elegant Charming & Bright Views",
     area: "Dubai Marina",
     building: "Sparkle Towers",
@@ -435,6 +464,9 @@ export const seedProperties: Property[] = [
   {
     id: "st-regis-residences-30th-floor-palm-jumeirah",
     slug: "st-regis-residences-30th-floor-palm-jumeirah",
+    lat: 25.1137872,
+    lng: 55.139872,
+    mapsUrl: "https://maps.app.goo.gl/2DqwTTAHmQAir4rF6",
     title: "St. Regis Residences 30th Floor Palm Jumeirah",
     area: "Palm Jumeirah",
     building: "St. Regis Residences",
@@ -507,6 +539,9 @@ export const seedProperties: Property[] = [
   {
     id: "st-regis-luxury-residence-34th-floor-palm",
     slug: "st-regis-luxury-residence-34th-floor-palm",
+    lat: 25.1137872,
+    lng: 55.139872,
+    mapsUrl: "https://maps.app.goo.gl/2DqwTTAHmQAir4rF6",
     title: "St. Regis Luxury Residence — 34th Floor at The Palm",
     area: "Palm Jumeirah",
     building: "St. Regis Residences",
@@ -551,6 +586,9 @@ export const seedProperties: Property[] = [
   {
     id: "azizi-riviera-near-downtown-cozy-studio",
     slug: "azizi-riviera-near-downtown-cozy-studio",
+    lat: 25.171072,
+    lng: 55.3047557,
+    mapsUrl: "https://maps.app.goo.gl/tovRLht7NXhuyJHP9",
     title: "Azizi Riviera Near Downtown Cozy Studio",
     area: "Meydan",
     building: "Azizi Riviera",
@@ -600,6 +638,9 @@ export const seedProperties: Property[] = [
   {
     id: "difc-penthouse-city-skyline-signature-living",
     slug: "difc-penthouse-city-skyline-signature-living",
+    lat: 25.2090816,
+    lng: 55.2784806,
+    mapsUrl: "https://maps.app.goo.gl/DQno6ci5pxRB3Z3s6",
     title: "DIFC Penthouse — City Skyline Signature Living",
     area: "DIFC",
     building: "Park Towers",
@@ -635,6 +676,9 @@ export const seedProperties: Property[] = [
   {
     id: "cloud-towers-jvt-quiet-well-connected-living",
     slug: "cloud-towers-jvt-quiet-well-connected-living",
+    lat: 25.0384744,
+    lng: 55.1805402,
+    mapsUrl: "https://maps.app.goo.gl/3AQEZ5m17JEDR94p6",
     title: "Cloud Towers JVT — Quiet & Well-Connected Living",
     area: "JVT",
     building: "Cloud Towers",
@@ -683,6 +727,9 @@ export const seedProperties: Property[] = [
   {
     id: "cloud-panoramic-residence-in-jvt",
     slug: "cloud-panoramic-residence-in-jvt",
+    lat: 25.0384744,
+    lng: 55.1805402,
+    mapsUrl: "https://maps.app.goo.gl/3AQEZ5m17JEDR94p6",
     title: "Cloud Panoramic Residence in JVT",
     area: "JVT",
     building: "Cloud Towers",
@@ -730,6 +777,9 @@ export const seedProperties: Property[] = [
   {
     id: "cloud-tower-cosy-1-bed-in-jvt",
     slug: "cloud-tower-cosy-1-bed-in-jvt",
+    lat: 25.0384744,
+    lng: 55.1805402,
+    mapsUrl: "https://maps.app.goo.gl/3AQEZ5m17JEDR94p6",
     title: "Cloud Tower cosy 1 Bed in JVT",
     area: "JVT",
     building: "Cloud Towers",
@@ -780,6 +830,9 @@ export const seedProperties: Property[] = [
   {
     id: "seven-palm-studio-west-beach-living",
     slug: "seven-palm-studio-west-beach-living",
+    lat: 25.1121932,
+    lng: 55.1386346,
+    mapsUrl: "https://maps.app.goo.gl/FgwnG7moAj4U1PS17",
     title: "Seven Palm Studio — West Beach Living",
     area: "Palm Jumeirah",
     building: "Seven Palm",
@@ -822,6 +875,9 @@ export const seedProperties: Property[] = [
   {
     id: "seven-palm-1br-west-beach-living-at-his-finest",
     slug: "seven-palm-1br-west-beach-living-at-his-finest",
+    lat: 25.1121932,
+    lng: 55.1386346,
+    mapsUrl: "https://maps.app.goo.gl/FgwnG7moAj4U1PS17",
     title: "Seven Palm 1BR — Chic West Beach Living",
     area: "Palm Jumeirah",
     building: "Seven Palm",

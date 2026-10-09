@@ -77,6 +77,13 @@ export const homeFormSchema = z.object({
     .trim()
     .optional()
     .refine((v) => !v || isAirbnbCalendarUrl(v) || process.env.ICAL_ALLOW_ANY_HOST === "1", "Paste the \"Export calendar\" link from Airbnb (it starts with https://www.airbnb.com/calendar/ical/…)."),
+  lat: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.coerce.number().min(22).max(27).optional()),
+  lng: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.coerce.number().min(51).max(57).optional()),
+  mapsUrl: z
+    .string()
+    .trim()
+    .optional()
+    .refine((v) => !v || /^https:\/\/(maps\.app\.goo\.gl|www\.google\.com\/maps|goo\.gl\/maps|maps\.google\.com)\//.test(v), "Paste a Google Maps link."),
   tag: z.string().trim().max(40),
   image: imageUrl,
   gallery: z.string().transform((v, ctx) => {
