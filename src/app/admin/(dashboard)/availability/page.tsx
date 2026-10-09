@@ -3,7 +3,8 @@ import Link from "next/link";
 import { getAllProperties } from "@/lib/server/catalog";
 import { addDays, formatShortDate, todayIso } from "@/lib/dates";
 import { requireAdmin } from "@/lib/server/admin-auth";
-import { listBlocks, listBookings } from "@/lib/server/bookings";
+import { holdsDates, listBlocks, listBookings } from "@/lib/server/bookings";
+import { importedRanges, listIcalDocs } from "@/lib/server/ical";
 import { deleteBlock } from "../../actions";
 import { BlockForm } from "../../AdminForms";
 
@@ -21,12 +22,14 @@ export default async function AdminAvailabilityPage({
   const start = addDays(today, offset);
   const days = Array.from({ length: DAYS }, (_, i) => addDays(start, i));
 
-  const [bookings, blocks, properties] = await Promise.all([
+  const [bookings, blocks, properties, icalDocs] = await Promise.all([
     listBookings(),
     listBlocks(),
     getAllProperties(),
+    listIcalDocs(),
   ]);
-  const live = bookings.filter((b) => b.status !== "cancelled");
+  // Cancelled bookings and unpaid holds that ran out don't occupy the nights.
+  const live = bookings.filter(holdsDates);
 
   const cell = (slug: string, day: string) => {
     const booking = live.find((b) => b.propertySlug === slug && b.checkIn <= day && day < b.checkOut);
@@ -35,6 +38,8 @@ export default async function AdminAvailabilityPage({
         className: booking.status === "confirmed" ? "bg-ink" : "bg-amber-400",
         title: `${booking.ref} · ${booking.guest.name} (${booking.status})`,
       };
+    const airbnb = importedRanges(icalDocs, slug).find((r) => r.start <= day && day < r.end);
+    if (airbnb) return { className: "bg-rose-400", title: "Booked on Airbnb" };
     const block = blocks.find((b) => b.propertySlug === slug && b.start <= day && day < b.end);
     if (block)
       return {
@@ -69,6 +74,7 @@ export default async function AdminAvailabilityPage({
         <div className="mt-3 flex flex-wrap gap-4 text-xs text-ink-60">
           <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-ink" /> Confirmed</span>
           <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-amber-400" /> Pending</span>
+          <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-rose-400" /> Airbnb</span>
           <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-ink-20" /> Blocked</span>
         </div>
 

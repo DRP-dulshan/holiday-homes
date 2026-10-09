@@ -1,6 +1,15 @@
 import "server-only";
 import { bookingRules, site } from "@/config/site";
-import { getProperty, getPropertyAnyStatus } from "./catalog";
+import { getAllProperties, getProperty, getPropertyAnyStatus } from "./catalog";
+import {
+  ICAL,
+  importedRanges,
+  listIcalDocs,
+  OWN_UID_SUFFIX,
+  syncStale,
+  withoutOwnRange,
+  type IcalDoc,
+} from "./ical";
 import {
   addDays,
   formatDate,
@@ -102,7 +111,7 @@ const HOLD_MINUTES = CHECKOUT_MINUTES + 5;
 const holdExpired = (b: Booking, now = Date.now()) =>
   b.status === "awaiting_payment" && !!b.payment && Date.parse(b.payment.holdUntil) < now;
 
-const holdsDates = (b: Booking) => b.status !== "cancelled" && !holdExpired(b);
+export const holdsDates = (b: Booking) => b.status !== "cancelled" && !holdExpired(b);
 
 /** Live bookings that used a promo code (cancelled and lapsed bookings free the use). */
 export const promoUses = (bookings: Booking[], code: string) => {
@@ -110,8 +119,14 @@ export const promoUses = (bookings: Booking[], code: string) => {
   return bookings.filter((b) => holdsDates(b) && b.quote.promo?.code === wanted).length;
 };
 
-function takenRanges(slug: string, bookings: Booking[], blocks: Block[]): DateRange[] {
+function takenRanges(
+  slug: string,
+  bookings: Booking[],
+  blocks: Block[],
+  imported: IcalDoc[] = [],
+): DateRange[] {
   return [
+    ...importedRanges(imported, slug),
     ...bookings
       .filter((b) => b.propertySlug === slug && holdsDates(b))
       .map((b) => ({ start: b.checkIn, end: b.checkOut })),
@@ -119,26 +134,64 @@ function takenRanges(slug: string, bookings: Booking[], blocks: Block[]): DateRa
   ];
 }
 
+/** How old an Airbnb calendar copy may be before a visitor's request refreshes it. */
+const CALENDAR_MAX_AGE = 10 * 60_000;
+/** Bookings are stricter: the copy must be this fresh when a booking is saved. */
+const CALENDAR_BOOKING_MAX_AGE = 2 * 60_000;
+
+/** Refreshes stale Airbnb calendar copies for these homes (all homes when none are given). */
+async function refreshCalendars(slugs: string[] | null, maxAge: number) {
+  try {
+    const homes = (await getAllProperties()).filter((p) => !slugs || slugs.includes(p.slug));
+    await syncStale(homes, maxAge);
+  } catch (err) {
+    console.error("[ical] refresh skipped:", err);
+  }
+}
+
 /** Every night range that can't be booked for a property, from today on. */
 export async function getUnavailableRanges(slug: string): Promise<DateRange[]> {
-  const [bookings, blocks] = await Promise.all([
+  await refreshCalendars([slug], CALENDAR_MAX_AGE);
+  const [bookings, blocks, imported] = await Promise.all([
     readAll<Booking>(BOOKINGS),
     readAll<Block>(BLOCKS),
+    listIcalDocs(),
   ]);
   const today = todayIso();
-  return takenRanges(slug, bookings, blocks)
+  return takenRanges(slug, bookings, blocks, imported)
     .filter((r) => r.end > today)
     .sort((a, b) => a.start.localeCompare(b.start));
+}
+
+/**
+ * The nights this site holds for a home, for the iCal feed Airbnb imports: live bookings and the
+ * team's own blocks. Dates imported *from* Airbnb are left out so they don't echo back.
+ */
+export async function exportEvents(slug: string) {
+  const [bookings, blocks] = await Promise.all([readAll<Booking>(BOOKINGS), readAll<Block>(BLOCKS)]);
+  const today = todayIso();
+  return [
+    ...bookings
+      .filter((b) => b.propertySlug === slug && holdsDates(b) && b.checkOut > today)
+      .map((b) => ({ uid: `booking-${b.id}${OWN_UID_SUFFIX}`, start: b.checkIn, end: b.checkOut, summary: "DRP booking" })),
+    ...blocks
+      .filter((b) => b.propertySlug === slug && b.end > today)
+      .map((b) => ({ uid: `block-${b.id}${OWN_UID_SUFFIX}`, start: b.start, end: b.end, summary: "DRP — not available" })),
+  ];
 }
 
 /** Slugs of properties that are NOT free for the whole requested stay. */
 export async function getUnavailableSlugs(checkIn: string, checkOut: string) {
   const stay = { start: checkIn, end: checkOut };
-  const [bookings, blocks] = await Promise.all([
+  await refreshCalendars(null, CALENDAR_MAX_AGE);
+  const [bookings, blocks, imported] = await Promise.all([
     readAll<Booking>(BOOKINGS),
     readAll<Block>(BLOCKS),
+    listIcalDocs(),
   ]);
   const taken = new Set<string>();
+  for (const doc of imported)
+    if (importedRanges(imported, doc.slug).some((r) => rangesOverlap(stay, r))) taken.add(doc.slug);
   for (const b of bookings)
     if (holdsDates(b) && rangesOverlap(stay, { start: b.checkIn, end: b.checkOut }))
       taken.add(b.propertySlug);
@@ -207,9 +260,13 @@ export async function createBooking(
   const problem = validateStay(property, input.checkIn, input.checkOut, input.guests);
   if (problem) throw new BookingError(problem);
 
+  // Make sure the Airbnb calendar copy is fresh before the dates are checked.
+  await refreshCalendars([property.slug], CALENDAR_BOOKING_MAX_AGE);
+
   const booking = await mutate<Booking, Booking>(BOOKINGS, async (bookings, read) => {
     const blocks = await read<Block>(BLOCKS);
-    const clash = takenRanges(property.slug, bookings, blocks).some((r) =>
+    const imported = await read<IcalDoc>(ICAL);
+    const clash = takenRanges(property.slug, bookings, blocks, imported).some((r) =>
       rangesOverlap(r, { start: input.checkIn, end: input.checkOut }),
     );
     if (clash)
@@ -393,8 +450,9 @@ export async function applyCheckoutSession(
     // Normally the hold kept the dates. If it lapsed (or the guest cancelled
     // while paying) and someone else booked them, the payment must be refunded.
     const blocks = await read<Block>(BLOCKS);
+    const imported = withoutOwnRange(await read<IcalDoc>(ICAL), b);
     const others = bookings.filter((x) => x.ref !== ref);
-    const clash = takenRanges(b.propertySlug, others, blocks).some((r) =>
+    const clash = takenRanges(b.propertySlug, others, blocks, imported).some((r) =>
       rangesOverlap(r, { start: b.checkIn, end: b.checkOut }),
     );
     if (clash) {
@@ -478,8 +536,9 @@ export async function setBookingStatus(
     if (booking.status === "cancelled") {
       // Re-opening a cancelled booking must not double-book the dates.
       const blocks = await read<Block>(BLOCKS);
+      const imported = withoutOwnRange(await read<IcalDoc>(ICAL), booking);
       const others = bookings.filter((b) => b.ref !== ref);
-      const clash = takenRanges(booking.propertySlug, others, blocks).some((r) =>
+      const clash = takenRanges(booking.propertySlug, others, blocks, imported).some((r) =>
         rangesOverlap(r, { start: booking.checkIn, end: booking.checkOut }),
       );
       if (clash)

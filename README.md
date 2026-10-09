@@ -51,6 +51,13 @@ handle enquiries. Email notifications go out at each step.
 - Homes: edit any home (price, photos, description, amenities, times), add a
   new one, unlist it, or restore the imported details. Photos can be uploaded
   (needs a Vercel Blob store) or pasted from Cloudinary / Unsplash.
+- Airbnb calendar sync (admin → Homes → a home): paste the home's Airbnb
+  "Export calendar" link and nights booked on Airbnb are blocked here too;
+  give Airbnb the home's private calendar link ("Import calendar") and nights
+  booked here are blocked there. Calendars refresh when guests browse (every 10
+  minutes), before a booking is saved (every 2 minutes) and daily by Vercel Cron.
+  Set `CRON_SECRET` to enable the cron route; an external pinger can call
+  `/api/cron/ical` more often.
 - Rates: per home, a weekend rate (Fri/Sat nights), seasonal / event rates for
   date ranges, and weekly (7+ nights) and monthly (28+ nights) discounts.
 - Promo codes: percent or AED-off codes with optional expiry, stay window,
@@ -100,6 +107,7 @@ test all the flows locally.
 | `SITE_URL`        | Public URL used in email links.                                          |
 | `RESEND_API_KEY`, `MAIL_FROM` | Turn on real email delivery.                                 |
 | `NOTIFY_EMAIL`    | Inbox for team notifications (default: `site.email`).                   |
+| `CRON_SECRET` | Protects `/api/cron/ical`, which refreshes Airbnb calendars. |
 | `BLOB_READ_WRITE_TOKEN` | Photo uploads in the admin (Vercel Blob). Optional.               |
 | `STRIPE_SECRET_KEY` | Turns on online payment (`sk_test_…` to test, `sk_live_…` for real payments). |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret (`whsec_…`) of the Stripe webhook below.            |

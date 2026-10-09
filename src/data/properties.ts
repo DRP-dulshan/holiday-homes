@@ -45,6 +45,8 @@ export type Property = {
   checkOut: string;
   /** The listing on dubairapidproperties.com this entry was imported from. */
   sourceUrl?: string;
+  /** The home's Airbnb "Export calendar" link; its busy dates are blocked here too. */
+  airbnbIcalUrl?: string;
   /** Unlisted by the team: not shown or bookable, but its bookings are kept. */
   hidden?: boolean;
   /** Added in the admin rather than imported. */

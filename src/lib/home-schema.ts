@@ -3,6 +3,7 @@ import { areas } from "@/data/areas";
 import { AMENITIES, type AmenityId } from "@/data/amenities";
 import { propertyTypes } from "@/data/properties";
 import { isIsoDate } from "@/lib/dates";
+import { isAirbnbCalendarUrl } from "@/lib/ical";
 
 /** Hosts the site's image optimiser is allowed to load photos from (see next.config.ts). */
 export const IMAGE_HOSTS = [
@@ -71,6 +72,11 @@ export const homeFormSchema = z.object({
     }
     return out;
   }),
+  airbnbIcalUrl: z
+    .string()
+    .trim()
+    .optional()
+    .refine((v) => !v || isAirbnbCalendarUrl(v) || process.env.ICAL_ALLOW_ANY_HOST === "1", "Paste the \"Export calendar\" link from Airbnb (it starts with https://www.airbnb.com/calendar/ical/…)."),
   tag: z.string().trim().max(40),
   image: imageUrl,
   gallery: z.string().transform((v, ctx) => {
