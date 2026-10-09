@@ -48,6 +48,9 @@ handle enquiries. Email notifications go out at each step.
   booking. The guest is emailed on each change. Paid bookings link to the
   payment in Stripe; cancelling a paid booking emails the team that a
   refund is due (refunds are issued from the Stripe dashboard).
+- Homes: edit any home (price, photos, description, amenities, times), add a
+  new one, unlist it, or restore the imported details. Photos can be uploaded
+  (needs a Vercel Blob store) or pasted from Cloudinary / Unsplash.
 - Availability: an occupancy grid for every home over 35 days, and a form
   to block dates (owner stays, maintenance, bookings taken elsewhere).
 - Enquiries: reply by email, mark as handled, or delete.
@@ -92,6 +95,7 @@ test all the flows locally.
 | `SITE_URL`        | Public URL used in email links.                                          |
 | `RESEND_API_KEY`, `MAIL_FROM` | Turn on real email delivery.                                 |
 | `NOTIFY_EMAIL`    | Inbox for team notifications (default: `site.email`).                   |
+| `BLOB_READ_WRITE_TOKEN` | Photo uploads in the admin (Vercel Blob). Optional.               |
 | `STRIPE_SECRET_KEY` | Turns on online payment (`sk_test_…` to test, `sk_live_…` for real payments). |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret (`whsec_…`) of the Stripe webhook below.            |
 

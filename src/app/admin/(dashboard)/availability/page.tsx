@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { properties } from "@/data/properties";
+import { getAllProperties } from "@/lib/server/catalog";
 import { addDays, formatShortDate, todayIso } from "@/lib/dates";
 import { requireAdmin } from "@/lib/server/admin-auth";
 import { listBlocks, listBookings } from "@/lib/server/bookings";
@@ -21,7 +21,11 @@ export default async function AdminAvailabilityPage({
   const start = addDays(today, offset);
   const days = Array.from({ length: DAYS }, (_, i) => addDays(start, i));
 
-  const [bookings, blocks] = await Promise.all([listBookings(), listBlocks()]);
+  const [bookings, blocks, properties] = await Promise.all([
+    listBookings(),
+    listBlocks(),
+    getAllProperties(),
+  ]);
   const live = bookings.filter((b) => b.status !== "cancelled");
 
   const cell = (slug: string, day: string) => {

@@ -5,15 +5,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { bookingRules } from "@/config/site";
-import { areas, areasWithHomes } from "@/data/areas";
-import { properties } from "@/data/properties";
+import { areas } from "@/data/areas";
+import type { CatalogSummary } from "@/lib/server/catalog";
 import { addDays, formatShortDate, nightsBetween } from "@/lib/dates";
 import { useToday } from "@/lib/useToday";
 import { DateRangeCalendar } from "./booking/DateRangeCalendar";
 import { IconCalendar, IconClose, IconPin, IconSearch, IconUsers } from "./icons";
-
-const MAX_GUESTS = Math.max(...properties.map((p) => p.guests));
-const homesIn = (areaName: string) => properties.filter((p) => p.area === areaName).length;
 
 type Panel = "where" | "checkIn" | "checkOut" | "who" | null;
 
@@ -30,7 +27,10 @@ const useIsWide = () =>
   );
 
 /** Hero search — location, dates and party size, then on to /explore. */
-export function SearchWidget() {
+export function SearchWidget({ summary }: { summary: Pick<CatalogSummary, "total" | "maxGuests" | "homesByArea"> }) {
+  const MAX_GUESTS = summary.maxGuests;
+  const homesIn = (areaName: string) => summary.homesByArea[areaName] ?? 0;
+  const areasWithHomes = areas.filter((a) => homesIn(a.name) > 0);
   const router = useRouter();
   const today = useToday();
   const isWide = useIsWide();
@@ -179,7 +179,7 @@ export function SearchWidget() {
                     <AreaOption
                       selected={!area}
                       title="Anywhere in Dubai"
-                      note={`All ${properties.length} homes`}
+                      note={`All ${summary.total} homes`}
                       onSelect={() => {
                         setArea("");
                         setPanel("checkIn");

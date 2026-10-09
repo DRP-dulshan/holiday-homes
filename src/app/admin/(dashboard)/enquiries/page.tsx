@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StatusBadge } from "@/components/booking/StatusBadge";
-import { getProperty } from "@/data/properties";
+import { getAllProperties } from "@/lib/server/catalog";
 import { enquiryTypes } from "@/lib/enquiry-schema";
 import { requireAdmin } from "@/lib/server/admin-auth";
 import { listEnquiries } from "@/lib/server/enquiries";
@@ -14,6 +14,7 @@ export default async function AdminEnquiriesPage({ searchParams }: PageProps<"/a
   const sp = await searchParams;
   const show = sp.show === "all" ? "all" : "new";
   const all = await listEnquiries();
+  const allProperties = await getAllProperties();
   const rows = show === "all" ? all : all.filter((e) => e.status === "new");
 
   return (
@@ -47,7 +48,7 @@ export default async function AdminEnquiriesPage({ searchParams }: PageProps<"/a
       ) : (
         <div className="space-y-4">
           {rows.map((e) => {
-            const property = e.propertySlug ? getProperty(e.propertySlug) : undefined;
+            const property = e.propertySlug ? allProperties.find((p) => p.slug === e.propertySlug) : undefined;
             return (
               <article key={e.id} className="rounded-card border border-ink-10 bg-canvas p-5 shadow-soft">
                 <div className="flex flex-wrap items-start justify-between gap-3">

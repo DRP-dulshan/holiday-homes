@@ -10,15 +10,21 @@ import { FAQAccordion } from "@/components/FAQAccordion";
 import { FinalCTA } from "@/components/FinalCTA";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 
-export default function Home() {
+import { getCatalogSummary } from "@/lib/server/catalog";
+
+// Homes come from the database, so render on request rather than once at build time.
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const summary = await getCatalogSummary();
   return (
     <>
       <Navbar overHero />
       <main className="flex-1">
-        <Hero />
+        <Hero summary={summary} />
         <FeaturedStays />
         <WhyDRP />
-        <AreasWeCover />
+        <AreasWeCover homesByArea={summary.homesByArea} />
         <DRPPromise />
         <Testimonials />
         <FAQAccordion />

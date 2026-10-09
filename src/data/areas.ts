@@ -1,5 +1,3 @@
-import { properties } from "./properties";
-
 export type Area = {
   name: string;
   slug: string;
@@ -120,10 +118,3 @@ export const areas: Area[] = [
     bestFor: "First-time visitors and short city breaks who want to be in the middle of it all",
   },
 ];
-
-/** Number of DRP homes in an area. */
-export const homesInArea = (areaName: string) =>
-  properties.filter((p) => p.area === areaName).length;
-
-/** Areas with at least one published home — the ones worth offering as a search filter. */
-export const areasWithHomes = areas.filter((a) => homesInArea(a.name) > 0);

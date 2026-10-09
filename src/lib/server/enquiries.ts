@@ -1,6 +1,6 @@
 import "server-only";
 import { enquiryTypes, type EnquiryInput } from "@/lib/enquiry-schema";
-import { getProperty } from "@/data/properties";
+import { getPropertyAnyStatus } from "./catalog";
 import { newId } from "./crypto";
 import { absoluteUrl, sendMail, teamInbox } from "./mailer";
 import { mutate, readAll } from "./store";
@@ -31,7 +31,7 @@ export async function createEnquiry(input: EnquiryInput) {
   });
 
   const typeLabel = enquiryTypes.find((t) => t.value === enquiry.enquiryType)?.label ?? "Enquiry";
-  const property = enquiry.propertySlug ? getProperty(enquiry.propertySlug) : undefined;
+  const property = enquiry.propertySlug ? await getPropertyAnyStatus(enquiry.propertySlug) : undefined;
 
   await Promise.all([
     sendMail({

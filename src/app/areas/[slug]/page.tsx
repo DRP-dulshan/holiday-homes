@@ -10,7 +10,9 @@ import { Reveal } from "@/components/Reveal";
 import { MapEmbed } from "@/components/MapEmbed";
 import { IconArrowRight } from "@/components/icons";
 import { areas } from "@/data/areas";
-import { properties } from "@/data/properties";
+import { getProperties } from "@/lib/server/catalog";
+
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return areas.map((a) => ({ slug: a.slug }));
@@ -34,7 +36,7 @@ export default async function AreaPage({ params }: PageProps<"/areas/[slug]">) {
   const area = areas.find((a) => a.slug === slug);
   if (!area) notFound();
 
-  const stays = properties.filter((p) => p.area === area.name);
+  const stays = (await getProperties()).filter((p) => p.area === area.name);
 
   return (
     <>

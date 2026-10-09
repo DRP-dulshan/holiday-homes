@@ -1,5 +1,4 @@
-import type { Property, PropertyType } from "@/data/properties";
-import { priceBounds } from "@/data/properties";
+import type { PriceBounds, Property, PropertyType } from "@/data/properties";
 import type { AmenityId } from "@/data/amenities";
 import { areas } from "@/data/areas";
 
@@ -32,40 +31,30 @@ export const FILTER_AMENITY_GROUPS: { id: string; label: string; match: AmenityI
   { id: "mallAccess", label: "Direct mall access", match: ["mallAccess"] },
 ];
 
-export const defaultFilters: ExploreFilters = {
-  areas: [],
-  types: [],
-  bedrooms: 0,
-  guests: 0,
-  priceMin: priceBounds.min,
-  priceMax: priceBounds.max,
-  amenities: [],
-  sort: "recommended",
-};
-
-const clampPrice = (v: string | null, fallback: number) => {
+const clampPrice = (v: string | null, fallback: number, bounds: PriceBounds) => {
   const n = Number(v);
-  return v && Number.isFinite(n)
-    ? Math.min(priceBounds.max, Math.max(priceBounds.min, n))
-    : fallback;
+  return v && Number.isFinite(n) ? Math.min(bounds.max, Math.max(bounds.min, n)) : fallback;
 };
 
 const csv = (v: string | null) => (v ? v.split(",").filter(Boolean) : []);
 
-export function filtersFromSearchParams(params: URLSearchParams): ExploreFilters {
+export function filtersFromSearchParams(
+  params: URLSearchParams,
+  priceBounds: PriceBounds,
+): ExploreFilters {
   return {
     areas: csv(params.get("area")),
     types: csv(params.get("type")) as PropertyType[],
     bedrooms: Number(params.get("bedrooms") ?? 0) || 0,
     guests: Number(params.get("guests") ?? 0) || 0,
-    priceMin: clampPrice(params.get("priceMin"), priceBounds.min),
-    priceMax: clampPrice(params.get("priceMax"), priceBounds.max),
+    priceMin: clampPrice(params.get("priceMin"), priceBounds.min, priceBounds),
+    priceMax: clampPrice(params.get("priceMax"), priceBounds.max, priceBounds),
     amenities: csv(params.get("amenities")),
     sort: SORT_KEYS.find((k) => k === params.get("sort")) ?? "recommended",
   };
 }
 
-export function filtersToSearchParams(f: ExploreFilters): URLSearchParams {
+export function filtersToSearchParams(f: ExploreFilters, priceBounds: PriceBounds): URLSearchParams {
   const params = new URLSearchParams();
   if (f.areas.length) params.set("area", f.areas.join(","));
   if (f.types.length) params.set("type", f.types.join(","));

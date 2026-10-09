@@ -1,8 +1,10 @@
-import { properties, type Property } from "@/data/properties";
+import type { Property } from "@/data/properties";
+import { getProperties } from "@/lib/server/catalog";
 import { PropertyCard } from "./PropertyCard";
 import { Reveal } from "./Reveal";
 
-export function SimilarStays({ current }: { current: Property }) {
+export async function SimilarStays({ current }: { current: Property }) {
+  const properties = await getProperties();
   const sameArea = properties.filter(
     (p) => p.slug !== current.slug && p.area === current.area,
   );

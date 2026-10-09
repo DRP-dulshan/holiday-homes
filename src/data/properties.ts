@@ -31,7 +31,11 @@ export type Property = {
   checkIn: string;
   checkOut: string;
   /** The listing on dubairapidproperties.com this entry was imported from. */
-  sourceUrl: string;
+  sourceUrl?: string;
+  /** Unlisted by the team: not shown or bookable, but its bookings are kept. */
+  hidden?: boolean;
+  /** Added in the admin rather than imported. */
+  custom?: boolean;
 };
 
 /** House rules shared by every DRP holiday home (from the DRP listings). */
@@ -52,7 +56,7 @@ const STANDARD_HOUSE_RULES = [
  * https://dubairapidproperties.com/holiday-home/ (MotoPress listings).
  * Photos are served from the DRP site. Order matches the listing page.
  */
-export const properties: Property[] = [
+export const seedProperties: Property[] = [
   {
     id: "stylish-1br-with-balcony-heart-of-business-bay",
     slug: "stylish-1br-with-balcony-heart-of-business-bay",
@@ -850,8 +854,6 @@ export const properties: Property[] = [
   },
 ];
 
-export const getProperty = (slug: string) => properties.find((p) => p.slug === slug);
-
 export const propertyTypes: { value: PropertyType; label: string }[] = [
   { value: "studio", label: "Studio" },
   { value: "apartment", label: "Apartment" },
@@ -860,19 +862,23 @@ export const propertyTypes: { value: PropertyType; label: string }[] = [
   { value: "townhouse", label: "Townhouse" },
 ];
 
-/** Property types that actually appear in the collection (for filters). */
-export const listedPropertyTypes = propertyTypes.filter((t) =>
-  properties.some((p) => p.type === t.value),
-);
+/** Property types that actually appear in a collection (for filters). */
+export const listedTypesFor = (list: Property[]) =>
+  propertyTypes.filter((t) => list.some((p) => p.type === t.value));
 
 /** Price filter step (AED). The bounds are rounded out to whole steps so the
  * slider can reach both ends exactly. */
 export const PRICE_STEP = 10;
 
-export const priceBounds = {
-  min: Math.floor(Math.min(...properties.map((p) => p.pricePerNight)) / PRICE_STEP) * PRICE_STEP,
-  max: Math.ceil(Math.max(...properties.map((p) => p.pricePerNight)) / PRICE_STEP) * PRICE_STEP,
-};
+export type PriceBounds = { min: number; max: number };
+
+export function priceBoundsFor(list: Property[]): PriceBounds {
+  const prices = list.map((p) => p.pricePerNight);
+  if (!prices.length) return { min: 0, max: PRICE_STEP };
+  const min = Math.floor(Math.min(...prices) / PRICE_STEP) * PRICE_STEP;
+  const max = Math.ceil(Math.max(...prices) / PRICE_STEP) * PRICE_STEP;
+  return { min, max: max > min ? max : min + PRICE_STEP };
+}
 
 /** "Studio" or "2 bedrooms". */
 export function bedroomLabel(bedrooms: number, short = false) {

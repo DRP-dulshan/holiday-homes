@@ -3,10 +3,11 @@
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { SearchWidget } from "./SearchWidget";
+import type { CatalogSummary } from "@/lib/server/catalog";
 import { IconChevronDown } from "./icons";
 import heroImage from "@/assets/hero-villa.webp";
 
-export function Hero() {
+export function Hero({ summary }: { summary: CatalogSummary }) {
   const reduce = useReducedMotion();
 
   return (
@@ -63,7 +64,7 @@ export function Hero() {
           transition={{ duration: 0.7, delay: 0.26 }}
           className="relative z-20 mt-10 max-w-5xl"
         >
-          <SearchWidget />
+          <SearchWidget summary={summary} />
         </motion.div>
       </div>
 
