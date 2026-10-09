@@ -136,7 +136,10 @@ export default async function AdminBookingsPage({ searchParams }: PageProps<"/ad
                 <div>
                   <dt className="text-xs text-ink-60">Total</dt>
                   <dd className="font-semibold text-ink">AED {aed.format(b.quote.total)}</dd>
-                  <dd className="text-ink-60">AED {aed.format(b.quote.nightlyRate)}/night</dd>
+                  <dd className="text-ink-60">AED {aed.format(b.quote.nightlyRate)}/night{b.quote.lines && b.quote.lines.length > 1 ? " avg" : ""}</dd>
+                  {b.quote.promo ? (
+                    <dd className="text-emerald-700">Code {b.quote.promo.code} (−AED {aed.format(b.quote.promo.amount)})</dd>
+                  ) : null}
                   {b.payment?.status === "paid" ? (
                     <dd className={b.payment.refundDue ? "font-semibold text-red-600" : "text-emerald-700"}>
                       {b.payment.refundDue ? "Paid — refund due" : "Paid online"}

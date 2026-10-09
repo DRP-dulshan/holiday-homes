@@ -2,7 +2,7 @@ import "server-only";
 import Stripe from "stripe";
 import { site, siteUrl } from "@/config/site";
 import { formatDate } from "@/lib/dates";
-import type { Quote } from "@/lib/pricing";
+import { accommodationTotal, type Quote } from "@/lib/pricing";
 
 /** Online payment is on when a Stripe secret key is configured. */
 export const paymentsEnabled = () => !!process.env.STRIPE_SECRET_KEY?.trim();
@@ -54,15 +54,20 @@ export async function createCheckoutSession(input: {
 }) {
   const { quote } = input;
   const dates = `${formatDate(input.checkIn)} – ${formatDate(input.checkOut)}`;
+  const stayTotal = accommodationTotal(quote);
+  const adjustments = [
+    quote.discount ? quote.discountLabel?.toLowerCase() : "",
+    quote.promo ? `code ${quote.promo.code}` : "",
+  ].filter(Boolean);
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
     {
-      quantity: quote.nights,
+      quantity: 1,
       price_data: {
         currency: "aed",
-        unit_amount: fils(quote.nightlyRate),
+        unit_amount: fils(stayTotal),
         product_data: {
-          name: `${input.propertyTitle} — nightly rate`,
-          description: `${dates} · ${input.guests} guest${input.guests === 1 ? "" : "s"}`,
+          name: `${input.propertyTitle} — ${quote.nights} night${quote.nights === 1 ? "" : "s"}`,
+          description: `${dates} · ${input.guests} guest${input.guests === 1 ? "" : "s"}${adjustments.length ? ` · includes ${adjustments.join(" and ")}` : ""}`,
         },
       },
     },

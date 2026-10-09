@@ -25,6 +25,8 @@ type Props = {
   payOnline: boolean;
   /** Amount due, for the button label. */
   totalLabel: string;
+  /** A promo code the guest applied; the server checks it again. */
+  promoCode?: string;
 };
 
 export function CheckoutForm({
@@ -35,6 +37,7 @@ export function CheckoutForm({
   guests,
   payOnline,
   totalLabel,
+  promoCode,
 }: Props) {
   const router = useRouter();
   // Stays true while the browser leaves for Stripe, so the button can't be pressed twice.
@@ -77,7 +80,7 @@ export function CheckoutForm({
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, propertySlug, checkIn, checkOut, guests }),
+        body: JSON.stringify({ ...data, propertySlug, checkIn, checkOut, guests, promoCode }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.ok) {

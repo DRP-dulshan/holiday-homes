@@ -25,6 +25,8 @@ import {
   saveProperty,
 } from "@/lib/server/catalog";
 import { homeFormSchema, slugify } from "@/lib/home-schema";
+import { createPromo, deletePromo, normalizeCode, setPromoActive } from "@/lib/server/promos";
+import { isIsoDate } from "@/lib/dates";
 import type { Property } from "@/data/properties";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 
@@ -128,6 +130,10 @@ export async function saveHome(_prev: HomeFormState, formData: FormData): Promis
     sizeSqft: formData.get("sizeSqft") ?? "",
     pricePerNight: formData.get("pricePerNight") ?? "",
     cleaningFee: formData.get("cleaningFee") ?? "0",
+    weekendRate: formData.get("weekendRate") ?? "",
+    weeklyDiscountPct: formData.get("weeklyDiscountPct") ?? "",
+    monthlyDiscountPct: formData.get("monthlyDiscountPct") ?? "",
+    seasons: String(formData.get("seasons") ?? ""),
     tag: formData.get("tag") ?? "",
     image: formData.get("image") ?? "",
     gallery: String(formData.get("gallery") ?? ""),
@@ -159,6 +165,12 @@ export async function saveHome(_prev: HomeFormState, formData: FormData): Promis
     sizeSqft: d.sizeSqft,
     pricePerNight: d.pricePerNight,
     cleaningFee: d.cleaningFee,
+    pricing: {
+      weekendRate: d.weekendRate,
+      weeklyDiscountPct: d.weeklyDiscountPct || undefined,
+      monthlyDiscountPct: d.monthlyDiscountPct || undefined,
+      seasons: d.seasons.length ? d.seasons : undefined,
+    },
     tag: d.tag,
     image: d.image,
     // The cover photo always leads the gallery.
@@ -208,4 +220,61 @@ export async function removeHome(formData: FormData) {
   else await resetToImported(slug);
   refreshSite();
   redirect("/admin/homes");
+}
+
+/* ------------------------------------------------------------------ */
+/* Promo codes                                                         */
+/* ------------------------------------------------------------------ */
+
+export async function addPromo(_prev: FormState, formData: FormData): Promise<FormState> {
+  await requireAdmin();
+  const code = normalizeCode(String(formData.get("code") ?? ""));
+  const type = formData.get("type") === "fixed" ? "fixed" : "percent";
+  const value = Number(formData.get("value"));
+  const optionalDate = (k: string) => {
+    const v = String(formData.get(k) ?? "").trim();
+    return v ? (isIsoDate(v) ? v : null) : undefined;
+  };
+  const validUntil = optionalDate("validUntil");
+  const stayFrom = optionalDate("stayFrom");
+  const stayTo = optionalDate("stayTo");
+  const int = (k: string) => {
+    const n = Number(formData.get(k));
+    return Number.isInteger(n) && n > 0 ? n : undefined;
+  };
+  if (code.length < 3) return { error: "The code needs at least 3 letters or numbers." };
+  if (!Number.isFinite(value) || value <= 0) return { error: "Enter how much the code takes off." };
+  if (type === "percent" && value > 90) return { error: "A percentage code can take off at most 90%." };
+  if (validUntil === null || stayFrom === null || stayTo === null) return { error: "Check the dates." };
+  const slugs = formData.getAll("propertySlugs").map(String).filter(Boolean);
+  try {
+    await createPromo({
+      code,
+      type,
+      value: Math.round(value),
+      validUntil,
+      stayFrom,
+      stayTo,
+      minNights: int("minNights"),
+      maxUses: int("maxUses"),
+      propertySlugs: slugs.length ? slugs : undefined,
+      note: String(formData.get("note") ?? "").trim().slice(0, 200) || undefined,
+    });
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Couldn't save that code." };
+  }
+  revalidatePath("/admin/promos");
+  return { ok: `Code ${code} created.` };
+}
+
+export async function togglePromo(formData: FormData) {
+  await requireAdmin();
+  await setPromoActive(String(formData.get("id") ?? ""), formData.get("active") === "1");
+  revalidatePath("/admin/promos");
+}
+
+export async function removePromo(formData: FormData) {
+  await requireAdmin();
+  await deletePromo(String(formData.get("id") ?? ""));
+  revalidatePath("/admin/promos");
 }

@@ -12,7 +12,7 @@ import {
   rangesOverlap,
   todayIso,
 } from "@/lib/dates";
-import { aed, quoteStay, validateStay } from "@/lib/pricing";
+import { aed, quoteStay, rateLines, validateStay } from "@/lib/pricing";
 import { ContactForm } from "./ContactForm";
 import { Modal } from "./Modal";
 import { DateRangeCalendar } from "./booking/DateRangeCalendar";
@@ -170,12 +170,20 @@ export function BookingCard({ property }: { property: Property }) {
 
       {nights > 0 ? (
         <div className="mt-5 space-y-2 border-t border-ink-10 pt-4 text-sm text-ink-80">
-          <div className="flex justify-between">
-            <span>
-              AED {aed.format(property.pricePerNight)} × {nights} night{nights === 1 ? "" : "s"}
-            </span>
-            <span>AED {aed.format(quote.subtotal)}</span>
-          </div>
+          {rateLines(quote).map((l) => (
+            <div key={l.rate} className="flex justify-between">
+              <span>
+                AED {aed.format(l.rate)} × {l.nights} night{l.nights === 1 ? "" : "s"}
+              </span>
+              <span>AED {aed.format(l.rate * l.nights)}</span>
+            </div>
+          ))}
+          {quote.discount ? (
+            <div className="flex justify-between text-emerald-700">
+              <span>{quote.discountLabel}</span>
+              <span>−AED {aed.format(quote.discount)}</span>
+            </div>
+          ) : null}
           {quote.cleaningFee > 0 ? (
             <div className="flex justify-between">
               <span>Cleaning fee</span>

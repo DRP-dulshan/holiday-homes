@@ -47,6 +47,8 @@ export const bookingRequestSchema = z.object({
   needCar: z.boolean().optional(),
   carType: z.enum(["any", "economy", "sedan", "suv", "luxury"]).optional(),
   carPickup: z.enum(["airport", "home"]).optional(),
+  /** A discount code, checked again on the server. */
+  promoCode: z.string().trim().max(40).optional(),
   acceptTerms: z.literal(true, { error: "Please accept the booking terms" }),
   /** Honeypot — real people never fill this in. */
   company: z.string().max(0).optional(),

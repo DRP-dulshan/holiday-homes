@@ -51,6 +51,11 @@ handle enquiries. Email notifications go out at each step.
 - Homes: edit any home (price, photos, description, amenities, times), add a
   new one, unlist it, or restore the imported details. Photos can be uploaded
   (needs a Vercel Blob store) or pasted from Cloudinary / Unsplash.
+- Rates: per home, a weekend rate (Fri/Sat nights), seasonal / event rates for
+  date ranges, and weekly (7+ nights) and monthly (28+ nights) discounts.
+- Promo codes: percent or AED-off codes with optional expiry, stay window,
+  minimum nights, redemption limit and home restriction. Guests apply them at
+  checkout; the server re-checks them when the booking is made.
 - Availability: an occupancy grid for every home over 35 days, and a form
   to block dates (owner stays, maintenance, bookings taken elsewhere).
 - Enquiries: reply by email, mark as handled, or delete.

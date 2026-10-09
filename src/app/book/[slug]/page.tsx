@@ -3,13 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { StaySummary } from "@/components/booking/StaySummary";
-import { CheckoutForm } from "@/components/booking/CheckoutForm";
+import { CheckoutLayout } from "@/components/booking/CheckoutLayout";
 import { IconArrowRight } from "@/components/icons";
 import { bookingRules } from "@/config/site";
 import { getProperty } from "@/lib/server/catalog";
 import { addDays, formatDate, isIsoDate } from "@/lib/dates";
-import { aed, quoteStay, validateStay } from "@/lib/pricing";
+import { validateStay } from "@/lib/pricing";
 import { isAvailable } from "@/lib/server/bookings";
 import { paymentsEnabled } from "@/lib/server/stripe";
 
@@ -73,39 +72,27 @@ export default async function BookPage({ params, searchParams }: PageProps<"/boo
               </div>
             </div>
           ) : (
-            <div className="mt-8 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-              <CheckoutForm
-                propertySlug={property.slug}
-                propertyTitle={property.title}
-                checkIn={checkIn}
-                checkOut={checkOut}
-                guests={guests}
-                payOnline={payOnline}
-                totalLabel={`AED ${aed.format(quoteStay(property, checkIn, checkOut).total)}`}
-              />
-              <div className="lg:sticky lg:top-28 lg:self-start">
-                <StaySummary
-                  property={property}
-                  checkIn={checkIn}
-                  checkOut={checkOut}
-                  guests={guests}
-                  quote={quoteStay(property, checkIn, checkOut)}
-                >
-                  <div className="mt-5 rounded-2xl bg-ink-05 p-4 text-xs leading-relaxed text-ink-80">
-                    <p className="font-semibold text-ink">Cancellation policy</p>
-                    <p className="mt-1">
-                      Free cancellation until{" "}
-                      {formatDate(addDays(checkIn, -bookingRules.freeCancellationDays))}.{" "}
-                      {bookingRules.lateCancellationNote} See the{" "}
-                      <Link href="/terms" className="font-semibold text-brand-600 hover:underline">
-                        booking terms
-                      </Link>
-                      .
-                    </p>
-                  </div>
-                </StaySummary>
-              </div>
-            </div>
+            <CheckoutLayout
+              property={property}
+              checkIn={checkIn}
+              checkOut={checkOut}
+              guests={guests}
+              payOnline={payOnline}
+              policy={
+                <div className="mt-5 rounded-2xl bg-ink-05 p-4 text-xs leading-relaxed text-ink-80">
+                  <p className="font-semibold text-ink">Cancellation policy</p>
+                  <p className="mt-1">
+                    Free cancellation until{" "}
+                    {formatDate(addDays(checkIn, -bookingRules.freeCancellationDays))}.{" "}
+                    {bookingRules.lateCancellationNote} See the{" "}
+                    <Link href="/terms" className="font-semibold text-brand-600 hover:underline">
+                      booking terms
+                    </Link>
+                    .
+                  </p>
+                </div>
+              }
+            />
           )}
         </div>
       </main>

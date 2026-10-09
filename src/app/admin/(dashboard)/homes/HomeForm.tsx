@@ -136,6 +136,40 @@ export function HomeForm({ home, mode }: { home?: Property; mode: "create" | "ed
       </section>
 
       <section className="rounded-card border border-ink-10 bg-canvas p-6 shadow-soft">
+        <h2 className="display text-lg font-semibold text-ink">Rate rules (optional)</h2>
+        <p className="mt-1 text-sm text-ink-60">
+          On top of the nightly rate above. A seasonal rate beats the weekend rate, which beats the
+          standard rate.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <Field label="Weekend rate (AED)" hint="Applies to Friday and Saturday nights" error={err.weekendRate}>
+            <input name="weekendRate" type="number" min={50} defaultValue={home?.pricing?.weekendRate} className={adminInput} />
+          </Field>
+          <Field label="Weekly discount (%)" hint="For stays of 7+ nights" error={err.weeklyDiscountPct}>
+            <input name="weeklyDiscountPct" type="number" min={0} max={60} defaultValue={home?.pricing?.weeklyDiscountPct} className={adminInput} />
+          </Field>
+          <Field label="Monthly discount (%)" hint="For stays of 28+ nights" error={err.monthlyDiscountPct}>
+            <input name="monthlyDiscountPct" type="number" min={0} max={60} defaultValue={home?.pricing?.monthlyDiscountPct} className={adminInput} />
+          </Field>
+          <Field
+            label="Seasonal and event rates (one per line)"
+            hint="Format: 2026-12-20 to 2027-01-05: 1200 New Year — both dates are included"
+            error={err.seasons}
+            className="sm:col-span-3"
+          >
+            <textarea
+              name="seasons"
+              rows={4}
+              defaultValue={(home?.pricing?.seasons ?? [])
+                .map((s) => `${s.from} to ${s.to}: ${s.rate}${s.name ? ` ${s.name}` : ""}`)
+                .join("\n")}
+              className={`${adminInput} font-mono text-xs`}
+            />
+          </Field>
+        </div>
+      </section>
+
+      <section className="rounded-card border border-ink-10 bg-canvas p-6 shadow-soft">
         <h2 className="display text-lg font-semibold text-ink">Photos</h2>
         <div className="mt-4 grid gap-4">
           <Field
