@@ -22,6 +22,8 @@ import { getProperty } from "@/lib/server/catalog";
 import { approvedReviews } from "@/lib/server/reviews";
 import { PropertyReviews } from "@/components/PropertyReviews";
 import { JsonLd } from "@/components/JsonLd";
+import { SaveButton } from "@/components/SaveButton";
+import { ShareButton } from "@/components/ShareButton";
 import { siteUrl } from "@/config/site";
 
 // Homes (and edits to them) come from the database, so pages render on request.
@@ -136,6 +138,10 @@ export default async function PropertyPage({
               <h1 className="display mt-1 text-3xl font-semibold text-ink sm:text-4xl">
                 {property.title}
               </h1>
+              <div className="mt-3 flex items-center gap-2">
+                <ShareButton title={property.title} />
+                <SaveButton slug={property.slug} title={property.title} className="border border-ink-20 shadow-none" />
+              </div>
             </div>
             {property.rating ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-ink-05 px-3.5 py-2 text-sm font-semibold text-ink">

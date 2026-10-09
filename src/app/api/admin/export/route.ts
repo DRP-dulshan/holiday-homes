@@ -3,6 +3,7 @@ import { isAdmin } from "@/lib/server/admin-auth";
 import { listBookings } from "@/lib/server/bookings";
 import { describeCar } from "@/lib/booking-schema";
 import { listEnquiries } from "@/lib/server/enquiries";
+import { listSubscribers } from "@/lib/server/newsletter";
 
 function toCsv(rows: (string | number | undefined)[][]) {
   return rows
@@ -27,7 +28,13 @@ export async function GET(request: Request) {
   const type = new URL(request.url).searchParams.get("type");
   let csv: string;
 
-  if (type === "enquiries") {
+  if (type === "subscribers") {
+    const rows = await listSubscribers();
+    csv = toCsv([
+      ["Email", "Status", "Subscribed", "Unsubscribed", "Source"],
+      ...rows.map((r) => [r.email, r.active ? "active" : "unsubscribed", r.createdAt, r.unsubscribedAt, r.source]),
+    ]);
+  } else if (type === "enquiries") {
     const rows = await listEnquiries();
     csv = toCsv([
       ["Received", "Status", "Type", "Name", "Email", "Phone", "Property", "Source", "Message"],
@@ -61,7 +68,7 @@ export async function GET(request: Request) {
     ]);
   }
 
-  const name = `${type === "enquiries" ? "enquiries" : "bookings"}-${new Date().toISOString().slice(0, 10)}.csv`;
+  const name = `${type === "enquiries" ? "enquiries" : type === "subscribers" ? "subscribers" : "bookings"}-${new Date().toISOString().slice(0, 10)}.csv`;
   return new NextResponse(`﻿${csv}`, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",

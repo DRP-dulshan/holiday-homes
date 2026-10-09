@@ -13,6 +13,7 @@ import {
   type GuestDetailsInput,
 } from "@/lib/booking-schema";
 import { whatsappLink } from "@/config/site";
+import { track } from "@/lib/track";
 import { IconArrowRight, IconCar, IconLock, IconWhatsApp } from "../icons";
 
 type Props = {
@@ -97,6 +98,7 @@ export function CheckoutForm({
         });
         return;
       }
+      track("begin_checkout", { currency: "AED", value: Number(totalLabel.replace(/[^\d.]/g, "")) || undefined });
       if (json.checkoutUrl) {
         setRedirecting(true);
         window.location.assign(json.checkoutUrl);

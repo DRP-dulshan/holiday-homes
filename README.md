@@ -62,6 +62,15 @@ handle enquiries. Email notifications go out at each step.
   and a button on their booking page. Reviews wait in admin → Reviews until you
   publish them (and optionally reply); published reviews show on the home page,
   the home's page and its rating on the cards, and feed Google rich results.
+- Cookie consent and analytics: set `NEXT_PUBLIC_GA_ID` (Google Analytics 4),
+  `NEXT_PUBLIC_META_PIXEL_ID` and/or `NEXT_PUBLIC_TAWK_SRC` (Tawk.to live chat) and a
+  cookie banner appears; the services only load after "Accept all". Conversions
+  (begin checkout, enquiry/lead) are reported when allowed. With none set there is no
+  banner and no tracking.
+- Newsletter: a signup box in the footer; admin → Subscribers lists and exports
+  the addresses (CSV) for Mailchimp, Brevo and similar. Every email has an unsubscribe link.
+- Saved homes: guests tap the heart on any home (kept in their browser) and see
+  them under "Saved"; every home page also has Share (phone share sheet, copy link, WhatsApp).
 - Rates: per home, a weekend rate (Fri/Sat nights), seasonal / event rates for
   date ranges, and weekly (7+ nights) and monthly (28+ nights) discounts.
 - Promo codes: percent or AED-off codes with optional expiry, stay window,
