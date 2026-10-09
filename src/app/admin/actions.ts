@@ -18,9 +18,11 @@ import {
   type BookingStatus,
 } from "@/lib/server/bookings";
 import { deleteEnquiry, setEnquiryStatus } from "@/lib/server/enquiries";
+import { syncCalendar } from "@/lib/server/ical";
 import {
   deleteCustomProperty,
   getAllProperties,
+  getPropertyAnyStatus,
   resetToImported,
   saveProperty,
 } from "@/lib/server/catalog";
@@ -134,6 +136,7 @@ export async function saveHome(_prev: HomeFormState, formData: FormData): Promis
     weeklyDiscountPct: formData.get("weeklyDiscountPct") ?? "",
     monthlyDiscountPct: formData.get("monthlyDiscountPct") ?? "",
     seasons: String(formData.get("seasons") ?? ""),
+    airbnbIcalUrl: String(formData.get("airbnbIcalUrl") ?? ""),
     tag: formData.get("tag") ?? "",
     image: formData.get("image") ?? "",
     gallery: String(formData.get("gallery") ?? ""),
@@ -171,6 +174,7 @@ export async function saveHome(_prev: HomeFormState, formData: FormData): Promis
       monthlyDiscountPct: d.monthlyDiscountPct || undefined,
       seasons: d.seasons.length ? d.seasons : undefined,
     },
+    airbnbIcalUrl: d.airbnbIcalUrl || undefined,
     tag: d.tag,
     image: d.image,
     // The cover photo always leads the gallery.
@@ -192,6 +196,9 @@ export async function saveHome(_prev: HomeFormState, formData: FormData): Promis
       redirect(`/admin/homes/${slug}?created=1`);
     }
     await saveProperty(existingSlug, values);
+    // Pull the Airbnb calendar straight away when its link was added or changed.
+    const before = (await getPropertyAnyStatus(existingSlug))?.airbnbIcalUrl;
+    if (d.airbnbIcalUrl && d.airbnbIcalUrl !== before) await syncCalendar(existingSlug, d.airbnbIcalUrl);
   } catch (err) {
     if (isRedirectError(err)) throw err;
     return { error: err instanceof Error ? err.message : "Couldn't save that home." };
@@ -277,4 +284,14 @@ export async function removePromo(formData: FormData) {
   await requireAdmin();
   await deletePromo(String(formData.get("id") ?? ""));
   revalidatePath("/admin/promos");
+}
+
+/** "Sync now" on a home's Airbnb calendar. */
+export async function syncHomeCalendar(formData: FormData) {
+  await requireAdmin();
+  const slug = String(formData.get("slug") ?? "");
+  const home = await getPropertyAnyStatus(slug);
+  if (home?.airbnbIcalUrl) await syncCalendar(slug, home.airbnbIcalUrl);
+  revalidatePath(`/admin/homes/${slug}`);
+  revalidatePath("/admin/availability");
 }

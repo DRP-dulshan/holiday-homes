@@ -221,6 +221,26 @@ export function HomeForm({ home, mode }: { home?: Property; mode: "create" | "ed
         </div>
       </section>
 
+      {mode === "edit" ? (
+        <section className="rounded-card border border-ink-10 bg-canvas p-6 shadow-soft">
+          <h2 className="display text-lg font-semibold text-ink">Airbnb calendar (optional)</h2>
+          <div className="mt-4">
+            <Field
+              label="Airbnb &quot;Export calendar&quot; link"
+              hint="Dates booked on Airbnb are blocked here automatically. See the sync panel at the top of this page."
+              error={err.airbnbIcalUrl}
+            >
+              <input
+                name="airbnbIcalUrl"
+                defaultValue={home?.airbnbIcalUrl}
+                placeholder="https://www.airbnb.com/calendar/ical/…"
+                className={adminInput}
+              />
+            </Field>
+          </div>
+        </section>
+      ) : null}
+
       <section className="rounded-card border border-ink-10 bg-canvas p-6 shadow-soft">
         <h2 className="display text-lg font-semibold text-ink">Amenities</h2>
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
