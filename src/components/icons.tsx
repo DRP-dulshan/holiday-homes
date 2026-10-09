@@ -302,3 +302,18 @@ export const IconBall = (p: IconProps) => (
     <path d="M3 12h18M12 3v18M5.6 5.6c3 3 3 9.8 0 12.8M18.4 5.6c-3 3-3 9.8 0 12.8" />
   </svg>
 );
+
+export const IconHeart = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.9 3.6 5 6.7 5c1.9 0 3.5 1 5.3 3 1.8-2 3.4-3 5.3-3 3.1 0 5.1 2.9 3.9 6.2-1.7 4.7-9.2 9.3-9.2 9.3z" />
+  </svg>
+);
+
+export const IconShare = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <circle cx="6" cy="12" r="2.4" />
+    <circle cx="18" cy="6" r="2.4" />
+    <circle cx="18" cy="18" r="2.4" />
+    <path d="M8.1 10.9l7.8-3.8M8.1 13.1l7.8 3.8" />
+  </svg>
+);

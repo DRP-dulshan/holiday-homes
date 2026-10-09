@@ -3,6 +3,8 @@ import { Logo } from "./Logo";
 import { areas } from "@/data/areas";
 import { footerLinks, navLinks, site, socialLinks } from "@/config/site";
 import { IconWhatsApp } from "./icons";
+import { NewsletterForm } from "./NewsletterForm";
+import { CookieSettingsLink } from "./ConsentBanner";
 
 export function Footer() {
   return (
@@ -27,6 +29,9 @@ export function Footer() {
                   {s.label}
                 </a>
               ))}
+            </div>
+            <div className="mt-8">
+              <NewsletterForm />
             </div>
           </div>
 
@@ -114,6 +119,7 @@ export function Footer() {
                 {l.label}
               </Link>
             ))}
+            <CookieSettingsLink />
             <span>{site.license}</span>
           </p>
         </div>

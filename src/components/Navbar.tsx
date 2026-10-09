@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Logo } from "./Logo";
 import { navLinks } from "@/config/site";
-import { IconArrowRight, IconClose } from "./icons";
+import { IconArrowRight, IconClose, IconHeart } from "./icons";
+import { useSaved } from "@/lib/saved";
 
 type NavbarProps = {
   /** When true, the bar starts transparent over a dark hero and turns solid on scroll. */
@@ -17,6 +18,7 @@ export function Navbar({ overHero = false }: NavbarProps) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const savedCount = useSaved().length;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -82,6 +84,21 @@ export function Navbar({ overHero = false }: NavbarProps) {
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/saved"
+              aria-label={savedCount ? `Saved homes (${savedCount})` : "Saved homes"}
+              className={[
+                "relative inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:text-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+                solid ? "border-ink-20 text-ink" : "border-white/30 text-white",
+              ].join(" ")}
+            >
+              <IconHeart className="h-[18px] w-[18px]" />
+              {savedCount ? (
+                <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[0.6rem] font-bold text-white">
+                  {savedCount}
+                </span>
+              ) : null}
+            </Link>
             <Link
               href="/contact"
               className="hidden rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition-all hover:bg-brand-600 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:inline-flex sm:items-center sm:gap-2"

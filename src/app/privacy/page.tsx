@@ -15,7 +15,7 @@ export default function PrivacyPage() {
     <LegalPage
       eyebrow="Privacy"
       title="Your privacy."
-      updated="7 October 2026"
+      updated="9 October 2026"
       intro="What we collect when you use this website, why, and the choices you have."
       sections={[
         {
@@ -28,6 +28,13 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Enquiries:</strong> your name, email, phone number and message.
+              </li>
+              <li>
+                <strong>Reviews:</strong> the rating, comment and name you choose to show, after a stay.
+              </li>
+              <li>
+                <strong>Newsletter:</strong> your email address, if you subscribe. You can unsubscribe from
+                any email.
               </li>
               <li>
                 <strong>Technical data:</strong> standard server logs such as IP address and
@@ -43,6 +50,8 @@ export default function PrivacyPage() {
               <li>To process and confirm your booking and arrange your stay.</li>
               <li>To reply to your enquiry.</li>
               <li>To meet legal obligations, including guest registration with Dubai authorities.</li>
+              <li>To publish guest reviews (with your name as you chose to show it) after the team approves them.</li>
+              <li>To send our newsletter, if you subscribed.</li>
               <li>To keep the website secure and prevent spam.</li>
             </ul>
           ),
@@ -62,11 +71,28 @@ export default function PrivacyPage() {
         {
           heading: "Cookies",
           body: (
-            <p>
-              The public website does not use advertising or tracking cookies. A strictly
-              necessary cookie is used only to keep team members signed in to the internal
-              dashboard.
-            </p>
+            <>
+              <p>
+                A strictly necessary cookie keeps team members signed in to the internal dashboard.
+                Your saved homes and cookie choice are stored in your browser only.
+              </p>
+              {process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || process.env.NEXT_PUBLIC_TAWK_SRC ? (
+                <p>
+                  With your consent we also load optional services:{" "}
+                  {[
+                    process.env.NEXT_PUBLIC_GA_ID ? "Google Analytics (how the site is used, with anonymised IP addresses)" : "",
+                    process.env.NEXT_PUBLIC_META_PIXEL_ID ? "the Meta Pixel (measuring our advertising)" : "",
+                    process.env.NEXT_PUBLIC_TAWK_SRC ? "a live-chat widget" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                  . Choose &ldquo;Essentials only&rdquo; in the cookie banner to decline them, or change your
+                  choice any time with &ldquo;Cookie settings&rdquo; in the footer.
+                </p>
+              ) : (
+                <p>The website does not use advertising or tracking cookies.</p>
+              )}
+            </>
           ),
         },
         {

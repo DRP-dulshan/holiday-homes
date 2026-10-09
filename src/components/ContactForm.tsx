@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { enquirySchema, enquiryTypes, type EnquiryInput } from "@/lib/enquiry-schema";
 import { whatsappLink } from "@/config/site";
+import { track } from "@/lib/track";
 import { IconArrowRight, IconBadgeCheck, IconWhatsApp } from "./icons";
 
 type ContactFormProps = {
@@ -49,6 +50,7 @@ export function ContactForm({
         setErrorMessage(typeof json.error === "string" ? json.error : null);
         throw new Error("Request failed");
       }
+      track("generate_lead", { form: source });
       setStatus("success");
       reset({ enquiryType: defaultEnquiryType, propertySlug, source, name: "", email: "", phone: "", message: "" });
     } catch {

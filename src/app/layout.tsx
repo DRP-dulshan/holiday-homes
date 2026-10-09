@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { site, siteUrl, socialLinks } from "@/config/site";
 import { JsonLd } from "@/components/JsonLd";
+import { Analytics } from "@/components/Analytics";
+import { ConsentBanner } from "@/components/ConsentBanner";
 import "./globals.css";
 
 const inter = Inter({
@@ -94,6 +96,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
         {children}
+        <ConsentBanner />
+        <Analytics />
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { areas } from "@/data/areas";
 import { site, whatsappLink } from "@/config/site";
+import { track } from "@/lib/track";
 import { IconArrowRight, IconBadgeCheck, IconWhatsApp } from "../icons";
 
 type Field = {
@@ -137,6 +138,7 @@ export function OwnerForm() {
         }),
       });
       if (!res.ok) throw new Error(String(res.status));
+      track("generate_lead", { form: "owners" });
       setStatus("sent");
     } catch {
       setStatus("error");

@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { bedroomLabel, type Property } from "@/data/properties";
-import { IconArrowUpRight, IconBed, IconStar, IconUsers } from "./icons";
+import { IconBed, IconStar, IconUsers } from "./icons";
+import { SaveButton } from "./SaveButton";
 
 const aed = new Intl.NumberFormat("en-AE", {
   maximumFractionDigits: 0,
@@ -16,9 +17,10 @@ export function PropertyCard({
   query?: string;
 }) {
   return (
+    <div className="group relative h-full transition-all duration-300 hover:-translate-y-1.5">
     <Link
       href={`/property/${property.slug}${query ? `?${query}` : ""}`}
-      className="group flex h-full flex-col overflow-hidden rounded-card border border-ink-10 bg-canvas shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift"
+      className="flex h-full flex-col overflow-hidden rounded-card border border-ink-10 bg-canvas shadow-soft transition-shadow duration-300 group-hover:shadow-lift"
     >
       <div className="relative aspect-[4/3] overflow-hidden">
         <Image
@@ -30,9 +32,6 @@ export function PropertyCard({
         />
         <span className="absolute left-4 top-4 rounded-full bg-canvas/95 px-3 py-1 text-xs font-semibold text-ink shadow-soft">
           {property.tag}
-        </span>
-        <span className="absolute right-4 top-4 inline-flex h-9 w-9 translate-y-1 items-center justify-center rounded-full bg-brand text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-          <IconArrowUpRight className="h-4 w-4" />
         </span>
       </div>
 
@@ -80,5 +79,7 @@ export function PropertyCard({
         </div>
       </div>
     </Link>
+    <SaveButton slug={property.slug} title={property.title} className="absolute right-4 top-4" />
+    </div>
   );
 }
