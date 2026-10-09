@@ -20,7 +20,7 @@ import {
   type DateRange,
 } from "@/lib/dates";
 import { aed, quoteStay, rateLines, validateStay, type PromoRule, type Quote } from "@/lib/pricing";
-import { describeCar, type BookingRequestInput, type CarRequest } from "@/lib/booking-schema";
+import { describeCar, describeExtras, type BookingRequestInput, type CarRequest } from "@/lib/booking-schema";
 import { newId, newReference, sign, verify } from "./crypto";
 import { absoluteUrl, sendMail, teamInbox } from "./mailer";
 import { mutate, readAll } from "./store";
@@ -28,6 +28,7 @@ import { evaluatePromo, normalizeCode, PROMOS, type Promo } from "./promos";
 import {
   CHECKOUT_MINUTES,
   createCheckoutSession,
+  createRefund,
   dashboardPaymentUrl,
   expireCheckoutSession,
   paymentsEnabled,
@@ -56,11 +57,19 @@ export type Booking = {
   specialRequests?: string;
   /** Present when the guest asked for a rental car. */
   car?: CarRequest;
+  /** Extras the guest asked for (ids from EXTRAS); the team quotes them separately. */
+  extras?: string[];
   quote: Quote;
   /** Present when the guest was sent to Stripe Checkout. */
   payment?: Payment;
   /** When the post-stay review request email went out. */
   reviewRequestedAt?: string;
+  /** Guest names and arrival details, filled in on the booking page before arrival. */
+  checkin?: CheckinDetails;
+  /** When the "arriving soon" email went out. */
+  preArrivalSentAt?: string;
+  /** Booked by the team (phone, WhatsApp…) rather than through the website. */
+  source?: "website" | "admin";
   status: BookingStatus;
   history: { status: BookingStatus; at: string; by: Actor; note?: string }[];
   createdAt: string;
@@ -80,8 +89,11 @@ export type Payment = {
   amount?: number;
   paidAt?: string;
   paymentIntentId?: string;
-  /** A paid booking was cancelled: the team refunds it from the Stripe dashboard. */
+  /** A paid booking was cancelled: the team refunds it from the admin (or the Stripe dashboard). */
   refundDue?: boolean;
+  /** Total refunded to the guest so far, in AED. */
+  refunded?: number;
+  refundedAt?: string;
 };
 
 /** Dates the team has closed manually (owner stays, maintenance…). */
@@ -97,6 +109,14 @@ export type Block = {
 
 const BOOKINGS = "bookings";
 const BLOCKS = "blocks";
+
+export type CheckinDetails = {
+  guests: { name: string; nationality: string }[];
+  arrivalTime?: string;
+  flight?: string;
+  notes?: string;
+  submittedAt: string;
+};
 
 export class BookingError extends Error {
   constructor(
@@ -232,6 +252,12 @@ export async function getBooking(ref: string) {
   return rows.find((b) => b.ref === ref.trim().toUpperCase()) ?? null;
 }
 
+/** A guest's bookings, newest first (by the email they booked with). */
+export async function listBookingsForEmail(email: string) {
+  const wanted = email.trim().toLowerCase();
+  return (await listBookings()).filter((b) => b.guest.email.toLowerCase() === wanted);
+}
+
 export async function findBookingForGuest(ref: string, email: string) {
   const booking = await getBooking(ref);
   if (!booking) return null;
@@ -254,7 +280,7 @@ export async function listBlocks() {
  */
 export async function createBooking(
   input: BookingRequestInput,
-  { payOnline = false }: { payOnline?: boolean } = {},
+  { payOnline = false, notify = true, source = "website" }: { payOnline?: boolean; notify?: boolean; source?: "website" | "admin" } = {},
 ): Promise<Booking> {
   const property = await getProperty(input.propertySlug);
   if (!property) throw new BookingError("That home no longer exists.", "not-found");
@@ -321,6 +347,7 @@ export async function createBooking(
       car: input.needCar
         ? { type: input.carType ?? "any", pickup: input.carPickup ?? "airport" }
         : undefined,
+      extras: input.extras?.length ? input.extras : undefined,
       quote: quoteStay(property, input.checkIn, input.checkOut, promoRule),
       payment: payOnline
         ? {
@@ -329,8 +356,9 @@ export async function createBooking(
             holdUntil: new Date(now.getTime() + HOLD_MINUTES * 60_000).toISOString(),
           }
         : undefined,
+      source: source === "admin" ? "admin" : undefined,
       status,
-      history: [{ status, at, by: "guest" }],
+      history: [{ status, at, by: source === "admin" ? "admin" : "guest" }],
       createdAt: at,
       updatedAt: at,
     };
@@ -339,7 +367,7 @@ export async function createBooking(
   });
 
   // A paid booking is announced once Stripe confirms the payment.
-  if (!payOnline) await notifyNewBooking(booking);
+  if (!payOnline && notify) await notifyNewBooking(booking);
   return booking;
 }
 
@@ -562,6 +590,98 @@ export async function setBookingStatus(
   return updated;
 }
 
+/**
+ * A booking the team enters themselves (phone call, WhatsApp). It follows the same availability and
+ * stay rules as the website. Confirming it emails the guest their confirmation.
+ */
+export async function createAdminBooking(input: BookingRequestInput, status: "pending" | "confirmed") {
+  const booking = await createBooking(input, { payOnline: false, notify: false, source: "admin" });
+  return status === "confirmed" ? setBookingStatus(booking.ref, "confirmed", "admin", "Added by the team") : booking;
+}
+
+/** Refunds part or all of what a guest paid online. Throws BookingError with a message the team can read. */
+export async function refundBooking(ref: string, amountAed: number): Promise<Booking> {
+  const booking = await getBooking(ref);
+  if (!booking) throw new BookingError("Booking not found.", "not-found");
+  const p = booking.payment;
+  if (p?.status !== "paid" || !p.paymentIntentId) throw new BookingError("This booking wasn't paid online, so there's nothing to refund here.");
+  const paid = p.amount ?? booking.quote.total;
+  const left = Math.round((paid - (p.refunded ?? 0)) * 100) / 100;
+  if (!Number.isFinite(amountAed) || amountAed <= 0) throw new BookingError("Enter the amount to refund.");
+  if (amountAed > left) throw new BookingError(`At most AED ${aed.format(left)} can still be refunded.`);
+
+  try {
+    await createRefund(p.paymentIntentId, amountAed, ref);
+  } catch (err) {
+    console.error(`[refund] ${ref} failed:`, err);
+    throw new BookingError("Stripe couldn't issue the refund. Check the payment in the Stripe dashboard.");
+  }
+
+  const updated = await mutate<Booking, Booking>(BOOKINGS, (bookings) => {
+    const b = bookings.find((x) => x.ref === ref);
+    if (!b?.payment) throw new BookingError("Booking not found.", "not-found");
+    b.payment.refunded = Math.round(((b.payment.refunded ?? 0) + amountAed) * 100) / 100;
+    b.payment.refundedAt = new Date().toISOString();
+    b.payment.refundDue = false;
+    b.updatedAt = b.payment.refundedAt;
+    return b;
+  });
+
+  await sendMail({
+    to: updated.guest.email,
+    subject: `Refund issued — ${updated.ref}`,
+    replyTo: site.email,
+    text: `Hi ${updated.guest.name.split(" ")[0]},
+
+We've refunded AED ${aed.format(amountAed)} for booking ${updated.ref} (${updated.propertyTitle}) to the card you paid with. Banks usually show it within 5–10 working days.
+
+Questions? Reply to this email or WhatsApp ${site.whatsappNumber}.`,
+  });
+  return updated;
+}
+
+export async function saveCheckinDetails(ref: string, details: Omit<CheckinDetails, "submittedAt">) {
+  return mutate<Booking, Booking>(BOOKINGS, (bookings) => {
+    const b = bookings.find((x) => x.ref === ref);
+    if (!b) throw new BookingError("Booking not found.", "not-found");
+    if (b.status !== "confirmed" && b.status !== "pending") throw new BookingError("This booking can't be updated.");
+    b.checkin = { ...details, submittedAt: new Date().toISOString() };
+    b.updatedAt = b.checkin.submittedAt;
+    return b;
+  });
+}
+
+export async function markPreArrivalSent(ref: string) {
+  await mutate<Booking, void>(BOOKINGS, (bookings) => {
+    const b = bookings.find((x) => x.ref === ref);
+    if (b) b.preArrivalSentAt = new Date().toISOString();
+  });
+}
+
+/** Email a few days before check-in: what to expect, the check-in form and how to reach the team. */
+export async function sendPreArrival(b: Booking) {
+  const home = await getPropertyAnyStatus(b.propertySlug);
+  const manage = absoluteUrl(await bookingUrl(b.ref));
+  const rules = (home?.houseRules ?? []).slice(0, 5).map((r) => `• ${r}`).join("\n");
+  return sendMail({
+    to: b.guest.email,
+    subject: `Arriving soon — ${b.propertyTitle}`,
+    replyTo: site.email,
+    text: `Hi ${b.guest.name.split(" ")[0]},
+
+Your stay at ${b.propertyTitle} starts on ${formatDate(b.checkIn)}. Check-in is from ${home?.checkIn ?? "15:00"} and check-out is by ${home?.checkOut ?? "11:00"} on ${formatDate(b.checkOut)}.
+
+${b.checkin ? "Thank you for sending your check-in details." : `To make arrival smooth, please add the names of everyone staying and your arrival time here:\n${manage}`}
+
+Dubai regulations require the team to register every guest, so we'll also ask for a copy of each guest's passport or Emirates ID by WhatsApp (${site.whatsappNumber}) or reply to this email.
+
+A few things to know:
+${rules}
+
+We'll send access details and directions before you arrive. Anything you need — reply to this email, call ${site.phoneDisplay} or WhatsApp ${site.whatsappNumber}.`,
+  });
+}
+
 export async function markReviewRequested(ref: string) {
   await mutate<Booking, void>(BOOKINGS, (bookings) => {
     const b = bookings.find((x) => x.ref === ref);
@@ -648,7 +768,7 @@ function summary(b: Booking) {
 function guestDetails(b: Booking) {
   return `Guest: ${b.guest.name}
 Email: ${b.guest.email}
-Phone: ${b.guest.phone}${b.guest.country ? `\nCountry: ${b.guest.country}` : ""}${b.arrivalTime ? `\nArrival time: ${b.arrivalTime}` : ""}${b.specialRequests ? `\nRequests: ${b.specialRequests}` : ""}${b.car ? `\nRental car: ${describeCar(b.car)}` : ""}`;
+Phone: ${b.guest.phone}${b.guest.country ? `\nCountry: ${b.guest.country}` : ""}${b.arrivalTime ? `\nArrival time: ${b.arrivalTime}` : ""}${b.specialRequests ? `\nRequests: ${b.specialRequests}` : ""}${b.car ? `\nRental car: ${describeCar(b.car)}` : ""}${b.extras?.length ? `\nExtras requested: ${describeExtras(b.extras)}` : ""}`;
 }
 
 function paymentLine(b: Booking) {
@@ -659,7 +779,7 @@ function paymentLine(b: Booking) {
 }
 
 const carNote = (b: Booking) =>
-  b.car ? `\n\nRental car requested: ${describeCar(b.car)}. We'll send car options and rates separately.` : "";
+  `${b.car ? `\n\nRental car requested: ${describeCar(b.car)}. We'll send car options and rates separately.` : ""}${b.extras?.length ? `\n\nExtras requested: ${describeExtras(b.extras)}. We'll confirm availability and prices with you.` : ""}`;
 
 async function notifyNewBooking(b: Booking) {
   const manage = absoluteUrl(await bookingUrl(b.ref));

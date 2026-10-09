@@ -9,7 +9,7 @@ import { bookingRules, site, whatsappLink } from "@/config/site";
 import { getPropertyAnyStatus } from "@/lib/server/catalog";
 import { canReview, reviewForBooking, reviewUrl } from "@/lib/server/reviews";
 import { formatDate, todayIso } from "@/lib/dates";
-import { describeCar } from "@/lib/booking-schema";
+import { describeCar, describeExtras } from "@/lib/booking-schema";
 import { aed } from "@/lib/pricing";
 import {
   bookingToken,
@@ -19,7 +19,7 @@ import {
   refreshPayment,
   verifyBookingToken,
 } from "@/lib/server/bookings";
-import { CancelBookingButton, LookupForm } from "../BookingForms";
+import { CancelBookingButton, CheckinForm, LookupForm } from "../BookingForms";
 
 export const metadata: Metadata = {
   title: "Your booking",
@@ -192,7 +192,7 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                         label="Payment"
                         detail={
                           paid
-                            ? `AED ${aed.format(payment.amount ?? booking.quote.total)} paid by card${payment.paidAt ? ` on ${formatDate(payment.paidAt.slice(0, 10))}` : ""}.`
+                            ? `AED ${aed.format(payment.amount ?? booking.quote.total)} paid by card${payment.paidAt ? ` on ${formatDate(payment.paidAt.slice(0, 10))}` : ""}.${payment.refunded ? ` AED ${aed.format(payment.refunded)} refunded to your card.` : ""}`
                             : "Pay securely on Stripe to confirm your stay."
                         }
                       />
@@ -250,6 +250,14 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                       />
                     </div>
                   ) : null}
+                  {booking.extras?.length ? (
+                    <div className="sm:col-span-2">
+                      <Detail
+                        label="Extras requested"
+                        value={`${describeExtras(booking.extras)} — the team will confirm availability and prices.`}
+                      />
+                    </div>
+                  ) : null}
                   {booking.specialRequests ? (
                     <div className="sm:col-span-2">
                       <Detail label="Requests" value={booking.specialRequests} />
@@ -257,6 +265,23 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                   ) : null}
                 </dl>
               </section>
+
+              {(booking.status === "confirmed" || booking.status === "pending") && booking.checkOut > todayIso() ? (
+                <section className="rounded-card border border-ink-10 bg-canvas p-6 shadow-soft sm:p-8">
+                  <h2 className="display text-lg font-semibold text-ink">Check-in details</h2>
+                  <p className="mt-1 text-sm text-ink-60">
+                    {booking.checkin
+                      ? "Thanks — we have your details. You can update them any time before arrival."
+                      : "Tell us who is staying and when you expect to arrive, so check-in is quick."}
+                  </p>
+                  <CheckinForm
+                    bookingRef={booking.ref}
+                    token={await bookingToken(booking.ref)}
+                    guests={booking.guests}
+                    saved={booking.checkin}
+                  />
+                </section>
+              ) : null}
 
               <section className="rounded-card border border-ink-10 bg-canvas p-6 shadow-soft sm:p-8">
                 <h2 className="display text-lg font-semibold text-ink">Need to change something?</h2>

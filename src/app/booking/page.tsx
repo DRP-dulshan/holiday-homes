@@ -3,7 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
 import { site } from "@/config/site";
-import { LookupForm } from "./BookingForms";
+import { EmailLinkForm, LookupForm } from "./BookingForms";
 
 export const metadata: Metadata = {
   title: "Manage my booking",
@@ -24,6 +24,11 @@ export default function ManageBookingPage() {
           <div className="container-drp grid gap-12 lg:grid-cols-[1fr_1fr]">
             <div className="rounded-card border border-ink-10 bg-canvas p-6 shadow-soft sm:p-8">
               <LookupForm />
+              <div className="mt-8 border-t border-ink-10 pt-6">
+                <h2 className="display text-lg font-semibold text-ink">Don&rsquo;t have your reference?</h2>
+                <p className="mt-1 mb-4 text-sm text-ink-60">We&rsquo;ll email you a private link to all your bookings.</p>
+                <EmailLinkForm />
+              </div>
             </div>
             <div className="text-sm leading-relaxed text-ink-80">
               <h2 className="display text-xl font-semibold text-ink">Can&rsquo;t find it?</h2>

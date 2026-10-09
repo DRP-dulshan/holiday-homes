@@ -3,11 +3,11 @@ import Link from "next/link";
 import { StatusBadge } from "@/components/booking/StatusBadge";
 import { formatShortDate } from "@/lib/dates";
 import { aed } from "@/lib/pricing";
-import { describeCar } from "@/lib/booking-schema";
+import { describeCar, describeExtras } from "@/lib/booking-schema";
 import { requireAdmin } from "@/lib/server/admin-auth";
 import { listBookings, settleExpiredHolds, type BookingStatus } from "@/lib/server/bookings";
 import { dashboardPaymentUrl } from "@/lib/server/stripe";
-import { adminInput, BookingStatusForm } from "../../AdminForms";
+import { adminInput, BookingStatusForm, RefundForm } from "../../AdminForms";
 
 export const metadata: Metadata = { title: "Bookings" };
 
@@ -48,9 +48,14 @@ export default async function AdminBookingsPage({ searchParams }: PageProps<"/ad
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="display text-2xl font-semibold text-ink">Bookings</h1>
-        <a href="/api/admin/export?type=bookings" className="btn btn-secondary btn-sm">
-          Export CSV
-        </a>
+        <div className="flex gap-2">
+          <Link href="/admin/bookings/new" className="btn btn-primary btn-sm">
+            Add a booking
+          </Link>
+          <a href="/api/admin/export?type=bookings" className="btn btn-secondary btn-sm">
+            Export CSV
+          </a>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -93,7 +98,8 @@ export default async function AdminBookingsPage({ searchParams }: PageProps<"/ad
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-60">
-                    {b.ref} · requested {new Date(b.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Dubai" })}
+                    {b.ref} · {b.source === "admin" ? "added by the team" : "requested"}{" "}
+                    {new Date(b.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Dubai" })}
                   </p>
                   <h2 className="display mt-1 text-lg font-semibold text-ink">
                     <Link href={`/property/${b.propertySlug}`} target="_blank" className="hover:text-brand-600">
@@ -163,14 +169,51 @@ export default async function AdminBookingsPage({ searchParams }: PageProps<"/ad
                 </div>
               </dl>
 
-              {b.arrivalTime || b.specialRequests || b.car ? (
+              {b.arrivalTime || b.specialRequests || b.car || b.extras?.length || b.checkin ? (
                 <div className="mt-4 rounded-xl bg-ink-05 p-3 text-sm text-ink-80">
                   {b.car ? (
                     <p className="font-semibold text-brand-600">Rental car: {describeCar(b.car)}</p>
                   ) : null}
+                  {b.extras?.length ? (
+                    <p className="font-semibold text-brand-600">Extras to quote: {describeExtras(b.extras)}</p>
+                  ) : null}
                   {b.arrivalTime ? <p><strong>Arrival:</strong> {b.arrivalTime}</p> : null}
+                  {b.checkin ? (
+                    <div className="mt-1">
+                      <p className="font-semibold text-emerald-700">Check-in details received</p>
+                      <p>
+                        {b.checkin.guests.map((g) => `${g.name}${g.nationality ? ` (${g.nationality})` : ""}`).join(" · ")}
+                      </p>
+                      {b.checkin.arrivalTime || b.checkin.flight ? (
+                        <p>
+                          Arrives {b.checkin.arrivalTime ?? "—"}
+                          {b.checkin.flight ? ` · flight ${b.checkin.flight}` : ""}
+                        </p>
+                      ) : null}
+                      {b.checkin.notes ? <p>{b.checkin.notes}</p> : null}
+                    </div>
+                  ) : null}
                   {b.specialRequests ? (
                     <p className="whitespace-pre-line"><strong>Requests:</strong> {b.specialRequests}</p>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {b.payment?.status === "paid" ? (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-10 p-3 text-sm">
+                  <p className="text-ink-80">
+                    Paid AED {aed.format(b.payment.amount ?? b.quote.total)}
+                    {b.payment.refunded ? (
+                      <span className="text-emerald-700"> · refunded AED {aed.format(b.payment.refunded)}</span>
+                    ) : null}
+                    {b.payment.refundDue ? <span className="font-semibold text-red-600"> · refund due</span> : null}
+                  </p>
+                  {b.payment.paymentIntentId &&
+                  (b.payment.amount ?? b.quote.total) - (b.payment.refunded ?? 0) > 0 ? (
+                    <RefundForm
+                      bookingRef={b.ref}
+                      remaining={Math.round(((b.payment.amount ?? b.quote.total) - (b.payment.refunded ?? 0)) * 100) / 100}
+                    />
                   ) : null}
                 </div>
               ) : null}

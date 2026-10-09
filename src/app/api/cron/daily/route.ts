@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { addDays, todayIso } from "@/lib/dates";
-import { listBookings, markReviewRequested } from "@/lib/server/bookings";
+import { listBookings, markPreArrivalSent, markReviewRequested, sendPreArrival } from "@/lib/server/bookings";
 import { getAllProperties } from "@/lib/server/catalog";
 import { safeEqual } from "@/lib/server/crypto";
 import { syncStale } from "@/lib/server/ical";
@@ -9,7 +9,7 @@ import { sendReviewRequest } from "@/lib/server/reviews";
 /**
  * Daily housekeeping, called by Vercel Cron (vercel.json) with `Authorization: Bearer $CRON_SECRET`
  * (or `?key=` from an external pinger): refreshes the Airbnb calendars and asks guests whose stay has
- * ended for a review. Safe to run more often — each guest is only asked once.
+ * ended for a review, and emails guests arriving within three days. Safe to run more often — each guest is only emailed once.
  */
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET?.trim();
@@ -35,5 +35,15 @@ export async function GET(request: Request) {
     await markReviewRequested(b.ref);
     requested++;
   }
-  return NextResponse.json({ ok: true, calendars: homes.length, reviewRequests: requested });
+
+  // Confirmed guests arriving within three days who haven't had the "arriving soon" email yet.
+  const soon = addDays(today, 3);
+  const arriving = (await listBookings()).filter(
+    (b) => b.status === "confirmed" && b.checkIn > today && b.checkIn <= soon && !b.preArrivalSentAt,
+  );
+  for (const b of arriving) {
+    await sendPreArrival(b);
+    await markPreArrivalSent(b.ref);
+  }
+  return NextResponse.json({ ok: true, calendars: homes.length, reviewRequests: requested, arrivalEmails: arriving.length });
 }

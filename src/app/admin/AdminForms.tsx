@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createBlock, login, updateBookingStatus, type FormState } from "./actions";
+import { createBlock, issueRefund, login, updateBookingStatus, type FormState } from "./actions";
 
 export const adminInput =
   "w-full rounded-xl border border-ink-20 bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
@@ -116,6 +116,39 @@ export function BlockForm({ properties }: { properties: { slug: string; title: s
       <div className="sm:col-span-2 lg:col-span-5">
         <Message state={state} />
       </div>
+    </form>
+  );
+}
+
+/** Refund part or all of a card payment. The amount starts at what's left to refund. */
+export function RefundForm({ bookingRef, remaining }: { bookingRef: string; remaining: number }) {
+  const [state, action, pending] = useActionState(issueRefund, {});
+  return (
+    <form
+      action={action}
+      className="flex flex-wrap items-center gap-2"
+      onSubmit={(e) => {
+        const amount = new FormData(e.currentTarget).get("amount");
+        if (!confirm(`Refund AED ${amount} to the guest's card for ${bookingRef}? This can't be undone.`)) e.preventDefault();
+      }}
+    >
+      <input type="hidden" name="ref" value={bookingRef} />
+      <label className="flex items-center gap-1.5 text-sm text-ink-80">
+        AED
+        <input
+          name="amount"
+          type="number"
+          min={1}
+          max={remaining}
+          step="0.01"
+          defaultValue={remaining}
+          className={`${adminInput} w-28`}
+        />
+      </label>
+      <button type="submit" disabled={pending} className="btn btn-secondary btn-sm">
+        {pending ? "Refunding…" : "Refund to card"}
+      </button>
+      <Message state={state} />
     </form>
   );
 }

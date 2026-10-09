@@ -9,6 +9,8 @@ import {
   CAR_PICKUPS,
   CAR_TYPES,
   describeCar,
+  describeExtras,
+  EXTRAS,
   guestDetailsSchema,
   type GuestDetailsInput,
 } from "@/lib/booking-schema";
@@ -56,7 +58,7 @@ export function CheckoutForm({
     formState: { errors, isSubmitting },
   } = useForm<GuestDetailsInput>({
     resolver: zodResolver(guestDetailsSchema),
-    defaultValues: { needCar: false, carType: "any", carPickup: "airport" },
+    defaultValues: { needCar: false, carType: "any", carPickup: "airport", extras: [] },
   });
   const needCar = useWatch({ control, name: "needCar" });
 
@@ -68,6 +70,7 @@ export function CheckoutForm({
         `Dates: ${checkIn} to ${checkOut} · Guests: ${guests}`,
         `Name: ${d.name} · Email: ${d.email} · Phone: ${d.phone}`,
         d.arrivalTime ? `Arrival: ${d.arrivalTime}` : "",
+        d.extras?.length ? `Extras: ${describeExtras(d.extras)}` : "",
         d.needCar ? `Rental car: ${describeCar({ type: d.carType ?? "any", pickup: d.carPickup ?? "airport" })}` : "",
         d.specialRequests ? `Requests: ${d.specialRequests}` : "",
       ]
@@ -221,6 +224,28 @@ export function CheckoutForm({
               </Field>
             </div>
           ) : null}
+        </fieldset>
+
+        <fieldset className="rounded-2xl border border-ink-10 p-4">
+          <legend className="px-1 text-xs font-semibold uppercase tracking-[0.12em] text-ink-60">
+            Anything else? (optional)
+          </legend>
+          <p className="text-xs text-ink-60">
+            Tick what you&rsquo;d like and the team will confirm availability and the price with you. Nothing is charged for these now.
+          </p>
+          <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+            {EXTRAS.map((x) => (
+              <label key={x.id} className="flex cursor-pointer items-center gap-2.5 text-sm text-ink-80">
+                <input
+                  type="checkbox"
+                  value={x.id}
+                  {...register("extras")}
+                  className="h-4 w-4 shrink-0 accent-[var(--color-brand)]"
+                />
+                {x.label}
+              </label>
+            ))}
+          </div>
         </fieldset>
 
         {/* Honeypot: hidden from people, tempting to bots. */}
