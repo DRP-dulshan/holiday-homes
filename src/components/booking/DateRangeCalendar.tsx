@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   addDays,
   isNightTaken,
+  formatShortDate,
   nightsBetween,
   toUtc,
   fromUtc,
@@ -122,7 +123,7 @@ export function DateRangeCalendar({
 
   return (
     <div className="select-none" onMouseLeave={() => setHovered(null)}>
-      <div className={months === 2 ? "grid gap-8 sm:grid-cols-2" : ""}>
+      <div className={months === 2 ? "grid gap-8 md:grid-cols-2" : ""}>
         {visible.map((m, idx) => (
           <div key={m}>
             <div className="flex h-9 items-center justify-between">
@@ -165,7 +166,7 @@ export function DateRangeCalendar({
               ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-y-0.5" role="grid">
+            <div className="grid grid-cols-7" role="grid">
               {monthCells(m).map((day, i) => {
                 if (!day) return <span key={`blank-${i}`} />;
 
@@ -181,34 +182,46 @@ export function DateRangeCalendar({
                 const isEnd = day === rangeEnd;
                 const inRange = checkIn && rangeEnd && day > checkIn && day < rangeEnd;
                 const isToday = day === today;
+                const hasRange = Boolean(checkIn && rangeEnd);
 
                 return (
-                  <button
+                  // The soft band behind the range runs edge to edge, with rounded ends at the first and last day.
+                  <span
                     key={day}
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => pick(day)}
-                    onMouseEnter={() => setHovered(day)}
-                    aria-pressed={isStart || isEnd}
-                    aria-label={`${day}${taken ? " (booked)" : ""}`}
                     className={[
-                      "relative h-10 text-sm transition-colors",
-                      isStart || isEnd
-                        ? `rounded-full font-semibold text-white ${!checkOut && isEnd ? "bg-brand/70" : "bg-brand"}`
-                        : inRange
-                          ? "bg-brand-soft text-ink"
-                          : disabled
-                            ? taken && !past
-                              ? "text-ink-40 line-through"
-                              : "text-ink-20"
-                            : "rounded-full font-medium text-ink hover:ring-1 hover:ring-ink",
+                      "relative flex h-11 items-center justify-center",
+                      hasRange && inRange ? "bg-brand-soft" : "",
+                      hasRange && isStart && rangeEnd ? "rounded-l-full bg-gradient-to-r from-transparent from-50% to-brand-soft to-50%" : "",
+                      hasRange && isEnd && checkIn ? "rounded-r-full bg-gradient-to-l from-transparent from-50% to-brand-soft to-50%" : "",
                     ].join(" ")}
                   >
-                    {Number(day.slice(8))}
-                    {isToday && !isStart && !isEnd ? (
-                      <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-brand" />
-                    ) : null}
-                  </button>
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => pick(day)}
+                      onMouseEnter={() => setHovered(day)}
+                      onFocus={() => setHovered(day)}
+                      aria-pressed={isStart || isEnd}
+                      aria-label={`${new Date(`${day}T00:00:00Z`).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}${taken ? " (booked)" : ""}`}
+                      className={[
+                        "relative h-10 w-10 rounded-full text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand",
+                        isStart || isEnd
+                          ? `font-semibold text-white shadow-soft ${!checkOut && isEnd ? "bg-brand/70" : "bg-brand"}`
+                          : inRange
+                            ? "font-medium text-ink hover:bg-brand/20"
+                            : disabled
+                              ? taken && !past
+                                ? "text-ink-40 line-through"
+                                : "text-ink-20"
+                              : "font-medium text-ink hover:bg-ink-05 hover:ring-1 hover:ring-ink",
+                      ].join(" ")}
+                    >
+                      {Number(day.slice(8))}
+                      {isToday && !isStart && !isEnd ? (
+                        <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-brand" />
+                      ) : null}
+                    </button>
+                  </span>
                 );
               })}
             </div>
@@ -216,13 +229,16 @@ export function DateRangeCalendar({
         ))}
       </div>
 
-      <p className="mt-2 min-h-[1.25rem] text-xs text-ink-60" aria-live="polite">
+      <p
+        className={`mt-2 min-h-[1.25rem] text-xs ${hint ? "font-medium text-red-600" : "text-ink-60"}`}
+        aria-live="polite"
+      >
         {hint ??
           (selectingCheckOut
-            ? "Now choose your check-out date."
+            ? `Check-in ${formatShortDate(checkIn)} — now choose your check-out date.`
             : !checkIn
               ? "Choose your check-in date."
-              : "")}
+              : `${nightsBetween(checkIn, checkOut)} night${nightsBetween(checkIn, checkOut) === 1 ? "" : "s"} · ${formatShortDate(checkIn)} → ${formatShortDate(checkOut)}`)}
       </p>
     </div>
   );

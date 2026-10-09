@@ -12,7 +12,8 @@ import { SortSelect } from "@/components/explore/SortSelect";
 import { Modal } from "@/components/Modal";
 import { filtersToSearchParams, type ExploreFilters } from "@/lib/filters";
 import { IconArrowRight } from "@/components/icons";
-import { addDays, formatShortDate, todayIso } from "@/lib/dates";
+import { formatShortDate } from "@/lib/dates";
+import { ExploreDates } from "@/components/explore/ExploreDates";
 
 const ExploreMap = dynamic(() => import("@/components/explore/ExploreMap"), {
   ssr: false,
@@ -32,10 +33,6 @@ export function ExploreClient({ filters, results, summary, checkIn, checkOut }: 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [view, setView] = useState<"list" | "map">("list");
 
-  const [draftIn, setDraftIn] = useState(checkIn ?? "");
-  const [draftOut, setDraftOut] = useState(checkOut ?? "");
-  const today = todayIso();
-
   const pushFilters = (
     next: ExploreFilters,
     dates: { checkIn: string | null; checkOut: string | null } = { checkIn, checkOut },
@@ -51,8 +48,6 @@ export function ExploreClient({ filters, results, summary, checkIn, checkOut }: 
 
   const onChange = (patch: Partial<ExploreFilters>) => pushFilters({ ...filters, ...patch });
   const onClear = () => {
-    setDraftIn("");
-    setDraftOut("");
     router.replace("/explore", { scroll: false });
   };
 
@@ -87,63 +82,12 @@ export function ExploreClient({ filters, results, summary, checkIn, checkOut }: 
         </aside>
 
         <div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (draftIn && draftOut && draftOut > draftIn) {
-                pushFilters(filters, { checkIn: draftIn, checkOut: draftOut });
-              }
-            }}
-            className="mb-6 flex flex-wrap items-end gap-3 rounded-2xl border border-ink-10 bg-ink-05 p-3"
-          >
-            <label className="min-w-[9rem] flex-1">
-              <span className="mb-1 block text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-ink-60">
-                Check-in
-              </span>
-              <input
-                type="date"
-                value={draftIn}
-                min={today}
-                onChange={(e) => {
-                  setDraftIn(e.target.value);
-                  if (draftOut && e.target.value >= draftOut) setDraftOut("");
-                }}
-                className="w-full rounded-xl border border-ink-20 bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-brand"
-              />
-            </label>
-            <label className="min-w-[9rem] flex-1">
-              <span className="mb-1 block text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-ink-60">
-                Check-out
-              </span>
-              <input
-                type="date"
-                value={draftOut}
-                min={draftIn ? addDays(draftIn, 1) : today}
-                onChange={(e) => setDraftOut(e.target.value)}
-                className="w-full rounded-xl border border-ink-20 bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-brand"
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={!draftIn || !draftOut || draftOut <= draftIn}
-              className="btn btn-primary btn-sm"
-            >
-              Check availability
-            </button>
-            {checkIn && checkOut ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setDraftIn("");
-                  setDraftOut("");
-                  pushFilters(filters, { checkIn: null, checkOut: null });
-                }}
-                className="btn btn-ghost btn-sm"
-              >
-                Any dates
-              </button>
-            ) : null}
-          </form>
+          <ExploreDates
+            value={{ checkIn: checkIn ?? "", checkOut: checkOut ?? "" }}
+            onApply={(d) =>
+              pushFilters(filters, { checkIn: d.checkIn || null, checkOut: d.checkOut || null })
+            }
+          />
 
           {(checkIn && checkOut) || filters.guests ? (
             <div className="mb-6 rounded-2xl border border-brand/30 bg-brand-soft px-4 py-3 text-sm text-brand-600">
