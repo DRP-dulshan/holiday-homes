@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { testimonials } from "@/data/testimonials";
+import { testimonials as sampleTestimonials, type Testimonial } from "@/data/testimonials";
 import { SectionHeading } from "./SectionHeading";
 import { IconArrowRight, IconStar } from "./icons";
 
@@ -19,7 +19,10 @@ function Stars({ n }: { n: number }) {
   );
 }
 
-export function Testimonials() {
+/** Real guest reviews when there are enough; otherwise labelled sample content. */
+export function Testimonials({ reviews }: { reviews?: Testimonial[] }) {
+  const isReal = !!reviews && reviews.length >= 3;
+  const testimonials = isReal ? reviews : sampleTestimonials;
   const [index, setIndex] = useState(0);
   const active = testimonials[index];
 
@@ -29,7 +32,11 @@ export function Testimonials() {
         <SectionHeading
           eyebrow="Guest stories"
           title="What staying with DRP feels like."
-          intro="Sample reviews from guests across the collection — illustrative content for this preview."
+          intro={
+            isReal
+              ? "Reviews from guests who stayed with us."
+              : "Sample reviews from guests across the collection — illustrative content for this preview."
+          }
         />
 
         <div className="mt-14 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">

@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/booking/StatusBadge";
 import { IconArrowRight, IconBadgeCheck, IconLock, IconWhatsApp } from "@/components/icons";
 import { bookingRules, site, whatsappLink } from "@/config/site";
 import { getPropertyAnyStatus } from "@/lib/server/catalog";
+import { canReview, reviewForBooking, reviewUrl } from "@/lib/server/reviews";
 import { formatDate, todayIso } from "@/lib/dates";
 import { describeCar } from "@/lib/booking-schema";
 import { aed } from "@/lib/pricing";
@@ -72,6 +73,7 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
     minute: "2-digit",
   });
   const firstName = booking.guest.name.split(" ")[0];
+  const askForReview = canReview(booking) && !(await reviewForBooking(booking.ref));
   const retryHref = `/book/${property.slug}?checkIn=${booking.checkIn}&checkOut=${booking.checkOut}&guests=${booking.guests}`;
 
   return (
@@ -79,6 +81,18 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
       <Navbar />
       <main className="flex-1 bg-ink-05 pb-20">
         <div className="container-drp pt-24 md:pt-28">
+          {askForReview ? (
+            <Notice tone="info" title="How was your stay?">
+              We&rsquo;d love to hear what you thought — it takes a minute.
+              <div className="mt-3">
+                <Link href={await reviewUrl(booking.ref)} className="btn btn-primary btn-sm">
+                  Leave a review
+                  <IconArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </Notice>
+          ) : null}
+
           {returnedFromStripe && paid && booking.status === "confirmed" ? (
             <Notice tone="success" title={`Payment received — you're booked, ${firstName}!`}>
               Your stay is confirmed and a confirmation is on its way to {booking.guest.email}. Keep your

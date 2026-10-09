@@ -27,6 +27,7 @@ export async function generateMetadata({
   return {
     title: `Stays in ${area.name}`,
     description: area.guide,
+    alternates: { canonical: `/areas/${area.slug}` },
     openGraph: { images: [{ url: area.image }] },
   };
 }

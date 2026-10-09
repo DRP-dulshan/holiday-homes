@@ -56,8 +56,12 @@ handle enquiries. Email notifications go out at each step.
   give Airbnb the home's private calendar link ("Import calendar") and nights
   booked here are blocked there. Calendars refresh when guests browse (every 10
   minutes), before a booking is saved (every 2 minutes) and daily by Vercel Cron.
-  Set `CRON_SECRET` to enable the cron route; an external pinger can call
+  Set `CRON_SECRET` to enable the cron routes; an external pinger can call
   `/api/cron/ical` more often.
+- Reviews: guests whose stay has ended get a review link by email (daily cron)
+  and a button on their booking page. Reviews wait in admin → Reviews until you
+  publish them (and optionally reply); published reviews show on the home page,
+  the home's page and its rating on the cards, and feed Google rich results.
 - Rates: per home, a weekend rate (Fri/Sat nights), seasonal / event rates for
   date ranges, and weekly (7+ nights) and monthly (28+ nights) discounts.
 - Promo codes: percent or AED-off codes with optional expiry, stay window,
@@ -107,7 +111,7 @@ test all the flows locally.
 | `SITE_URL`        | Public URL used in email links.                                          |
 | `RESEND_API_KEY`, `MAIL_FROM` | Turn on real email delivery.                                 |
 | `NOTIFY_EMAIL`    | Inbox for team notifications (default: `site.email`).                   |
-| `CRON_SECRET` | Protects `/api/cron/ical`, which refreshes Airbnb calendars. |
+| `CRON_SECRET` | Protects the cron routes (`/api/cron/daily` also sends review requests; `/api/cron/ical` only refreshes Airbnb calendars). |
 | `BLOB_READ_WRITE_TOKEN` | Photo uploads in the admin (Vercel Blob). Optional.               |
 | `STRIPE_SECRET_KEY` | Turns on online payment (`sk_test_…` to test, `sk_live_…` for real payments). |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret (`whsec_…`) of the Stripe webhook below.            |
