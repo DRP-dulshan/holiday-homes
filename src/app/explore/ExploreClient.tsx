@@ -87,7 +87,38 @@ export function ExploreClient({ filters, results, summary, checkIn, checkOut }: 
             onApply={(d) =>
               pushFilters(filters, { checkIn: d.checkIn || null, checkOut: d.checkOut || null })
             }
-          />
+          >
+            <label className="flex min-w-[8.5rem] flex-1 flex-col rounded-xl border border-ink-20 bg-canvas px-3.5 py-2 transition-colors focus-within:border-brand hover:border-ink-40">
+              <span className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-ink-60">Guests</span>
+              <select
+                value={filters.guests}
+                onChange={(e) => onChange({ guests: Number(e.target.value) })}
+                className="mt-0.5 bg-transparent text-sm font-medium text-ink outline-none"
+              >
+                <option value={0}>Any number</option>
+                {Array.from({ length: summary.maxGuests }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>
+                    {n} guest{n === 1 ? "" : "s"}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex min-w-[8.5rem] flex-1 flex-col rounded-xl border border-ink-20 bg-canvas px-3.5 py-2 transition-colors focus-within:border-brand hover:border-ink-40">
+              <span className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-ink-60">Bedrooms</span>
+              <select
+                value={filters.bedrooms}
+                onChange={(e) => onChange({ bedrooms: Number(e.target.value) })}
+                className="mt-0.5 bg-transparent text-sm font-medium text-ink outline-none"
+              >
+                <option value={0}>Any</option>
+                {[1, 2, 3, 4].map((n) => (
+                  <option key={n} value={n}>
+                    {n}+ bedroom{n === 1 ? "" : "s"}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </ExploreDates>
 
           {(checkIn && checkOut) || filters.guests ? (
             <div className="mb-6 rounded-2xl border border-brand/30 bg-brand-soft px-4 py-3 text-sm text-brand-600">

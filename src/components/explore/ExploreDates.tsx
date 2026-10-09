@@ -10,7 +10,16 @@ import { IconCalendar, IconClose } from "@/components/icons";
 type Dates = { checkIn: string; checkOut: string };
 
 /** Check-in / check-out picker for the explore page: one popover with a two-month calendar. */
-export function ExploreDates({ value, onApply }: { value: Dates; onApply: (d: Dates) => void }) {
+export function ExploreDates({
+  value,
+  onApply,
+  children,
+}: {
+  value: Dates;
+  onApply: (d: Dates) => void;
+  /** Extra fields shown in the same bar (guests…). */
+  children?: React.ReactNode;
+}) {
   const today = useToday();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Dates>(value);
@@ -55,6 +64,7 @@ export function ExploreDates({ value, onApply }: { value: Dates; onApply: (d: Da
       <div className="flex flex-wrap items-stretch gap-3 rounded-2xl border border-ink-10 bg-ink-05 p-3">
         {field("Check-in", shown.checkIn)}
         {field("Check-out", shown.checkOut)}
+        {children}
         {value.checkIn && value.checkOut ? (
           <button
             type="button"
