@@ -16,6 +16,21 @@ export const CAR_PICKUPS = [
   { value: "home", label: "Deliver to the home" },
 ] as const;
 
+/** Extras guests can ask for. They aren't charged online: the team confirms availability and the price. */
+export const EXTRAS = [
+  { id: "airport-transfer", label: "Airport transfer" },
+  { id: "early-checkin", label: "Early check-in" },
+  { id: "late-checkout", label: "Late check-out" },
+  { id: "baby-cot", label: "Baby cot or high chair" },
+  { id: "extra-cleaning", label: "Extra cleaning mid-stay" },
+] as const;
+export type ExtraId = (typeof EXTRAS)[number]["id"];
+const EXTRA_IDS = EXTRAS.map((e) => e.id) as [ExtraId, ...ExtraId[]];
+
+/** "Airport transfer, Early check-in" */
+export const describeExtras = (ids: readonly string[] = []) =>
+  ids.map((id) => EXTRAS.find((e) => e.id === id)?.label ?? id).join(", ");
+
 export type CarRequest = {
   type: (typeof CAR_TYPES)[number]["value"];
   pickup: (typeof CAR_PICKUPS)[number]["value"];
@@ -47,6 +62,8 @@ export const bookingRequestSchema = z.object({
   needCar: z.boolean().optional(),
   carType: z.enum(["any", "economy", "sedan", "suv", "luxury"]).optional(),
   carPickup: z.enum(["airport", "home"]).optional(),
+  /** Other add-ons the guest would like a quote for. */
+  extras: z.array(z.enum(EXTRA_IDS)).max(EXTRAS.length).optional(),
   /** A discount code, checked again on the server. */
   promoCode: z.string().trim().max(40).optional(),
   acceptTerms: z.literal(true, { error: "Please accept the booking terms" }),
@@ -67,6 +84,7 @@ export const guestDetailsSchema = bookingRequestSchema.pick({
   needCar: true,
   carType: true,
   carPickup: true,
+  extras: true,
   acceptTerms: true,
   company: true,
 });

@@ -71,6 +71,17 @@ handle enquiries. Email notifications go out at each step.
   the addresses (CSV) for Mailchimp, Brevo and similar. Every email has an unsubscribe link.
 - Saved homes: guests tap the heart on any home (kept in their browser) and see
   them under "Saved"; every home page also has Share (phone share sheet, copy link, WhatsApp).
+- Bookings by phone or WhatsApp: admin → Bookings → Add a booking. It follows the
+  same availability and stay rules as the website, and confirming it emails the guest.
+- Refunds: for bookings paid online, the admin has a "Refund to card" box (any amount up
+  to what is left); the guest is emailed. Cancelling a paid booking flags "refund due".
+- Reports: admin → Reports shows bookings, nights, revenue, average rates, occupancy,
+  discounts and online payments by month and by home for any period.
+- Extras: guests can ask for an airport transfer, early check-in, late check-out, a baby
+  cot or extra cleaning at checkout; the team quotes them (nothing is charged for them online).
+- Guests can email themselves a private link to all their bookings ("Manage my booking"),
+  send their guests' names and arrival details from their booking page, and get an
+  "arriving soon" email three days before check-in (daily cron).
 - Rates: per home, a weekend rate (Fri/Sat nights), seasonal / event rates for
   date ranges, and weekly (7+ nights) and monthly (28+ nights) discounts.
 - Promo codes: percent or AED-off codes with optional expiry, stay window,

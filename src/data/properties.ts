@@ -900,3 +900,12 @@ export function bedroomLabel(bedrooms: number, short = false) {
   if (bedrooms === 0) return "Studio";
   return short ? `${bedrooms} bed` : `${bedrooms} bedroom${bedrooms === 1 ? "" : "s"}`;
 }
+
+/** The refundable security deposit (AED) a home's house rules mention, if any. */
+export function securityDeposit(property: Pick<Property, "houseRules">): number | null {
+  for (const rule of property.houseRules) {
+    const m = rule.match(/security deposit of AED\s*([\d,]+)/i);
+    if (m) return Number(m[1].replace(/,/g, ""));
+  }
+  return null;
+}

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { bedroomLabel, type Property } from "@/data/properties";
+import { bedroomLabel, securityDeposit, type Property } from "@/data/properties";
 import { formatDate } from "@/lib/dates";
 import { aed, rateLines, type Quote } from "@/lib/pricing";
 import { IconStar } from "../icons";
@@ -98,6 +98,12 @@ export function StaySummary({
           <span>Total (AED)</span>
           <span>AED {aed.format(quote.total)}</span>
         </div>
+        {securityDeposit(property) ? (
+          <p className="pt-1 text-xs text-ink-60">
+            Plus a refundable security deposit of AED {aed.format(securityDeposit(property)!)}, arranged
+            with the team before arrival. It isn&rsquo;t part of this total.
+          </p>
+        ) : null}
       </div>
       {children}
     </div>

@@ -117,6 +117,18 @@ export async function createCheckoutSession(input: {
   );
 }
 
+/** Refunds (part of) a card payment to the guest. Amount in AED; omit for the full amount. */
+export async function createRefund(paymentIntentId: string, amountAed: number, ref: string) {
+  return stripe().refunds.create(
+    {
+      payment_intent: paymentIntentId,
+      amount: fils(amountAed),
+      reason: "requested_by_customer",
+      metadata: { ref },
+    },
+  );
+}
+
 export const retrieveCheckoutSession = (id: string) => stripe().checkout.sessions.retrieve(id);
 
 /** Closes an open session so it can't be paid any more. Returns the session as it now stands. */

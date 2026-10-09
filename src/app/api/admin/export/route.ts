@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/server/admin-auth";
 import { listBookings } from "@/lib/server/bookings";
-import { describeCar } from "@/lib/booking-schema";
+import { describeCar, describeExtras } from "@/lib/booking-schema";
 import { listEnquiries } from "@/lib/server/enquiries";
 import { listSubscribers } from "@/lib/server/newsletter";
 
@@ -56,12 +56,12 @@ export async function GET(request: Request) {
       [
         "Reference", "Status", "Created", "Property", "Area", "Check-in", "Check-out",
         "Nights", "Guests", "Guest name", "Email", "Phone", "Country", "Total (AED)",
-        "Arrival time", "Requests", "Rental car", "Payment", "Paid (AED)", "Stripe payment",
+        "Arrival time", "Requests", "Rental car", "Extras", "Payment", "Paid (AED)", "Stripe payment",
       ],
       ...rows.map((b) => [
         b.ref, b.status, b.createdAt, b.propertyTitle, b.area, b.checkIn, b.checkOut,
         b.quote.nights, b.guests, b.guest.name, b.guest.email, b.guest.phone, b.guest.country,
-        b.quote.total, b.arrivalTime, b.specialRequests, b.car ? describeCar(b.car) : "",
+        b.quote.total, b.arrivalTime, b.specialRequests, b.car ? describeCar(b.car) : "", describeExtras(b.extras),
         b.payment ? (b.payment.refundDue ? "paid, refund due" : b.payment.status) : "offline",
         b.payment?.amount, b.payment?.paymentIntentId,
       ]),

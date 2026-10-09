@@ -14,6 +14,8 @@ import {
   addBlock,
   BookingError,
   removeBlock,
+  createAdminBooking,
+  refundBooking,
   setBookingStatus,
   type BookingStatus,
 } from "@/lib/server/bookings";
@@ -29,6 +31,7 @@ import {
 import { homeFormSchema, slugify } from "@/lib/home-schema";
 import { createPromo, deletePromo, normalizeCode, setPromoActive } from "@/lib/server/promos";
 import { isIsoDate } from "@/lib/dates";
+import { bookingRequestSchema } from "@/lib/booking-schema";
 import { deleteReview, replyToReview, setReviewStatus, type ReviewStatus } from "@/lib/server/reviews";
 import type { Property } from "@/data/properties";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
@@ -319,4 +322,61 @@ export async function removeReview(formData: FormData) {
   await requireAdmin();
   await deleteReview(String(formData.get("id") ?? ""));
   revalidatePath("/", "layout");
+}
+
+/* ------------------------------------------------------------------ */
+/* Refunds                                                             */
+/* ------------------------------------------------------------------ */
+
+export async function issueRefund(_prev: FormState, formData: FormData): Promise<FormState> {
+  await requireAdmin();
+  const ref = String(formData.get("ref") ?? "");
+  const amount = Number(formData.get("amount"));
+  try {
+    await refundBooking(ref, amount);
+  } catch (err) {
+    if (err instanceof BookingError) return { error: err.message };
+    throw err;
+  }
+  revalidatePath("/admin", "layout");
+  return { ok: `Refunded AED ${amount}.` };
+}
+
+/* ------------------------------------------------------------------ */
+/* Bookings entered by the team                                        */
+/* ------------------------------------------------------------------ */
+
+export type NewBookingState = FormState & { fieldErrors?: Record<string, string> };
+
+export async function addManualBooking(_prev: NewBookingState, formData: FormData): Promise<NewBookingState> {
+  await requireAdmin();
+  const text = (k: string) => String(formData.get(k) ?? "").trim();
+  const parsed = bookingRequestSchema.safeParse({
+    propertySlug: text("propertySlug"),
+    checkIn: text("checkIn"),
+    checkOut: text("checkOut"),
+    guests: text("guests"),
+    name: text("name"),
+    email: text("email"),
+    phone: text("phone"),
+    country: text("country") || undefined,
+    specialRequests: text("specialRequests") || undefined,
+    promoCode: text("promoCode") || undefined,
+    acceptTerms: true,
+  });
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const i of parsed.error.issues) fieldErrors[String(i.path[0])] ??= i.message;
+    return { error: "Please fix the highlighted fields.", fieldErrors };
+  }
+  const status = formData.get("status") === "confirmed" ? "confirmed" : "pending";
+  let ref: string;
+  try {
+    ref = (await createAdminBooking(parsed.data, status)).ref;
+  } catch (err) {
+    if (err instanceof BookingError) return { error: err.message };
+    throw err;
+  }
+  revalidatePath("/admin", "layout");
+  redirect(`/admin/bookings?q=${ref}`);
 }
