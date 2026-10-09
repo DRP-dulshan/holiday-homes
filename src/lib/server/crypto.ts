@@ -1,6 +1,6 @@
 import "server-only";
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { readOrCreateText } from "./store";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { readOrCreateText, storageReady } from "./store";
 
 /**
  * Signing secret for booking links and admin sessions. Set APP_SECRET in
@@ -11,6 +11,11 @@ let cached: Promise<string> | null = null;
 function getSecret() {
   const fromEnv = process.env.APP_SECRET?.trim();
   if (fromEnv && fromEnv.length >= 16) return Promise.resolve(fromEnv);
+  // Vercel without a database has nowhere to keep a generated secret. Derive one from the
+  // dashboard password so sign-in still works; set APP_SECRET (and Redis) for production.
+  const password = process.env.ADMIN_PASSWORD?.trim();
+  if (!storageReady() && password)
+    return Promise.resolve(createHash("sha256").update(`drp-app-secret:${password}`).digest("hex"));
   cached ??= readOrCreateText(".secret", () => randomBytes(32).toString("hex")).catch((err) => {
     cached = null; // don't cache a failure — retry on the next request
     throw err;

@@ -1,5 +1,5 @@
 import "server-only";
-import { site } from "@/config/site";
+import { site, siteUrl } from "@/config/site";
 
 type Mail = {
   to: string;
@@ -76,6 +76,6 @@ export async function sendMail(mail: Mail): Promise<boolean> {
 
 /** Absolute site URL for links in emails. */
 export function absoluteUrl(path: string) {
-  const base = (process.env.SITE_URL?.trim() || site.url).replace(/\/$/, "");
+  const base = siteUrl();
   return `${base}${path}`;
 }

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
-import { site } from "@/config/site";
+import { site, siteUrl } from "@/config/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,7 +20,7 @@ const defaultDescription =
   "DRP Holiday Homes is Dubai's boutique collection of professionally designed, fully managed holiday homes across Palm Jumeirah, Dubai Marina, Downtown and beyond. A division of D|R|P.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
+  metadataBase: new URL(siteUrl()),
   title: {
     default: defaultTitle,
     template: `%s — ${site.name}`,
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     description:
       "Professionally designed, fully managed holiday homes across Dubai's most sought-after addresses.",
     type: "website",
-    url: site.url,
+    url: siteUrl(),
     siteName: site.name,
     locale: "en_AE",
   },

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { requireAdmin } from "@/lib/server/admin-auth";
+import { storageReady } from "@/lib/server/store";
 import { logout } from "../actions";
 import { AdminNav } from "./AdminNav";
 
@@ -35,7 +36,21 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         </div>
         <AdminNav />
       </header>
-      <main className="container-drp flex-1 py-8">{children}</main>
+      <main className="container-drp flex-1 py-8">
+        {storageReady() ? (
+          children
+        ) : (
+          <div className="mx-auto max-w-xl rounded-card border border-amber-200 bg-amber-50 p-6 text-amber-900">
+            <h1 className="display text-xl font-semibold">Connect a database to start taking bookings</h1>
+            <p className="mt-2 text-sm">
+              The site is live, but bookings and enquiries can&rsquo;t be saved yet because no database is
+              connected. In Vercel: open the project, go to <strong>Storage → Create Database → Upstash
+              for Redis</strong>, connect it to this project, then <strong>redeploy</strong>.
+            </p>
+            <p className="mt-2 text-sm">Until then, guests are offered WhatsApp instead of the online form.</p>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

@@ -10,15 +10,12 @@ export const site = {
   tagline: "Dubai's curated collection of designed, managed holiday homes.",
   url: "https://drpholidayhomes.ae",
 
-  // TODO: confirm the live phone number before launch — placeholder for the demo.
+  // Phone and WhatsApp match https://dubairapidproperties.com.
   phoneDisplay: "+971 4 529 4904",
   phoneHref: "tel:+97145294904",
-  // TODO: confirm the live WhatsApp number before launch — placeholder for the demo.
   whatsappNumber: "971 56 777 0272",
   whatsappHref: "https://wa.me/971567770272",
-  // TODO: confirm the live inbox before launch — placeholder for the demo.
   email: "lettings@dubairapidproperties.com",
-  ownersEmail: "owners@drpholidayhomes.ae",
 
   address: {
     line1: "Golden Mile 9",
@@ -69,12 +66,22 @@ export const footerLinks = [
   { label: "Terms", href: "/terms" },
 ];
 
+/** Only real, verified profiles belong here. Add Instagram / LinkedIn once the URLs are confirmed. */
 export const socialLinks = [
-  // TODO: link real profiles before launch — placeholders for the demo.
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "LinkedIn", href: "https://linkedin.com" },
-  { label: "Facebook", href: "https://facebook.com" },
+  { label: "Facebook", href: "https://www.facebook.com/dubairapidproperties" },
 ];
+
+/**
+ * The site's public address, for canonical links, the sitemap and email links.
+ * Set SITE_URL in production; otherwise the Vercel production domain is used.
+ */
+export function siteUrl() {
+  const fromEnv = process.env.SITE_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercel) return `https://${vercel}`;
+  return site.url;
+}
 
 /** Build a wa.me link pre-filled with a message. */
 export function whatsappLink(message: string) {
