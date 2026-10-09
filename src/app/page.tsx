@@ -8,6 +8,7 @@ import { AreasWeCover } from "@/components/AreasWeCover";
 import { DRPPromise } from "@/components/DRPPromise";
 import { Testimonials } from "@/components/Testimonials";
 import { FAQAccordion } from "@/components/FAQAccordion";
+import { GuidesTeaser } from "@/components/GuidesTeaser";
 import { FinalCTA } from "@/components/FinalCTA";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 
@@ -55,6 +56,7 @@ export default async function Home() {
         <AreasWeCover homesByArea={summary.homesByArea} />
         <DRPPromise />
         <Testimonials reviews={stories} />
+        <GuidesTeaser />
         <FAQAccordion />
         <FinalCTA />
       </main>

@@ -3,6 +3,7 @@ import { bedroomLabel, securityDeposit, type Property } from "@/data/properties"
 import { formatDate } from "@/lib/dates";
 import { aed, rateLines, type Quote } from "@/lib/pricing";
 import { IconStar } from "../icons";
+import { ApproxPrice } from "../CurrencyProvider";
 
 /** Property + dates + price breakdown, used on checkout and booking pages. */
 export function StaySummary({
@@ -98,6 +99,7 @@ export function StaySummary({
           <span>Total (AED)</span>
           <span>AED {aed.format(quote.total)}</span>
         </div>
+        <ApproxPrice aed={quote.total} className="block text-right text-xs text-ink-60" />
         {securityDeposit(property) ? (
           <p className="pt-1 text-xs text-ink-60">
             Plus a refundable security deposit of AED {aed.format(securityDeposit(property)!)}, arranged

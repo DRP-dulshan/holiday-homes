@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Property } from "@/data/properties";
@@ -13,6 +14,11 @@ import { filtersToSearchParams, type ExploreFilters } from "@/lib/filters";
 import { IconArrowRight } from "@/components/icons";
 import { addDays, formatShortDate, todayIso } from "@/lib/dates";
 
+const ExploreMap = dynamic(() => import("@/components/explore/ExploreMap"), {
+  ssr: false,
+  loading: () => <div className="h-[28rem] animate-pulse rounded-card bg-ink-05 sm:h-[34rem]" />,
+});
+
 type ExploreClientProps = {
   filters: ExploreFilters;
   results: Property[];
@@ -24,6 +30,7 @@ type ExploreClientProps = {
 export function ExploreClient({ filters, results, summary, checkIn, checkOut }: ExploreClientProps) {
   const router = useRouter();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [view, setView] = useState<"list" | "map">("list");
 
   const [draftIn, setDraftIn] = useState(checkIn ?? "");
   const [draftOut, setDraftOut] = useState(checkOut ?? "");
@@ -160,6 +167,19 @@ export function ExploreClient({ filters, results, summary, checkIn, checkOut }: 
               >
                 Filters{activeCount ? ` (${activeCount})` : ""}
               </button>
+              <div className="flex rounded-full border border-ink-20 p-0.5 text-sm font-medium" role="group" aria-label="View">
+                {(["list", "map"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    aria-pressed={view === v}
+                    onClick={() => setView(v)}
+                    className={`rounded-full px-3.5 py-1.5 capitalize ${view === v ? "bg-ink text-white" : "text-ink-60 hover:text-ink"}`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
               <SortSelect value={filters.sort} onChange={(sort) => onChange({ sort })} />
             </div>
           </div>
@@ -174,8 +194,14 @@ export function ExploreClient({ filters, results, summary, checkIn, checkOut }: 
             </button>
           ) : null}
 
+          {view === "map" && results.length > 0 ? (
+            <div className="mt-8">
+              <ExploreMap homes={results} query={cardQs} />
+            </div>
+          ) : null}
+
           <AnimatePresence mode="popLayout">
-            {results.length > 0 ? (
+            {view === "map" && results.length > 0 ? null : results.length > 0 ? (
               <motion.div
                 layout
                 className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3"

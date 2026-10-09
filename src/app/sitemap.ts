@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { siteUrl } from "@/config/site";
 import { getProperties } from "@/lib/server/catalog";
 import { areas } from "@/data/areas";
+import { guides } from "@/data/guides";
 
 export const dynamic = "force-dynamic";
 
@@ -34,5 +35,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...areaRoutes, ...propertyRoutes];
+  const guideRoutes: MetadataRoute.Sitemap = [
+    { url: `${siteUrl()}/guides`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    ...guides.map((g) => ({
+      url: `${siteUrl()}/guides/${g.slug}`,
+      lastModified: new Date(g.published),
+      changeFrequency: "yearly" as const,
+      priority: 0.5,
+    })),
+  ];
+
+  return [...staticRoutes, ...areaRoutes, ...propertyRoutes, ...guideRoutes];
 }
