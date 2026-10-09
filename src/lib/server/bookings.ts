@@ -59,6 +59,8 @@ export type Booking = {
   quote: Quote;
   /** Present when the guest was sent to Stripe Checkout. */
   payment?: Payment;
+  /** When the post-stay review request email went out. */
+  reviewRequestedAt?: string;
   status: BookingStatus;
   history: { status: BookingStatus; at: string; by: Actor; note?: string }[];
   createdAt: string;
@@ -558,6 +560,13 @@ export async function setBookingStatus(
 
   if (changed) await notifyStatusChange(updated, by);
   return updated;
+}
+
+export async function markReviewRequested(ref: string) {
+  await mutate<Booking, void>(BOOKINGS, (bookings) => {
+    const b = bookings.find((x) => x.ref === ref);
+    if (b) b.reviewRequestedAt = new Date().toISOString();
+  });
 }
 
 export async function cancelBookingAsGuest(ref: string) {

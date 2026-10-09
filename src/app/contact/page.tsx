@@ -10,6 +10,7 @@ import { site } from "@/config/site";
 import { IconWhatsApp } from "@/components/icons";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/contact" },
   title: "Contact",
   description:
     "Enquire about a stay, or ask about bringing your Dubai property into the DRP collection. Call, WhatsApp or send a note.",

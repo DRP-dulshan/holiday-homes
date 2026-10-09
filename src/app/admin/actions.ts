@@ -29,6 +29,7 @@ import {
 import { homeFormSchema, slugify } from "@/lib/home-schema";
 import { createPromo, deletePromo, normalizeCode, setPromoActive } from "@/lib/server/promos";
 import { isIsoDate } from "@/lib/dates";
+import { deleteReview, replyToReview, setReviewStatus, type ReviewStatus } from "@/lib/server/reviews";
 import type { Property } from "@/data/properties";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 
@@ -294,4 +295,28 @@ export async function syncHomeCalendar(formData: FormData) {
   if (home?.airbnbIcalUrl) await syncCalendar(slug, home.airbnbIcalUrl);
   revalidatePath(`/admin/homes/${slug}`);
   revalidatePath("/admin/availability");
+}
+
+/* ------------------------------------------------------------------ */
+/* Reviews                                                             */
+/* ------------------------------------------------------------------ */
+
+export async function moderateReview(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const status = String(formData.get("status") ?? "") as ReviewStatus;
+  if (["pending", "approved", "hidden"].includes(status)) await setReviewStatus(id, status);
+  revalidatePath("/", "layout");
+}
+
+export async function answerReview(formData: FormData) {
+  await requireAdmin();
+  await replyToReview(String(formData.get("id") ?? ""), String(formData.get("reply") ?? ""));
+  revalidatePath("/", "layout");
+}
+
+export async function removeReview(formData: FormData) {
+  await requireAdmin();
+  await deleteReview(String(formData.get("id") ?? ""));
+  revalidatePath("/", "layout");
 }

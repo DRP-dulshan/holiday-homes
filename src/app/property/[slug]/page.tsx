@@ -19,6 +19,10 @@ import {
 } from "@/components/icons";
 import { bedroomLabel } from "@/data/properties";
 import { getProperty } from "@/lib/server/catalog";
+import { approvedReviews } from "@/lib/server/reviews";
+import { PropertyReviews } from "@/components/PropertyReviews";
+import { JsonLd } from "@/components/JsonLd";
+import { siteUrl } from "@/config/site";
 
 // Homes (and edits to them) come from the database, so pages render on request.
 export const dynamic = "force-dynamic";
@@ -32,6 +36,7 @@ export async function generateMetadata({
   return {
     title: `${property.title}, ${property.area}`,
     description: property.description.slice(0, 155),
+    alternates: { canonical: `/property/${property.slug}` },
     openGraph: { images: [{ url: property.image }] },
   };
 }
@@ -42,9 +47,71 @@ export default async function PropertyPage({
   const { slug } = await params;
   const property = await getProperty(slug);
   if (!property) notFound();
+  const reviews = await approvedReviews(property.slug).catch(() => []);
+  const url = `${siteUrl()}/property/${property.slug}`;
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "VacationRental",
+              "@id": `${url}#home`,
+              name: property.title,
+              description: property.description,
+              url,
+              identifier: property.slug,
+              image: property.gallery.slice(0, 8),
+              brand: { "@type": "Brand", name: "DRP Holiday Homes" },
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: "Dubai",
+                addressRegion: property.area,
+                addressCountry: "AE",
+              },
+              containsPlace: {
+                "@type": "Accommodation",
+                additionalType: "EntirePlace",
+                numberOfBedrooms: property.bedrooms,
+                numberOfBathroomsTotal: property.bathrooms,
+                occupancy: { "@type": "QuantitativeValue", minValue: 1, maxValue: property.guests },
+                ...(property.sizeSqft
+                  ? { floorSize: { "@type": "QuantitativeValue", value: property.sizeSqft, unitCode: "FTK" } }
+                  : {}),
+              },
+              checkinTime: property.checkIn,
+              checkoutTime: property.checkOut,
+              ...(reviews.length
+                ? {
+                    aggregateRating: {
+                      "@type": "AggregateRating",
+                      ratingValue: property.rating,
+                      reviewCount: reviews.length,
+                      bestRating: 5,
+                    },
+                    review: reviews.slice(0, 8).map((r) => ({
+                      "@type": "Review",
+                      author: { "@type": "Person", name: r.name },
+                      datePublished: r.createdAt.slice(0, 10),
+                      reviewBody: r.comment,
+                      reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5 },
+                    })),
+                  }
+                : {}),
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Home", item: siteUrl() },
+                { "@type": "ListItem", position: 2, name: "Explore", item: `${siteUrl()}/explore` },
+                { "@type": "ListItem", position: 3, name: property.title, item: url },
+              ],
+            },
+          ],
+        }}
+      />
       <Navbar />
       <main className="flex-1 pb-24 lg:pb-0">
         <div className="container-drp pt-24 md:pt-28">
@@ -173,6 +240,8 @@ export default async function PropertyPage({
                 label={property.area}
                 className="mt-4 h-72"
               />
+
+              <PropertyReviews reviews={reviews} />
 
               <div className="mt-10 rounded-card border border-ink-10 bg-ink-05 p-6 text-sm text-ink-80">
                 Every DRP home is furnished by our own design studio and

@@ -19,6 +19,7 @@ import {
 } from "@/components/icons";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/about" },
   title: "About",
   description:
     "DRP Holiday Homes is the short-stay division of D|R|P, a Dubai real estate brokerage. Designed, furnished and managed in-house.",

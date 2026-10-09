@@ -5,6 +5,7 @@ import { bookingRules, site } from "@/config/site";
 import { paymentsEnabled } from "@/lib/server/stripe";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/terms" },
   title: "Booking Terms",
   description: `Booking, payment and cancellation terms for stays with ${site.name}.`,
 };

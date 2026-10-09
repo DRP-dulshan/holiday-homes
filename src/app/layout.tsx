@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
-import { site, siteUrl } from "@/config/site";
+import { site, siteUrl, socialLinks } from "@/config/site";
+import { JsonLd } from "@/components/JsonLd";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,7 +36,6 @@ export const metadata: Metadata = {
     "DRP Holiday Homes",
   ],
   authors: [{ name: site.name }],
-  alternates: { canonical: "/" },
   robots: { index: true, follow: true },
   openGraph: {
     title: defaultTitle,
@@ -67,6 +67,32 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-canvas text-ink">
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": ["Organization", "LodgingBusiness"],
+                "@id": `${siteUrl()}#org`,
+                name: site.name,
+                legalName: `${site.parentFull} — ${site.name}`,
+                url: siteUrl(),
+                logo: `${siteUrl()}/brand/holiday-homes-logo-dark.png`,
+                description: site.tagline,
+                telephone: site.phoneDisplay,
+                email: site.email,
+                address: {
+                  "@type": "PostalAddress",
+                  streetAddress: `${site.address.line1}, ${site.address.line2}`,
+                  addressLocality: site.address.city,
+                  addressCountry: "AE",
+                },
+                sameAs: socialLinks.map((s) => s.href),
+              },
+              { "@type": "WebSite", "@id": `${siteUrl()}#site`, url: siteUrl(), name: site.name, publisher: { "@id": `${siteUrl()}#org` } },
+            ],
+          }}
+        />
         {children}
       </body>
     </html>

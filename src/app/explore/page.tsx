@@ -10,6 +10,7 @@ import { isIsoDate, todayIso } from "@/lib/dates";
 import { getUnavailableSlugs } from "@/lib/server/bookings";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/explore" },
   title: "Explore Stays",
   description:
     "Filter the full DRP Holiday Homes collection by area, property type, bedrooms, guests, price and amenities.",

@@ -19,6 +19,7 @@ import {
 } from "@/components/icons";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/owners" },
   title: "List Your Property with DRP",
   description:
     "Full-service holiday-home management in Dubai: in-house design and furnishing, professional photography, dynamic pricing, housekeeping, guest communication and DTCM licensing support.",

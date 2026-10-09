@@ -3,6 +3,7 @@ import { LegalPage } from "@/components/LegalPage";
 import { site } from "@/config/site";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/privacy" },
   title: "Privacy Policy",
   description: `How ${site.name} collects, uses and protects your personal data.`,
 };

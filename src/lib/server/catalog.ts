@@ -6,6 +6,7 @@ import {
   type Property,
 } from "@/data/properties";
 import { areas } from "@/data/areas";
+import { getRatingStats } from "./review-stats";
 import { mutate, readAll } from "./store";
 
 /**
@@ -49,7 +50,12 @@ function merge(rows: Row[]): Property[] {
 
 /** Every home, including unlisted ones (admin only). */
 export async function getAllProperties(): Promise<Property[]> {
-  return merge(await readRows());
+  const [rows, stats] = await Promise.all([readRows(), getRatingStats()]);
+  // Ratings come from approved guest reviews; homes without any show none.
+  return merge(rows).map((p) => {
+    const s = stats.get(p.slug);
+    return { ...p, rating: s?.rating, reviews: s?.reviews };
+  });
 }
 
 /** Homes guests can see and book. */
