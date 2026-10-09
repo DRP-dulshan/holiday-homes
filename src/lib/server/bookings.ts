@@ -5,15 +5,17 @@ import {
   addDays,
   formatDate,
   isIsoDate,
+  nightsBetween,
   rangesOverlap,
   todayIso,
   type DateRange,
 } from "@/lib/dates";
-import { aed, quoteStay, validateStay, type Quote } from "@/lib/pricing";
+import { aed, quoteStay, rateLines, validateStay, type PromoRule, type Quote } from "@/lib/pricing";
 import { describeCar, type BookingRequestInput, type CarRequest } from "@/lib/booking-schema";
 import { newId, newReference, sign, verify } from "./crypto";
 import { absoluteUrl, sendMail, teamInbox } from "./mailer";
 import { mutate, readAll } from "./store";
+import { evaluatePromo, normalizeCode, PROMOS, type Promo } from "./promos";
 import {
   CHECKOUT_MINUTES,
   createCheckoutSession,
@@ -101,6 +103,12 @@ const holdExpired = (b: Booking, now = Date.now()) =>
   b.status === "awaiting_payment" && !!b.payment && Date.parse(b.payment.holdUntil) < now;
 
 const holdsDates = (b: Booking) => b.status !== "cancelled" && !holdExpired(b);
+
+/** Live bookings that used a promo code (cancelled and lapsed bookings free the use). */
+export const promoUses = (bookings: Booking[], code: string) => {
+  const wanted = normalizeCode(code);
+  return bookings.filter((b) => holdsDates(b) && b.quote.promo?.code === wanted).length;
+};
 
 function takenRanges(slug: string, bookings: Booking[], blocks: Block[]): DateRange[] {
   return [
@@ -210,6 +218,24 @@ export async function createBooking(
         "unavailable",
       );
 
+    // Re-check the promo code under the lock so a limited code can't be over-redeemed.
+    let promoRule: PromoRule | undefined;
+    if (input.promoCode?.trim()) {
+      const result = evaluatePromo(
+        await read<Promo>(PROMOS),
+        input.promoCode,
+        {
+          slug: property.slug,
+          checkIn: input.checkIn,
+          checkOut: input.checkOut,
+          nights: nightsBetween(input.checkIn, input.checkOut),
+        },
+        promoUses(bookings, input.promoCode),
+      );
+      if (!result.ok) throw new BookingError(result.error);
+      promoRule = result.rule;
+    }
+
     let ref = newReference();
     while (bookings.some((b) => b.ref === ref)) ref = newReference();
     const now = new Date();
@@ -236,7 +262,7 @@ export async function createBooking(
       car: input.needCar
         ? { type: input.carType ?? "any", pickup: input.carPickup ?? "airport" }
         : undefined,
-      quote: quoteStay(property, input.checkIn, input.checkOut),
+      quote: quoteStay(property, input.checkIn, input.checkOut, promoRule),
       payment: payOnline
         ? {
             provider: "stripe",
@@ -539,7 +565,15 @@ function summary(b: Booking) {
     `Check-in: ${formatDate(b.checkIn)}`,
     `Check-out: ${formatDate(b.checkOut)}`,
     `Nights: ${q.nights} · Guests: ${b.guests}`,
-    `Total: AED ${aed.format(q.total)} (AED ${aed.format(q.nightlyRate)} × ${q.nights} nights${q.cleaningFee ? `, cleaning AED ${aed.format(q.cleaningFee)}` : ""}, Tourism Dirham AED ${aed.format(q.tourismFee)})`,
+    `Total: AED ${aed.format(q.total)} (${[
+      rateLines(q).map((l) => `AED ${aed.format(l.rate)} × ${l.nights} night${l.nights === 1 ? "" : "s"}`).join(" + "),
+      q.discount ? `${q.discountLabel ?? "Discount"} −AED ${aed.format(q.discount)}` : "",
+      q.promo ? `code ${q.promo.code} −AED ${aed.format(q.promo.amount)}` : "",
+      q.cleaningFee ? `cleaning AED ${aed.format(q.cleaningFee)}` : "",
+      `Tourism Dirham AED ${aed.format(q.tourismFee)}`,
+    ]
+      .filter(Boolean)
+      .join(", ")})`,
   ].join("\n");
 }
 

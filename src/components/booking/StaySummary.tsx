@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { bedroomLabel, type Property } from "@/data/properties";
 import { formatDate } from "@/lib/dates";
-import { aed, type Quote } from "@/lib/pricing";
+import { aed, rateLines, type Quote } from "@/lib/pricing";
 import { IconStar } from "../icons";
 
 /** Property + dates + price breakdown, used on checkout and booking pages. */
@@ -64,12 +64,26 @@ export function StaySummary({
       </dl>
 
       <div className="mt-5 space-y-2 border-t border-ink-10 pt-5 text-sm text-ink-80">
-        <div className="flex justify-between">
-          <span>
-            AED {aed.format(quote.nightlyRate)} × {quote.nights} night{quote.nights === 1 ? "" : "s"}
-          </span>
-          <span>AED {aed.format(quote.subtotal)}</span>
-        </div>
+        {rateLines(quote).map((l) => (
+          <div key={l.rate} className="flex justify-between">
+            <span>
+              AED {aed.format(l.rate)} × {l.nights} night{l.nights === 1 ? "" : "s"}
+            </span>
+            <span>AED {aed.format(l.rate * l.nights)}</span>
+          </div>
+        ))}
+        {quote.discount ? (
+          <div className="flex justify-between text-emerald-700">
+            <span>{quote.discountLabel ?? "Stay discount"}</span>
+            <span>−AED {aed.format(quote.discount)}</span>
+          </div>
+        ) : null}
+        {quote.promo ? (
+          <div className="flex justify-between text-emerald-700">
+            <span>Promo code {quote.promo.code}</span>
+            <span>−AED {aed.format(quote.promo.amount)}</span>
+          </div>
+        ) : null}
         {quote.cleaningFee > 0 ? (
           <div className="flex justify-between">
             <span>Cleaning fee</span>

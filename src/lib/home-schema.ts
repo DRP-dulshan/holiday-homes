@@ -2,6 +2,7 @@ import { z } from "zod";
 import { areas } from "@/data/areas";
 import { AMENITIES, type AmenityId } from "@/data/amenities";
 import { propertyTypes } from "@/data/properties";
+import { isIsoDate } from "@/lib/dates";
 
 /** Hosts the site's image optimiser is allowed to load photos from (see next.config.ts). */
 export const IMAGE_HOSTS = [
@@ -48,6 +49,28 @@ export const homeFormSchema = z.object({
   sizeSqft: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.coerce.number().int().min(50).max(50000).optional()),
   pricePerNight: z.coerce.number().int().min(50, "Nightly rate must be at least AED 50").max(50000),
   cleaningFee: z.coerce.number().int().min(0).max(5000),
+  weekendRate: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.coerce.number().int().min(50).max(50000).optional(),
+  ),
+  weeklyDiscountPct: z.preprocess((v) => (v === "" || v == null ? 0 : v), z.coerce.number().min(0).max(60)),
+  monthlyDiscountPct: z.preprocess((v) => (v === "" || v == null ? 0 : v), z.coerce.number().min(0).max(60)),
+  seasons: z.string().transform((v, ctx) => {
+    const out: { name?: string; from: string; to: string; rate: number }[] = [];
+    for (const line of lines(v)) {
+      // "2026-12-20 to 2027-01-05: 1200 New Year"
+      const m = line.match(/^(\d{4}-\d{2}-\d{2})\s*(?:to|-|–|→)\s*(\d{4}-\d{2}-\d{2})\s*[:=]\s*(\d+)\s*(.*)$/i);
+      if (!m || !isIsoDate(m[1]) || !isIsoDate(m[2]) || m[2] < m[1] || Number(m[3]) < 50) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Couldn't read "${line.slice(0, 50)}" — use: 2026-12-20 to 2027-01-05: 1200 New Year`,
+        });
+        return z.NEVER;
+      }
+      out.push({ from: m[1], to: m[2], rate: Number(m[3]), name: m[4].trim() || undefined });
+    }
+    return out;
+  }),
   tag: z.string().trim().max(40),
   image: imageUrl,
   gallery: z.string().transform((v, ctx) => {

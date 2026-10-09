@@ -2,6 +2,17 @@ import type { AmenityId } from "./amenities";
 
 export type PropertyType = "studio" | "apartment" | "penthouse" | "villa" | "townhouse";
 
+export type PricingRules = {
+  /** AED per night for Friday and Saturday nights. */
+  weekendRate?: number;
+  /** Rates for date ranges (peak season, events). `from` and `to` are inclusive nights, ISO dates. */
+  seasons?: { name?: string; from: string; to: string; rate: number }[];
+  /** % off the stay for 7+ nights. */
+  weeklyDiscountPct?: number;
+  /** % off the stay for 28+ nights. */
+  monthlyDiscountPct?: number;
+};
+
 export type Property = {
   id: string;
   slug: string;
@@ -19,6 +30,8 @@ export type Property = {
   pricePerNight: number;
   /** AED, one-time (0 = none) */
   cleaningFee: number;
+  /** Optional rate rules on top of `pricePerNight`. */
+  pricing?: PricingRules;
   rating?: number;
   reviews?: number;
   tag: string;
