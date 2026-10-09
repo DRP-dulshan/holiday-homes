@@ -14,10 +14,7 @@ function jitter(slug: string) {
   return { dLat: ((h % 1000) / 1000 - 0.5) * 0.009, dLng: (((h >>> 10) % 1000) / 1000 - 0.5) * 0.009 };
 }
 
-/**
- * Homes on an OpenStreetMap map. Positions are approximate (the middle of each neighbourhood, nudged
- * apart): the exact address is shared after booking.
- */
+/** Homes on an OpenStreetMap map, at their building (or the neighbourhood when a home has no pin yet). */
 export default function ExploreMap({ homes, query }: { homes: Property[]; query: string }) {
   const el = useRef<HTMLDivElement>(null);
 
@@ -36,9 +33,15 @@ export default function ExploreMap({ homes, query }: { homes: Property[]; query:
       const points: [number, number][] = [];
       for (const p of homes) {
         const area = areas.find((a) => a.name === p.area);
-        if (!area) continue;
-        const j = jitter(p.slug);
-        const at: [number, number] = [area.lat + j.dLat, area.lng + j.dLng];
+        let at: [number, number];
+        if (p.lat != null && p.lng != null) {
+          // Homes in the same building share a spot; nudge them a few metres apart so every pin shows.
+          const j = jitter(p.slug);
+          at = [p.lat + j.dLat / 25, p.lng + j.dLng / 25];
+        } else if (area) {
+          const j = jitter(p.slug);
+          at = [area.lat + j.dLat, area.lng + j.dLng];
+        } else continue;
         points.push(at);
         const icon = L.divIcon({
           className: "",
@@ -64,7 +67,7 @@ export default function ExploreMap({ homes, query }: { homes: Property[]; query:
   return (
     <div>
       <div ref={el} className="h-[28rem] w-full overflow-hidden rounded-card border border-ink-10 sm:h-[34rem]" role="region" aria-label="Map of homes" />
-      <p className="mt-2 text-xs text-ink-60">Locations are approximate — the exact address is shared after you book.</p>
+      <p className="mt-2 text-xs text-ink-60">Pins show the building. The unit and access details are shared after you book.</p>
     </div>
   );
 }

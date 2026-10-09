@@ -74,6 +74,9 @@ export default async function PropertyPage({
                 addressRegion: property.area,
                 addressCountry: "AE",
               },
+              ...(property.lat != null && property.lng != null
+                ? { latitude: property.lat, longitude: property.lng }
+                : {}),
               containsPlace: {
                 "@type": "Accommodation",
                 additionalType: "EntirePlace",
@@ -242,10 +245,26 @@ export default async function PropertyPage({
               </div>
 
               <h2 className="display mt-10 text-2xl font-semibold text-ink">Location</h2>
-              <p className="mt-2 text-sm text-ink-80">{property.area}, Dubai</p>
+              <p className="mt-2 text-sm text-ink-80">
+                {property.building ? `${property.building}, ` : ""}
+                {property.area}, Dubai
+                {property.mapsUrl ? (
+                  <>
+                    {" · "}
+                    <a href={property.mapsUrl} target="_blank" rel="noreferrer" className="font-semibold text-brand-600 hover:underline">
+                      Open in Google Maps
+                    </a>
+                  </>
+                ) : null}
+              </p>
               <MapEmbed
                 query={`${property.area}, Dubai, United Arab Emirates`}
-                label={property.area}
+                src={
+                  property.lat != null && property.lng != null
+                    ? `https://www.google.com/maps?q=${property.lat},${property.lng}&z=16&output=embed`
+                    : undefined
+                }
+                label={property.title}
                 className="mt-4 h-72"
               />
 

@@ -118,6 +118,25 @@ export function HomeForm({ home, mode }: { home?: Property; mode: "create" | "ed
       </section>
 
       <section className="rounded-card border border-ink-10 bg-canvas p-6 shadow-soft">
+        <h2 className="display text-lg font-semibold text-ink">Location on the map</h2>
+        <p className="mt-1 text-sm text-ink-60">
+          In Google Maps, right-click the building and click the numbers at the top of the menu to copy them
+          (for example 25.1138, 55.1399), then paste the two values below.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <Field label="Latitude" error={err.lat}>
+            <input name="lat" inputMode="decimal" defaultValue={home?.lat} placeholder="25.1138" className={adminInput} />
+          </Field>
+          <Field label="Longitude" error={err.lng}>
+            <input name="lng" inputMode="decimal" defaultValue={home?.lng} placeholder="55.1399" className={adminInput} />
+          </Field>
+          <Field label="Google Maps link (optional)" error={err.mapsUrl}>
+            <input name="mapsUrl" defaultValue={home?.mapsUrl} placeholder="https://maps.app.goo.gl/…" className={adminInput} />
+          </Field>
+        </div>
+      </section>
+
+      <section className="rounded-card border border-ink-10 bg-canvas p-6 shadow-soft">
         <h2 className="display text-lg font-semibold text-ink">Price and times</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Nightly rate (AED)" error={err.pricePerNight}>
