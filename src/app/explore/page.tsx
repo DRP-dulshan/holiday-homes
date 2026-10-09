@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { ExploreClient } from "./ExploreClient";
-import { properties } from "@/data/properties";
+import { getProperties, summarize } from "@/lib/server/catalog";
 import { applyFilters, filtersFromSearchParams } from "@/lib/filters";
 import { isIsoDate, todayIso } from "@/lib/dates";
 import { getUnavailableSlugs } from "@/lib/server/bookings";
@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   description:
     "Filter the full DRP Holiday Homes collection by area, property type, bedrooms, guests, price and amenities.",
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function ExplorePage({
   searchParams,
@@ -25,7 +27,9 @@ export default async function ExplorePage({
     else if (Array.isArray(value) && value[0]) params.set(key, value[0]);
   }
 
-  const filters = filtersFromSearchParams(params);
+  const properties = await getProperties();
+  const summary = summarize(properties);
+  const filters = filtersFromSearchParams(params, summary.priceBounds);
   let checkIn = params.get("checkIn");
   let checkOut = params.get("checkOut");
   const datesValid =
@@ -53,6 +57,7 @@ export default async function ExplorePage({
         <ExploreClient
           filters={filters}
           results={results}
+          summary={summary}
           checkIn={checkIn}
           checkOut={checkOut}
         />

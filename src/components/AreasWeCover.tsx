@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { areas, homesInArea } from "@/data/areas";
+import { areas } from "@/data/areas";
 import { SectionHeading } from "./SectionHeading";
 import { Reveal } from "./Reveal";
 import { IconArrowUpRight } from "./icons";
 
-export function AreasWeCover() {
+export function AreasWeCover({ homesByArea }: { homesByArea: Record<string, number> }) {
+  const homesInArea = (name: string) => homesByArea[name] ?? 0;
   return (
     <section id="areas" className="bg-canvas py-24 md:py-32">
       <div className="container-drp">

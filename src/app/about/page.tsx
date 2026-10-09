@@ -8,7 +8,7 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import { CountUp } from "@/components/CountUp";
 import { areas } from "@/data/areas";
-import { properties } from "@/data/properties";
+import { getProperties } from "@/lib/server/catalog";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import {
   IconArrowRight,
@@ -24,12 +24,7 @@ export const metadata: Metadata = {
     "DRP Holiday Homes is the short-stay division of D|R|P, a Dubai real estate brokerage. Designed, furnished and managed in-house.",
 };
 
-const stats = [
-  { value: properties.length, suffix: "", label: "Holiday homes" },
-  { value: areas.length, suffix: "", label: "Dubai neighbourhoods" },
-  { value: Math.min(...properties.map((p) => p.pricePerNight)), suffix: "", label: "AED per night, from" },
-  { value: 24, suffix: "/7", label: "Guest support" },
-];
+
 
 const differentiators = [
   {
@@ -75,7 +70,20 @@ const team = [
   { initials: "DC", name: "Delia Cuadrante", role: "Housekeeping Manager" },
 ];
 
-export default function AboutPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AboutPage() {
+  const properties = await getProperties();
+  const stats = [
+    { value: properties.length, suffix: "", label: "Holiday homes" },
+    { value: areas.length, suffix: "", label: "Dubai neighbourhoods" },
+    {
+      value: properties.length ? Math.min(...properties.map((p) => p.pricePerNight)) : 0,
+      suffix: "",
+      label: "AED per night, from",
+    },
+    { value: 24, suffix: "/7", label: "Guest support" },
+  ];
   return (
     <>
       <Navbar />

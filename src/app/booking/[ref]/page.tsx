@@ -6,7 +6,7 @@ import { StaySummary } from "@/components/booking/StaySummary";
 import { StatusBadge } from "@/components/booking/StatusBadge";
 import { IconArrowRight, IconBadgeCheck, IconLock, IconWhatsApp } from "@/components/icons";
 import { bookingRules, site, whatsappLink } from "@/config/site";
-import { getProperty } from "@/data/properties";
+import { getPropertyAnyStatus } from "@/lib/server/catalog";
 import { formatDate, todayIso } from "@/lib/dates";
 import { describeCar } from "@/lib/booking-schema";
 import { aed } from "@/lib/pricing";
@@ -38,7 +38,7 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
   const found = (await verifyBookingToken(ref, token)) ? await getBooking(ref) : null;
   // Back from Stripe (or still unpaid): check the payment now rather than wait for the webhook.
   const booking = found ? await refreshPayment(found) : null;
-  const property = booking ? getProperty(booking.propertySlug) : undefined;
+  const property = booking ? await getPropertyAnyStatus(booking.propertySlug) : undefined;
 
   if (!booking || !property) {
     return (

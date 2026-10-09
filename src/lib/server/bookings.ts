@@ -1,6 +1,6 @@
 import "server-only";
 import { bookingRules, site } from "@/config/site";
-import { getProperty } from "@/data/properties";
+import { getProperty, getPropertyAnyStatus } from "./catalog";
 import {
   addDays,
   formatDate,
@@ -193,7 +193,7 @@ export async function createBooking(
   input: BookingRequestInput,
   { payOnline = false }: { payOnline?: boolean } = {},
 ): Promise<Booking> {
-  const property = getProperty(input.propertySlug);
+  const property = await getProperty(input.propertySlug);
   if (!property) throw new BookingError("That home no longer exists.", "not-found");
 
   const problem = validateStay(property, input.checkIn, input.checkOut, input.guests);
@@ -501,7 +501,7 @@ export async function addBlock(input: {
   end: string;
   reason?: string;
 }) {
-  if (!getProperty(input.propertySlug)) throw new BookingError("Unknown property.");
+  if (!(await getPropertyAnyStatus(input.propertySlug))) throw new BookingError("Unknown property.");
   if (!isIsoDate(input.start) || !isIsoDate(input.end) || input.end <= input.start)
     throw new BookingError("The end date must be after the start date.");
   return mutate<Block, Block>(BLOCKS, (blocks) => {
@@ -594,6 +594,7 @@ Review it in the dashboard: ${absoluteUrl("/admin/bookings")}`,
 }
 
 async function notifyPayment(b: Booking, outcome: NonNullable<PaymentOutcome>) {
+  const checkInTime = (await getPropertyAnyStatus(b.propertySlug))?.checkIn ?? "15:00";
   if (outcome === "expired") return; // the guest left checkout; nothing was booked
   const manage = absoluteUrl(await bookingUrl(b.ref));
   const dashboard = absoluteUrl(`/admin/bookings?q=${b.ref}`);
@@ -652,7 +653,7 @@ Thank you for booking with ${site.name} — your payment was received and your s
 ${summary(b)}
 ${paymentLine(b).replace(/\nStripe:.*$/, "")}${carNote(b)}
 
-Check-in is from ${getProperty(b.propertySlug)?.checkIn ?? "15:00"}. We'll share access details and directions before you arrive.
+Check-in is from ${checkInTime}. We'll share access details and directions before you arrive.
 
 View or cancel your booking: ${manage}
 
@@ -675,6 +676,7 @@ ${dashboard}`,
 }
 
 async function notifyStatusChange(b: Booking, by: Actor) {
+  const checkInTime = (await getPropertyAnyStatus(b.propertySlug))?.checkIn ?? "15:00";
   const manage = absoluteUrl(await bookingUrl(b.ref));
   if (b.status === "confirmed") {
     await sendMail({
@@ -687,7 +689,7 @@ Great news — your stay at ${b.propertyTitle} is confirmed.
 
 ${summary(b)}
 
-Check-in is from ${getProperty(b.propertySlug)?.checkIn ?? "15:00"}. We'll share access details and directions before you arrive.
+Check-in is from ${checkInTime}. We'll share access details and directions before you arrive.
 
 Your booking: ${manage}`,
     });

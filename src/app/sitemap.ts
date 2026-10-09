@@ -1,10 +1,13 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/config/site";
-import { properties } from "@/data/properties";
+import { getProperties } from "@/lib/server/catalog";
 import { areas } from "@/data/areas";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const dynamic = "force-dynamic";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const properties = await getProperties();
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: siteUrl(), lastModified: now, changeFrequency: "weekly", priority: 1 },

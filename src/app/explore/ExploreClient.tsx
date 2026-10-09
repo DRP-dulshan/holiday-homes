@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Property } from "@/data/properties";
+import type { CatalogSummary } from "@/lib/server/catalog";
 import { PropertyCard } from "@/components/PropertyCard";
 import { FilterSidebar } from "@/components/explore/FilterSidebar";
 import { SortSelect } from "@/components/explore/SortSelect";
@@ -15,11 +16,12 @@ import { addDays, formatShortDate, todayIso } from "@/lib/dates";
 type ExploreClientProps = {
   filters: ExploreFilters;
   results: Property[];
+  summary: CatalogSummary;
   checkIn: string | null;
   checkOut: string | null;
 };
 
-export function ExploreClient({ filters, results, checkIn, checkOut }: ExploreClientProps) {
+export function ExploreClient({ filters, results, summary, checkIn, checkOut }: ExploreClientProps) {
   const router = useRouter();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -31,7 +33,7 @@ export function ExploreClient({ filters, results, checkIn, checkOut }: ExploreCl
     next: ExploreFilters,
     dates: { checkIn: string | null; checkOut: string | null } = { checkIn, checkOut },
   ) => {
-    const params = filtersToSearchParams(next);
+    const params = filtersToSearchParams(next, summary.priceBounds);
     if (dates.checkIn && dates.checkOut) {
       params.set("checkIn", dates.checkIn);
       params.set("checkOut", dates.checkOut);
@@ -67,7 +69,14 @@ export function ExploreClient({ filters, results, checkIn, checkOut }: ExploreCl
     <section className="bg-canvas py-16 md:py-24">
       <div className="container-drp grid gap-10 lg:grid-cols-[260px_1fr]">
         <aside className="hidden lg:block">
-          <FilterSidebar filters={filters} onChange={onChange} onClear={onClear} />
+          <FilterSidebar
+            filters={filters}
+            priceBounds={summary.priceBounds}
+            listedTypes={summary.listedTypes}
+            homesByArea={summary.homesByArea}
+            onChange={onChange}
+            onClear={onClear}
+          />
         </aside>
 
         <div>
@@ -210,7 +219,14 @@ export function ExploreClient({ filters, results, checkIn, checkOut }: ExploreCl
       </div>
 
       <Modal open={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)} title="Filters">
-        <FilterSidebar filters={filters} onChange={onChange} onClear={onClear} />
+        <FilterSidebar
+            filters={filters}
+            priceBounds={summary.priceBounds}
+            listedTypes={summary.listedTypes}
+            homesByArea={summary.homesByArea}
+            onChange={onChange}
+            onClear={onClear}
+          />
         <button
           type="button"
           onClick={() => setMobileFiltersOpen(false)}

@@ -7,7 +7,7 @@ import { StaySummary } from "@/components/booking/StaySummary";
 import { CheckoutForm } from "@/components/booking/CheckoutForm";
 import { IconArrowRight } from "@/components/icons";
 import { bookingRules } from "@/config/site";
-import { getProperty } from "@/data/properties";
+import { getProperty } from "@/lib/server/catalog";
 import { addDays, formatDate, isIsoDate } from "@/lib/dates";
 import { aed, quoteStay, validateStay } from "@/lib/pricing";
 import { isAvailable } from "@/lib/server/bookings";
@@ -22,7 +22,7 @@ const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v
 
 export default async function BookPage({ params, searchParams }: PageProps<"/book/[slug]">) {
   const { slug } = await params;
-  const property = getProperty(slug);
+  const property = await getProperty(slug);
   if (!property) notFound();
 
   const sp = await searchParams;

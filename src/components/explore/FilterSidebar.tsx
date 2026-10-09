@@ -1,7 +1,7 @@
 "use client";
 
-import { areasWithHomes } from "@/data/areas";
-import { listedPropertyTypes, priceBounds, PRICE_STEP } from "@/data/properties";
+import { areas } from "@/data/areas";
+import { PRICE_STEP, type PriceBounds, type PropertyType } from "@/data/properties";
 import { PriceRange } from "./PriceRange";
 import { FILTER_AMENITY_GROUPS, type ExploreFilters } from "@/lib/filters";
 
@@ -10,6 +10,9 @@ const BEDROOM_OPTIONS = [0, 1, 2, 3];
 
 type FilterSidebarProps = {
   filters: ExploreFilters;
+  priceBounds: PriceBounds;
+  listedTypes: { value: PropertyType; label: string }[];
+  homesByArea: Record<string, number>;
   onChange: (patch: Partial<ExploreFilters>) => void;
   onClear: () => void;
 };
@@ -18,7 +21,15 @@ function toggle<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
 
-export function FilterSidebar({ filters, onChange, onClear }: FilterSidebarProps) {
+export function FilterSidebar({
+  filters,
+  priceBounds,
+  listedTypes,
+  homesByArea,
+  onChange,
+  onClear,
+}: FilterSidebarProps) {
+  const areasWithHomes = areas.filter((a) => (homesByArea[a.name] ?? 0) > 0);
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -52,7 +63,7 @@ export function FilterSidebar({ filters, onChange, onClear }: FilterSidebarProps
           Property type
         </legend>
         <div className="mt-3 flex flex-col gap-2.5">
-          {listedPropertyTypes.map((t) => (
+          {listedTypes.map((t) => (
             <label key={t.value} className="flex items-center gap-2.5 text-sm text-ink-80">
               <input
                 type="checkbox"

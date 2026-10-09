@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { properties } from "@/data/properties";
+import { getProperties } from "@/lib/server/catalog";
 import { PropertyCard } from "./PropertyCard";
 import { SectionHeading } from "./SectionHeading";
 import { Reveal } from "./Reveal";
@@ -15,10 +15,13 @@ const FEATURED_SLUGS = [
   "stylish-1br-with-balcony-heart-of-business-bay",
 ];
 
-export function FeaturedStays() {
-  const featured = FEATURED_SLUGS.map((slug) =>
+export async function FeaturedStays() {
+  const properties = await getProperties();
+  // Falls back to the first homes if the hand-picked ones are unlisted.
+  const picked = FEATURED_SLUGS.map((slug) =>
     properties.find((p) => p.slug === slug),
   ).filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const featured = picked.length >= 3 ? picked : properties.slice(0, 6);
 
   return (
     <section id="stays" className="bg-canvas py-24 md:py-32">

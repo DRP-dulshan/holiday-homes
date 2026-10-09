@@ -17,17 +17,17 @@ import {
   IconStar,
   IconUsers,
 } from "@/components/icons";
-import { bedroomLabel, getProperty, properties } from "@/data/properties";
+import { bedroomLabel } from "@/data/properties";
+import { getProperty } from "@/lib/server/catalog";
 
-export function generateStaticParams() {
-  return properties.map((p) => ({ slug: p.slug }));
-}
+// Homes (and edits to them) come from the database, so pages render on request.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/property/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const property = getProperty(slug);
+  const property = await getProperty(slug);
   if (!property) return { title: "Stay not found" };
   return {
     title: `${property.title}, ${property.area}`,
@@ -40,7 +40,7 @@ export default async function PropertyPage({
   params,
 }: PageProps<"/property/[slug]">) {
   const { slug } = await params;
-  const property = getProperty(slug);
+  const property = await getProperty(slug);
   if (!property) notFound();
 
   return (
