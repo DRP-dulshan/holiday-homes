@@ -194,6 +194,7 @@ src/
 - Add the Stripe keys and webhook (live mode), and make one real test booking.
 - Have `/terms` and `/privacy` reviewed against your DET licence and the
   UAE PDPL.
-- Guest reviews: `src/data/testimonials.ts` holds sample text, so the home page doesn't show
-  it. Replace it with real reviews (with permission) and add `<Testimonials />` back to `src/app/page.tsx`.
+- Guest reviews: the "Guest stories" section on the home page shows the sample reviews in
+  `src/data/testimonials.ts` and says so. Replace them with real guest reviews (with permission), and
+  remove the "sample" wording in `src/components/Testimonials.tsx`, before launch.
 - Some area photos are Unsplash stock; replace them with DRP's own when available.
