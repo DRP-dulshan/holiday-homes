@@ -3,6 +3,8 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import { site, siteUrl, socialLinks } from "@/config/site";
 import { JsonLd } from "@/components/JsonLd";
 import { Analytics } from "@/components/Analytics";
+import { CurrencyProvider } from "@/components/CurrencyProvider";
+import { getRates } from "@/lib/server/rates";
 import { ConsentBanner } from "@/components/ConsentBanner";
 import "./globals.css";
 
@@ -62,7 +64,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const rates = await getRates();
   return (
     <html
       lang="en"
@@ -95,7 +98,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             ],
           }}
         />
-        {children}
+        <CurrencyProvider rates={rates}>{children}</CurrencyProvider>
         <ConsentBanner />
         <Analytics />
       </body>

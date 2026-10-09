@@ -14,6 +14,7 @@ import {
 } from "@/lib/dates";
 import { aed, quoteStay, rateLines, validateStay } from "@/lib/pricing";
 import { ContactForm } from "./ContactForm";
+import { ApproxPrice } from "./CurrencyProvider";
 import { Modal } from "./Modal";
 import { DateRangeCalendar } from "./booking/DateRangeCalendar";
 import { useAvailability } from "./booking/useAvailability";
@@ -198,6 +199,7 @@ export function BookingCard({ property }: { property: Property }) {
             <span>Total</span>
             <span>AED {aed.format(quote.total)}</span>
           </div>
+          <ApproxPrice aed={quote.total} className="block text-right text-xs text-ink-60" />
         </div>
       ) : (
         <p className="mt-5 border-t border-ink-10 pt-4 text-sm text-ink-60">

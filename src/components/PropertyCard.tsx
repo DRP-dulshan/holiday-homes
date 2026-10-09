@@ -3,6 +3,7 @@ import Link from "next/link";
 import { bedroomLabel, type Property } from "@/data/properties";
 import { IconBed, IconStar, IconUsers } from "./icons";
 import { SaveButton } from "./SaveButton";
+import { ApproxPrice } from "./CurrencyProvider";
 
 const aed = new Intl.NumberFormat("en-AE", {
   maximumFractionDigits: 0,
@@ -72,6 +73,7 @@ export function PropertyCard({
               AED {aed.format(property.pricePerNight)}
             </span>{" "}
             / night
+            <ApproxPrice aed={property.pricePerNight} className="block text-xs text-ink-60" />
           </p>
           <span className="text-sm font-semibold text-brand-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             View

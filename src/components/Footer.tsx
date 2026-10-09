@@ -4,6 +4,7 @@ import { areas } from "@/data/areas";
 import { footerLinks, navLinks, site, socialLinks } from "@/config/site";
 import { IconWhatsApp } from "./icons";
 import { NewsletterForm } from "./NewsletterForm";
+import { CurrencySelect } from "./CurrencyProvider";
 import { CookieSettingsLink } from "./ConsentBanner";
 
 export function Footer() {
@@ -120,6 +121,7 @@ export function Footer() {
               </Link>
             ))}
             <CookieSettingsLink />
+            <CurrencySelect className="text-white/60" />
             <span>{site.license}</span>
           </p>
         </div>

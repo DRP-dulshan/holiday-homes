@@ -24,6 +24,7 @@ import { PropertyReviews } from "@/components/PropertyReviews";
 import { JsonLd } from "@/components/JsonLd";
 import { SaveButton } from "@/components/SaveButton";
 import { ShareButton } from "@/components/ShareButton";
+import { ApproxPrice } from "@/components/CurrencyProvider";
 import { siteUrl } from "@/config/site";
 
 // Homes (and edits to them) come from the database, so pages render on request.
@@ -156,6 +157,7 @@ export default async function PropertyPage({
                   AED {property.pricePerNight.toLocaleString("en-AE")}
                 </span>{" "}
                 / night
+                <ApproxPrice aed={property.pricePerNight} className="text-ink-60" />
               </span>
             )}
           </div>

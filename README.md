@@ -82,6 +82,11 @@ handle enquiries. Email notifications go out at each step.
 - Guests can email themselves a private link to all their bookings ("Manage my booking"),
   send their guests' names and arrival details from their booking page, and get an
   "arriving soon" email three days before check-in (daily cron).
+- Travel guides (`/guides`): five Dubai guides (neighbourhoods, best season, getting around, a
+  3-day plan, holiday-home essentials) kept in `src/data/guides.ts`; add more there.
+- Currency: guests can view prices in USD, EUR, GBP, SAR, INR, RUB or CNY (approximate,
+  from live rates refreshed twice a day, with a built-in fallback). Payment is always in AED.
+- Explore has a List / Map toggle (OpenStreetMap). Pins are approximate, at neighbourhood level.
 - Rates: per home, a weekend rate (Fri/Sat nights), seasonal / event rates for
   date ranges, and weekly (7+ nights) and monthly (28+ nights) discounts.
 - Promo codes: percent or AED-off codes with optional expiry, stay window,

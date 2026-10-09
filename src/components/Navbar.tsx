@@ -8,6 +8,7 @@ import { Logo } from "./Logo";
 import { navLinks } from "@/config/site";
 import { IconArrowRight, IconClose, IconHeart } from "./icons";
 import { useSaved } from "@/lib/saved";
+import { CurrencySelect } from "./CurrencyProvider";
 
 type NavbarProps = {
   /** When true, the bar starts transparent over a dark hero and turns solid on scroll. */
@@ -84,6 +85,7 @@ export function Navbar({ overHero = false }: NavbarProps) {
           </div>
 
           <div className="flex items-center gap-3">
+            <CurrencySelect className={`hidden xl:inline-flex ${solid ? "text-ink" : "text-white"}`} />
             <Link
               href="/saved"
               aria-label={savedCount ? `Saved homes (${savedCount})` : "Saved homes"}

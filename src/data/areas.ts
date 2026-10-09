@@ -4,6 +4,9 @@ export type Area = {
   image: string;
   /** Location-specific alt text for the area card image. */
   alt: string;
+  /** Approximate centre of the neighbourhood, for the map. */
+  lat: number;
+  lng: number;
   /** CSS object-position for the photo when it is cropped to a banner or card. */
   imagePosition?: string;
   note: string;
@@ -22,6 +25,8 @@ export const areas: Area[] = [
   {
     name: "Palm Jumeirah",
     slug: "palm-jumeirah",
+    lat: 25.1124,
+    lng: 55.139,
     image:
       "https://images.unsplash.com/photo-1786991810391-e28ee367c3aa?auto=format&fit=crop&w=1200&q=80",
     alt: "Aerial view of Palm Jumeirah in Dubai, showing the palm-shaped island's fronds and the outer crescent",
@@ -33,6 +38,8 @@ export const areas: Area[] = [
   {
     name: "Dubai Marina",
     slug: "dubai-marina",
+    lat: 25.0805,
+    lng: 55.1403,
     image:
       "https://images.unsplash.com/photo-1582120042072-d01e2fc8f3ea?auto=format&fit=crop&w=1200&q=80",
     alt: "The Dubai Marina skyline with yachts moored along the waterfront and the Cayan Tower among the surrounding high-rise towers",
@@ -44,6 +51,8 @@ export const areas: Area[] = [
   {
     name: "JVT",
     slug: "jvt",
+    lat: 25.0536,
+    lng: 55.163,
     image:
       "https://dubairapidproperties.com/wp-content/uploads/2026/04/WhatsApp-Image-2026-04-18-at-9.15.56-PM-3.jpeg",
     alt: "Rooftop sports court and lawn at Cloud Towers in Jumeirah Village Triangle (JVT), Dubai",
@@ -55,6 +64,8 @@ export const areas: Area[] = [
   {
     name: "Business Bay",
     slug: "business-bay",
+    lat: 25.1862,
+    lng: 55.268,
     image:
       "https://images.unsplash.com/photo-1643818738490-19931ee82bc9?auto=format&fit=crop&w=1200&q=80",
     alt: "The Dubai Water Canal at night curving past the Business Bay tower cluster, with the twin-sail pedestrian bridge and Burj Khalifa in the distance",
@@ -66,6 +77,8 @@ export const areas: Area[] = [
   {
     name: "DIFC",
     slug: "difc",
+    lat: 25.2138,
+    lng: 55.2823,
     image: "https://dubairapidproperties.com/wp-content/uploads/2026/04/5.jpeg",
     alt: "Living room of a DIFC penthouse with floor-to-ceiling windows overlooking the Dubai skyline",
     note: "Skyline living in the financial district",
@@ -76,6 +89,8 @@ export const areas: Area[] = [
   {
     name: "JVC",
     slug: "jvc",
+    lat: 25.0587,
+    lng: 55.2086,
     image:
       "https://images.unsplash.com/photo-1642715350691-7ffde05661c4?auto=format&fit=crop&w=1200&q=80",
     alt: "Aerial view of the circular community in Jumeirah Village Circle (JVC), Dubai — low-rise buildings arranged in a ring around a central garden",
@@ -87,6 +102,8 @@ export const areas: Area[] = [
   {
     name: "Dubai Sports City",
     slug: "dubai-sports-city",
+    lat: 25.0393,
+    lng: 55.2175,
     image: "https://dubairapidproperties.com/wp-content/uploads/2026/05/IMG_3135.png",
     alt: "Bright studio bedroom in Dubai Sports City with floor-to-ceiling windows and a balcony",
     note: "Golf views and a rooftop pool",
@@ -97,6 +114,8 @@ export const areas: Area[] = [
   {
     name: "Meydan",
     slug: "meydan",
+    lat: 25.1637,
+    lng: 55.3014,
     image:
       "https://dubairapidproperties.com/wp-content/uploads/2026/04/WhatsApp-Image-2026-04-18-at-9.17.28-PM.jpeg",
     alt: "Pool deck with sun loungers at Azizi Riviera in Meydan, Dubai",
@@ -108,6 +127,8 @@ export const areas: Area[] = [
   {
     name: "Downtown Dubai",
     slug: "downtown-dubai",
+    lat: 25.1972,
+    lng: 55.2744,
     image:
       "https://images.unsplash.com/photo-1634007626524-f47fa37810a7?auto=format&fit=crop&w=1600&q=80",
     alt: "The Burj Khalifa rising above the illuminated Downtown Dubai skyline at dusk, with the Sheikh Zayed Road interchange below",
