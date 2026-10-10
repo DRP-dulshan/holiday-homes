@@ -8,6 +8,7 @@ import {
 import { areas } from "@/data/areas";
 import { getRatingStats } from "./review-stats";
 import { mutate, readAll } from "./store";
+import { getPortalHomes } from "./portal";
 
 /**
  * The home collection. The imported listings in src/data/properties.ts are the starting point;
@@ -50,9 +51,12 @@ function merge(rows: Row[]): Property[] {
 
 /** Every home, including unlisted ones (admin only). */
 export async function getAllProperties(): Promise<Property[]> {
-  const [rows, stats] = await Promise.all([readRows(), getRatingStats()]);
+  const [rows, stats, portal] = await Promise.all([readRows(), getRatingStats(), getPortalHomes()]);
+  // With the portal connected, the homes published there are the catalog. An unreachable or empty
+  // portal falls back to the built-in list so the site never goes blank.
+  const homes = portal ?? merge(rows);
   // Ratings come from approved guest reviews; homes without any show none.
-  return merge(rows).map((p) => {
+  return homes.map((p) => {
     const s = stats.get(p.slug);
     return { ...p, rating: s?.rating, reviews: s?.reviews };
   });
