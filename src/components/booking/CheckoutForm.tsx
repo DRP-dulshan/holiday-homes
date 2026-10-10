@@ -172,7 +172,7 @@ export function CheckoutForm({
           <textarea
             {...register("specialRequests")}
             rows={3}
-            placeholder="Airport transfer, cot, celebration set-up…"
+            placeholder="Celebration set-up, dietary needs, anything we should know…"
             className={inputClass(!!errors.specialRequests)}
           />
         </Field>

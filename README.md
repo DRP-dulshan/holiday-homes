@@ -27,8 +27,8 @@ handle enquiries. Email notifications go out at each step.
   pay within 30 minutes, the checkout expires and the dates are released.
   Without Stripe keys, a booking is a *request* the team confirms and
   arranges payment for directly.
-  Guests can also ask for a **rental car** (type and airport or home
-  pick-up). The team sees it in the dashboard and emails.
+  Guests can also ask to rent the **DRP car** (linked to its page via
+  `site.carFleetUrl`). The team sees it in the dashboard and emails.
 - `/booking/[ref]` is the booking page. It's reached through a signed link
   sent by email, or by looking up the reference and email at `/booking`.
   Guests can see the status and payment, finish an unpaid payment, and
@@ -77,7 +77,7 @@ handle enquiries. Email notifications go out at each step.
   to what is left); the guest is emailed. Cancelling a paid booking flags "refund due".
 - Reports: admin → Reports shows bookings, nights, revenue, average rates, occupancy,
   discounts and online payments by month and by home for any period.
-- Extras: guests can ask for an airport transfer, early check-in, late check-out, a baby
+- Extras: guests can ask for early check-in, late check-out, a baby
   cot or extra cleaning at checkout; the team quotes them (nothing is charged for them online).
 - Guests can email themselves a private link to all their bookings ("Manage my booking"),
   send their guests' names and arrival details from their booking page, and get an

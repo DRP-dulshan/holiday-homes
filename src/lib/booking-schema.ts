@@ -20,7 +20,6 @@ export const CAR_PICKUPS = [
 
 /** Extras guests can ask for. They aren't charged online: the team confirms availability and the price. */
 export const EXTRAS = [
-  { id: "airport-transfer", label: "Airport transfer" },
   { id: "early-checkin", label: "Early check-in" },
   { id: "late-checkout", label: "Late check-out" },
   { id: "baby-cot", label: "Baby cot or high chair" },
@@ -29,9 +28,12 @@ export const EXTRAS = [
 export type ExtraId = (typeof EXTRAS)[number]["id"];
 const EXTRA_IDS = EXTRAS.map((e) => e.id) as [ExtraId, ...ExtraId[]];
 
-/** "Airport transfer, Early check-in" */
+/** Extras no longer offered, kept so older bookings still read well. */
+const RETIRED_EXTRAS: Record<string, string> = { "airport-transfer": "Airport transfer" };
+
+/** "Early check-in, Baby cot or high chair" */
 export const describeExtras = (ids: readonly string[] = []) =>
-  ids.map((id) => EXTRAS.find((e) => e.id === id)?.label ?? id).join(", ");
+  ids.map((id) => EXTRAS.find((e) => e.id === id)?.label ?? RETIRED_EXTRAS[id] ?? id).join(", ");
 
 export type CarRequest = {
   /** Only on older bookings, from when guests chose a car type. */
