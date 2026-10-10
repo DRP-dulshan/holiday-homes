@@ -16,7 +16,7 @@ const pillars = [
   {
     icon: IconCar,
     title: "Dedicated car fleet & concierge",
-    body: "Guests can rent the DRP car for their stay, collected from our office, and our team arranges the details before you arrive.",
+    body: "Guests can rent the DRP car for their stay, and our team arranges the details before you arrive.",
   },
   {
     icon: IconBadgeCheck,

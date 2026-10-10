@@ -190,8 +190,7 @@ export function CheckoutForm({
                 I&rsquo;d like to rent the DRP car
               </span>
               <span className="mt-0.5 block text-xs text-ink-60">
-                Our own SUV, available to DRP guests during their stay. The car is collected from
-                our office ({site.address.line1}, {site.address.line2}). We&rsquo;ll confirm
+                Our own SUV, available to DRP guests during their stay. We&rsquo;ll confirm
                 availability and the rate with you{payOnline ? "; the car is paid separately." : " — nothing is charged now."}{" "}
                 <a
                   href={site.carFleetUrl}

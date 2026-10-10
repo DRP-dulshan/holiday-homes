@@ -32,7 +32,7 @@ export const faqs: Faq[] = [
   {
     question: "Can I rent a car through DRP?",
     answer:
-      "Yes. DRP guests can rent our own SUV for their stay; tick the box when you book and we'll confirm availability and the rate. The car is collected from our office on Palm Jumeirah. Our team can also help with restaurant tables, activities, groceries and more before and during your stay.",
+      "Yes. DRP guests can rent our own SUV for their stay; tick the box when you book and we'll confirm availability and the rate. Our team can also help with restaurant tables, activities, groceries and more before and during your stay.",
   },
   {
     question: "I own a property in Dubai — how does management with DRP work?",

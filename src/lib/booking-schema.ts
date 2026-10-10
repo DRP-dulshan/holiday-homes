@@ -11,11 +11,11 @@ export const CAR_TYPES = [
   { value: "luxury", label: "Luxury" },
 ] as const;
 
-/** Older bookings carry these; the DRP car is now always collected from the office. */
+/** Older bookings carry airport/home; new requests are for the DRP car, arranged with the team ("office"). */
 export const CAR_PICKUPS = [
   { value: "airport", label: "Collect at the airport on arrival" },
   { value: "home", label: "Deliver to the home" },
-  { value: "office", label: "Collect from the DRP office" },
+  { value: "office", label: "Arranged with the team" },
 ] as const;
 
 /** Extras guests can ask for. They aren't charged online: the team confirms availability and the price. */
@@ -39,9 +39,10 @@ export type CarRequest = {
   pickup: (typeof CAR_PICKUPS)[number]["value"];
 };
 
-/** "DRP car — collect from the DRP office" (older bookings: "SUV / family — deliver to the home") */
+/** "DRP car" (older bookings: "SUV / family — deliver to the home") */
 export function describeCar(car: CarRequest) {
   const type = car.type ? (CAR_TYPES.find((t) => t.value === car.type)?.label ?? car.type) : "DRP car";
+  if (car.pickup === "office") return type;
   const pickup = CAR_PICKUPS.find((p) => p.value === car.pickup)?.label ?? car.pickup;
   return `${type} — ${pickup.charAt(0).toLowerCase()}${pickup.slice(1)}`;
 }
@@ -61,7 +62,7 @@ export const bookingRequestSchema = z.object({
   country: z.string().trim().max(80).optional(),
   arrivalTime: z.string().trim().max(40).optional(),
   specialRequests: z.string().trim().max(1500).optional(),
-  /** The guest would like to rent the DRP car (collected from the office); the team confirms it and the rate. */
+  /** The guest would like to rent the DRP car; the team confirms availability and the rate. */
   needCar: z.boolean().optional(),
   carType: z.enum(["any", "economy", "sedan", "suv", "luxury"]).optional(),
   carPickup: z.enum(["airport", "home"]).optional(),

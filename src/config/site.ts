@@ -33,7 +33,7 @@ export const site = {
     "https://www.google.com/maps?q=Palm+Jumeirah,+Dubai,+United+Arab+Emirates&output=embed",
 
   license: "Licensed holiday-home operator · Dubai DET / DTCM",
-  /** The DRP car guests can rent: details on the main D|R|P website. Collected from the office. */
+  /** The DRP car guests can rent: details on the main D|R|P website. */
   carFleetUrl: "https://new-home-drp6.vercel.app/ecosystem/car-fleet",
   timeZone: "Asia/Dubai",
 };

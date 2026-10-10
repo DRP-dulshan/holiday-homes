@@ -41,7 +41,7 @@ const differentiators = [
   {
     icon: IconCar,
     title: "Car fleet & concierge",
-    body: "Guests can rent the DRP car, collected from our office, and our team arranges the details ahead of arrival.",
+    body: "Guests can rent the DRP car, and our team arranges the details ahead of arrival.",
   },
   {
     icon: IconBadgeCheck,
