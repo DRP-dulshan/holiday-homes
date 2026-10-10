@@ -19,11 +19,19 @@ import {
   todayIso,
   type DateRange,
 } from "@/lib/dates";
-import { aed, quoteStay, rateLines, validateStay, type PromoRule, type Quote } from "@/lib/pricing";
+import { accommodationTotal, aed, quoteStay, rateLines, validateStay, type PromoRule, type Quote } from "@/lib/pricing";
 import { describeCar, describeExtras, type BookingRequestInput, type CarRequest } from "@/lib/booking-schema";
 import { newId, newReference, sign, verify } from "./crypto";
 import { absoluteUrl, sendMail, teamInbox } from "./mailer";
 import { mutate, readAll } from "./store";
+import {
+  getPortalBusy,
+  isPortalHome,
+  pushBookingToPortal,
+  pushStatusToPortal,
+  PortalError,
+  type PortalBookingPush,
+} from "./portal";
 import { evaluatePromo, normalizeCode, PROMOS, type Promo } from "./promos";
 import {
   CHECKOUT_MINUTES,
@@ -180,7 +188,8 @@ export async function getUnavailableRanges(slug: string): Promise<DateRange[]> {
     listIcalDocs(),
   ]);
   const today = todayIso();
-  return takenRanges(slug, bookings, blocks, imported)
+  const portal = (await getPortalBusy())[slug] ?? [];
+  return [...takenRanges(slug, bookings, blocks, imported), ...portal]
     .filter((r) => r.end > today)
     .sort((a, b) => a.start.localeCompare(b.start));
 }
@@ -218,6 +227,8 @@ export async function getUnavailableSlugs(checkIn: string, checkOut: string) {
     if (holdsDates(b) && rangesOverlap(stay, { start: b.checkIn, end: b.checkOut }))
       taken.add(b.propertySlug);
   for (const b of blocks) if (rangesOverlap(stay, b)) taken.add(b.propertySlug);
+  for (const [slug, ranges] of Object.entries(await getPortalBusy()))
+    if (ranges.some((r) => rangesOverlap(stay, r))) taken.add(slug);
   return taken;
 }
 
@@ -366,9 +377,59 @@ export async function createBooking(
     return created;
   });
 
+  // With the portal connected, it owns the calendar: it must accept the dates too (it also holds
+  // Airbnb's), or this booking is dropped and the guest is asked to pick other dates.
+  if (await isPortalHome(property.slug)) {
+    try {
+      await pushBookingToPortal(portalPayload(booking));
+    } catch (err) {
+      await mutate<Booking, void>(BOOKINGS, (rows) => {
+        const i = rows.findIndex((b) => b.ref === booking.ref);
+        if (i !== -1) rows.splice(i, 1);
+      });
+      if (err instanceof PortalError && err.status === 409)
+        throw new BookingError("Sorry — those dates were just taken. Please choose different dates.", "unavailable");
+      console.error(`[portal] booking ${booking.ref} was not accepted:`, err);
+      throw new BookingError("We couldn't reserve those dates right now. Please try again in a moment.");
+    }
+  }
+
   // A paid booking is announced once Stripe confirms the payment.
   if (!payOnline && notify) await notifyNewBooking(booking);
   return booking;
+}
+
+const portalPayload = (b: Booking): PortalBookingPush => ({
+  ref: b.ref,
+  slug: b.propertySlug,
+  checkIn: b.checkIn,
+  checkOut: b.checkOut,
+  guests: b.guests,
+  status: b.status === "confirmed" ? "confirmed" : "tentative",
+  guest: { name: b.guest.name, email: b.guest.email, phone: b.guest.phone, nationality: b.guest.country },
+  quote: {
+    nightlyRate: b.quote.nightlyRate,
+    accommodation: accommodationTotal(b.quote),
+    cleaningFee: b.quote.cleaningFee,
+    tourismFee: b.quote.tourismFee,
+    total: b.quote.total,
+  },
+  message: b.specialRequests,
+  notes: [b.arrivalTime ? `Arrival ${b.arrivalTime}` : "", b.car ? "Car requested" : "", b.extras?.length ? `Extras: ${b.extras.join(", ")}` : ""]
+    .filter(Boolean)
+    .join(" · ") || undefined,
+});
+
+/** Tells the portal a booking was confirmed or cancelled here. Best effort: the portal keeps its own hold otherwise. */
+async function syncPortalStatus(b: Booking | null) {
+  if (!b || (b.status !== "confirmed" && b.status !== "cancelled")) return;
+  try {
+    if (!(await isPortalHome(b.propertySlug))) return;
+    await pushStatusToPortal(b.ref, b.status, b.history.at(-1)?.note);
+  } catch (err) {
+    if (err instanceof PortalError && err.status === 404) return; // never reached the portal
+    console.error(`[portal] couldn't update ${b.ref}:`, err);
+  }
 }
 
 /**
@@ -498,7 +559,10 @@ export async function applyCheckoutSession(
     return b;
   });
 
-  if (booking && outcome) await notifyPayment(booking, outcome);
+  if (booking && outcome) {
+    await syncPortalStatus(booking);
+    await notifyPayment(booking, outcome);
+  }
   return booking;
 }
 
@@ -539,6 +603,7 @@ export async function settleExpiredHolds() {
           x.updatedAt = at;
           x.history.push({ status: "cancelled", at, by: "system", note: "Payment not completed in time" });
         });
+        await syncPortalStatus(await getBooking(b.ref));
       }),
   );
 }
@@ -586,7 +651,10 @@ export async function setBookingStatus(
     return booking;
   });
 
-  if (changed) await notifyStatusChange(updated, by);
+  if (changed) {
+    await syncPortalStatus(updated);
+    await notifyStatusChange(updated, by);
+  }
   return updated;
 }
 

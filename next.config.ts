@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
       // Photos the team uploads in the admin (Vercel Blob) or hosts on Cloudinary.
       { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },
+      // Photos uploaded in the portal (Supabase Storage).
+      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
     ],
   },
 };
