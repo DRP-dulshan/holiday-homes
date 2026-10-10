@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Property } from "@/data/properties";
@@ -158,6 +159,13 @@ export function ExploreClient({ filters, results, summary, checkIn, checkOut }: 
               <SortSelect value={filters.sort} onChange={(sort) => onChange({ sort })} />
             </div>
           </div>
+
+          <p className="mt-2 text-xs text-ink-60">
+            Staying a month or more?{" "}
+            <Link href="/monthly" className="font-semibold text-brand-600 hover:underline">
+              See monthly prices
+            </Link>
+          </p>
 
           {activeCount > 0 ? (
             <button

@@ -78,6 +78,26 @@ export default function TermsPage() {
           ),
         },
         {
+          heading: "Best price guarantee",
+          id: "best-price",
+          body: (
+            <>
+              <p>
+                Our homes cost the least when you book them on this website. If you find the same
+                home, for the same dates and number of guests, at a lower total price on another
+                website (such as Airbnb or Booking.com), send us the link before you book and we
+                will match that total.
+              </p>
+              <p>
+                The lower price must be publicly available and bookable at the time you contact us,
+                and is compared on the total you would pay, including all fees. Prices behind a
+                member login, a promo code or a package with flights or other services are not
+                included. The guarantee cannot be combined with a promo code.
+              </p>
+            </>
+          ),
+        },
+        {
           heading: "Cancellations and changes",
           body: (
             <>

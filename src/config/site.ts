@@ -61,6 +61,7 @@ export const navLinks = [
 ];
 
 export const footerLinks = [
+  { label: "Monthly stays", href: "/monthly" },
   { label: "Travel guides", href: "/guides" },
   { label: "Manage my booking", href: "/booking" },
   { label: "Privacy", href: "/privacy" },
