@@ -358,7 +358,7 @@ export async function createBooking(
       arrivalTime: input.arrivalTime || undefined,
       specialRequests: input.specialRequests || undefined,
       car: input.needCar
-        ? { type: input.carType ?? "any", pickup: input.carPickup ?? "airport" }
+        ? { pickup: "office" as const }
         : undefined,
       extras: input.extras?.length ? input.extras : undefined,
       quote: quoteStay(property, input.checkIn, input.checkOut, promoRule),
@@ -857,7 +857,7 @@ function paymentLine(b: Booking) {
 }
 
 const carNote = (b: Booking) =>
-  `${b.car ? `\n\nRental car requested: ${describeCar(b.car)}. We'll send car options and rates separately.` : ""}${b.extras?.length ? `\n\nExtras requested: ${describeExtras(b.extras)}. We'll confirm availability and prices with you.` : ""}`;
+  `${b.car ? `\n\nRental car requested: ${describeCar(b.car)}. We'll confirm the car's availability and rate with you.` : ""}${b.extras?.length ? `\n\nExtras requested: ${describeExtras(b.extras)}. We'll confirm availability and prices with you.` : ""}`;
 
 async function notifyNewBooking(b: Booking) {
   const manage = absoluteUrl(await bookingUrl(b.ref));

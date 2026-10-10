@@ -11,9 +11,11 @@ export const CAR_TYPES = [
   { value: "luxury", label: "Luxury" },
 ] as const;
 
+/** Older bookings carry these; the DRP car is now always collected from the office. */
 export const CAR_PICKUPS = [
   { value: "airport", label: "Collect at the airport on arrival" },
   { value: "home", label: "Deliver to the home" },
+  { value: "office", label: "Collect from the DRP office" },
 ] as const;
 
 /** Extras guests can ask for. They aren't charged online: the team confirms availability and the price. */
@@ -32,13 +34,14 @@ export const describeExtras = (ids: readonly string[] = []) =>
   ids.map((id) => EXTRAS.find((e) => e.id === id)?.label ?? id).join(", ");
 
 export type CarRequest = {
-  type: (typeof CAR_TYPES)[number]["value"];
+  /** Only on older bookings, from when guests chose a car type. */
+  type?: (typeof CAR_TYPES)[number]["value"];
   pickup: (typeof CAR_PICKUPS)[number]["value"];
 };
 
-/** "SUV / family — deliver to the home" */
+/** "DRP car — collect from the DRP office" (older bookings: "SUV / family — deliver to the home") */
 export function describeCar(car: CarRequest) {
-  const type = CAR_TYPES.find((t) => t.value === car.type)?.label ?? car.type;
+  const type = car.type ? (CAR_TYPES.find((t) => t.value === car.type)?.label ?? car.type) : "DRP car";
   const pickup = CAR_PICKUPS.find((p) => p.value === car.pickup)?.label ?? car.pickup;
   return `${type} — ${pickup.charAt(0).toLowerCase()}${pickup.slice(1)}`;
 }
@@ -58,7 +61,7 @@ export const bookingRequestSchema = z.object({
   country: z.string().trim().max(80).optional(),
   arrivalTime: z.string().trim().max(40).optional(),
   specialRequests: z.string().trim().max(1500).optional(),
-  /** Rental car add-on — the team sends options and rates with the confirmation. */
+  /** The guest would like to rent the DRP car (collected from the office); the team confirms it and the rate. */
   needCar: z.boolean().optional(),
   carType: z.enum(["any", "economy", "sedan", "suv", "luxury"]).optional(),
   carPickup: z.enum(["airport", "home"]).optional(),

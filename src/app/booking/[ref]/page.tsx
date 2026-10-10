@@ -246,7 +246,7 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                     <div className="sm:col-span-2">
                       <Detail
                         label="Rental car"
-                        value={`${describeCar(booking.car)} — the team will send options and rates.`}
+                        value={`${describeCar(booking.car)} — the team will confirm availability and the rate.`}
                       />
                     </div>
                   ) : null}

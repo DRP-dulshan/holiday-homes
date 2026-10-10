@@ -16,7 +16,7 @@ const pillars = [
   {
     icon: IconCar,
     title: "Dedicated car fleet & concierge",
-    body: "Guests travel with a private DRP car for transfers and around-town journeys, and a concierge who arranges the details before you arrive.",
+    body: "Guests can rent the DRP car for their stay, collected from our office, and our team arranges the details before you arrive.",
   },
   {
     icon: IconBadgeCheck,

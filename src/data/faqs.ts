@@ -30,9 +30,9 @@ export const faqs: Faq[] = [
       "Our current collection spans Palm Jumeirah, Dubai Marina, Jumeirah Village Triangle (JVT), Business Bay, DIFC, Jumeirah Village Circle (JVC), Dubai Sports City and Meydan. We add homes in new communities regularly, so ask us if you have a specific address in mind.",
   },
   {
-    question: "Do guests really get access to a car and concierge?",
+    question: "Can I rent a car through DRP?",
     answer:
-      "Yes. Every booking includes access to the DRP car fleet for airport transfers and around-town travel, plus a concierge who can arrange restaurant tables, activities, private chefs, groceries and more before and during your stay.",
+      "Yes. DRP guests can rent our own SUV for their stay; tick the box when you book and we'll confirm availability and the rate. The car is collected from our office on Palm Jumeirah. Our team can also help with restaurant tables, activities, groceries and more before and during your stay.",
   },
   {
     question: "I own a property in Dubai — how does management with DRP work?",

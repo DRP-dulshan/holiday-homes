@@ -3,18 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  CAR_PICKUPS,
-  CAR_TYPES,
   describeCar,
   describeExtras,
   EXTRAS,
   guestDetailsSchema,
   type GuestDetailsInput,
 } from "@/lib/booking-schema";
-import { whatsappLink } from "@/config/site";
+import { site, whatsappLink } from "@/config/site";
 import { track } from "@/lib/track";
 import { IconArrowRight, IconCar, IconLock, IconWhatsApp } from "../icons";
 
@@ -54,13 +52,11 @@ export function CheckoutForm({
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors, isSubmitting },
   } = useForm<GuestDetailsInput>({
     resolver: zodResolver(guestDetailsSchema),
-    defaultValues: { needCar: false, carType: "any", carPickup: "airport", extras: [] },
+    defaultValues: { needCar: false, extras: [] },
   });
-  const needCar = useWatch({ control, name: "needCar" });
 
   // Everything the team needs, so a request can still reach them if the site can't save it.
   const whatsappFallback = (d: GuestDetailsInput) =>
@@ -71,7 +67,7 @@ export function CheckoutForm({
         `Name: ${d.name} · Email: ${d.email} · Phone: ${d.phone}`,
         d.arrivalTime ? `Arrival: ${d.arrivalTime}` : "",
         d.extras?.length ? `Extras: ${describeExtras(d.extras)}` : "",
-        d.needCar ? `Rental car: ${describeCar({ type: d.carType ?? "any", pickup: d.carPickup ?? "airport" })}` : "",
+        d.needCar ? `Rental car: ${describeCar({ pickup: "office" })}` : "",
         d.specialRequests ? `Requests: ${d.specialRequests}` : "",
       ]
         .filter(Boolean)
@@ -191,39 +187,23 @@ export function CheckoutForm({
             <span>
               <span className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <IconCar className="h-4 w-4 text-brand-600" />
-                Do you need a rental car?
+                I&rsquo;d like to rent the DRP car
               </span>
               <span className="mt-0.5 block text-xs text-ink-60">
-                DRP guests get special rates on our private car fleet. We&rsquo;ll send car
-                options and prices by email{" "}
-                {payOnline
-                  ? "— the car is arranged and paid separately."
-                  : "with your confirmation — nothing is charged now."}
+                Our own SUV, available to DRP guests during their stay. The car is collected from
+                our office ({site.address.line1}, {site.address.line2}). We&rsquo;ll confirm
+                availability and the rate with you{payOnline ? "; the car is paid separately." : " — nothing is charged now."}{" "}
+                <a
+                  href={site.carFleetUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold text-brand-600 hover:underline"
+                >
+                  See the car
+                </a>
               </span>
             </span>
           </label>
-          {needCar ? (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <Field label="Car type">
-                <select {...register("carType")} className={inputClass(false)}>
-                  {CAR_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Pick-up">
-                <select {...register("carPickup")} className={inputClass(false)}>
-                  {CAR_PICKUPS.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-          ) : null}
         </fieldset>
 
         <fieldset className="rounded-2xl border border-ink-10 p-4">
