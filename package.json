@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
+    "@stripe/stripe-js": "^9.17.0",
     "@vercel/blob": "^2.8.1",
     "framer-motion": "^13.1.1",
     "leaflet": "^1.9.4",

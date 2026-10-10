@@ -21,8 +21,8 @@ handle enquiries. Email notifications go out at each step.
   policy. The server re-checks availability under a lock, so the same
   nights can't be booked twice.
 - **Payment (Stripe Checkout).** With Stripe configured, "Book now"
-  holds the dates and sends the guest to Stripe's hosted payment
-  page for the full amount in AED. Once paid, the booking is confirmed
+  holds the dates and opens a secure card form (Stripe's embedded Checkout) on the
+  site's own payment page, for the full amount in AED. Once paid, the booking is confirmed
   automatically and the guest and team are emailed. If the guest doesn't
   pay within 30 minutes, the checkout expires and the dates are released.
   Without Stripe keys, a booking is a *request* the team confirms and
@@ -140,6 +140,7 @@ test all the flows locally.
 | `PORTAL_API_URL`, `PORTAL_API_KEY` | Optional. Connect the D\|R\|P portal: homes published there (portal → unit → Website) replace the built-in list, their availability (incl. Airbnb) comes from the portal, and website bookings are pushed to it. The key equals `WEBSITE_API_KEY` in the portal. If the portal is unreachable the site shows the built-in homes and refuses new bookings for portal homes instead of risking a double booking. |
 | `BLOB_READ_WRITE_TOKEN` | Photo uploads in the admin (Vercel Blob). Optional.               |
 | `STRIPE_SECRET_KEY` | Turns on online payment (`sk_test_…` to test, `sk_live_…` for real payments). |
+| `STRIPE_PUBLISHABLE_KEY` | `pk_test_…` / `pk_live_…`. With it, guests pay in a card form on this site (`/booking/[ref]/pay`); without it, they are sent to Stripe's hosted page. |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret (`whsec_…`) of the Stripe webhook below.            |
 
 Business details live in `src/config/site.ts`: phone, WhatsApp, emails,
@@ -173,7 +174,8 @@ filled in, and the server log says what to configure.
 ### Stripe
 
 1. In the [Stripe dashboard](https://dashboard.stripe.com), under
-   **Developers → API keys**, copy the secret key into `STRIPE_SECRET_KEY`.
+   **Developers → API keys**, copy the secret key into `STRIPE_SECRET_KEY` and the
+   publishable key into `STRIPE_PUBLISHABLE_KEY` (the card form then appears on this site).
 2. Under **Developers → Webhooks**, add an endpoint at
    `https://<your-site>/api/stripe/webhook` with the events
    `checkout.session.completed`, `checkout.session.async_payment_succeeded`,

@@ -8,6 +8,13 @@ import { accommodationTotal, type Quote } from "@/lib/pricing";
 export const paymentsEnabled = () => !!process.env.STRIPE_SECRET_KEY?.trim();
 
 /**
+ * With the publishable key set too, guests pay in a card form on this site (Stripe's embedded
+ * Checkout); without it they are sent to Stripe's own payment page.
+ */
+export const publishableKey = () => process.env.STRIPE_PUBLISHABLE_KEY?.trim() || "";
+export const paysOnSite = () => paymentsEnabled() && !!publishableKey();
+
+/**
  * How long a Checkout Session stays open. Stripe's minimum is 30 minutes;
  * the extra minute absorbs clock differences.
  */
@@ -49,7 +56,9 @@ export async function createCheckoutSession(input: {
   guests: number;
   email: string;
   quote: Quote;
+  /** Where the guest lands after paying; Stripe fills in {CHECKOUT_SESSION_ID}. */
   successUrl: string;
+  /** Where Stripe's own page sends a guest who goes back (not used for the on-site form). */
   cancelUrl: string;
 }) {
   const { quote } = input;
@@ -109,8 +118,9 @@ export async function createCheckoutSession(input: {
         metadata,
       },
       expires_at: Math.floor(Date.now() / 1000) + CHECKOUT_MINUTES * 60,
-      success_url: input.successUrl,
-      cancel_url: input.cancelUrl,
+      ...(paysOnSite()
+        ? { ui_mode: "embedded_page" as const, return_url: input.successUrl }
+        : { success_url: input.successUrl, cancel_url: input.cancelUrl }),
     },
     // Retrying the same booking never opens a second session.
     { idempotencyKey: `checkout-${input.ref}` },

@@ -90,8 +90,10 @@ export type Payment = {
   /** While unpaid, the dates are held until this time (ISO). */
   holdUntil: string;
   sessionId?: string;
-  /** The Stripe Checkout page, while it's open. */
+  /** Where the guest pays (our payment page or Stripe's), while the checkout is open. */
   url?: string;
+  /** Opens the embedded Stripe form on our payment page. */
+  clientSecret?: string;
   livemode?: boolean;
   /** Amount paid in AED. */
   amount?: number;
@@ -434,10 +436,11 @@ async function syncPortalStatus(b: Booking | null) {
 
 /**
  * Opens a Stripe Checkout Session for a booking that is awaiting payment and
- * returns its URL. If Stripe can't be reached the hold is released.
+ * returns the page where the guest pays. If Stripe can't be reached the hold is released.
  */
 export async function startCheckout(booking: Booking, origin: string) {
-  const page = `${origin}/booking/${booking.ref}?t=${await bookingToken(booking.ref)}`;
+  const token = await bookingToken(booking.ref);
+  const page = `${origin}/booking/${booking.ref}?t=${token}`;
   try {
     const session = await createCheckoutSession({
       ref: booking.ref,
@@ -452,18 +455,22 @@ export async function startCheckout(booking: Booking, origin: string) {
       successUrl: `${page}&session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${page}&payment=cancelled`,
     });
-    if (!session.url) throw new Error("Stripe returned no checkout URL.");
+    const payUrl = session.client_secret
+      ? `${origin}/booking/${booking.ref}/pay?t=${token}`
+      : session.url;
+    if (!payUrl) throw new Error("Stripe returned no checkout URL.");
     await mutate<Booking, void>(BOOKINGS, (bookings) => {
       const b = bookings.find((x) => x.ref === booking.ref);
       if (!b?.payment) return;
       b.payment.sessionId = session.id;
-      b.payment.url = session.url ?? undefined;
+      b.payment.url = payUrl;
+      b.payment.clientSecret = session.client_secret ?? undefined;
       b.payment.livemode = session.livemode;
       b.payment.holdUntil = new Date(
         session.expires_at * 1000 + (HOLD_MINUTES - CHECKOUT_MINUTES) * 60_000,
       ).toISOString();
     });
-    return session.url;
+    return payUrl;
   } catch (err) {
     await mutate<Booking, void>(BOOKINGS, (bookings) => {
       const b = bookings.find((x) => x.ref === booking.ref);
@@ -513,6 +520,7 @@ export async function applyCheckoutSession(
     if (!paid) {
       b.payment.status = "expired";
       b.payment.url = undefined;
+      b.payment.clientSecret = undefined;
       if (b.status === "awaiting_payment") {
         b.status = "cancelled";
         b.history.push({
@@ -528,6 +536,7 @@ export async function applyCheckoutSession(
 
     b.payment.status = "paid";
     b.payment.url = undefined;
+    b.payment.clientSecret = undefined;
     b.payment.paidAt = at;
     b.payment.amount = (session.amount_total ?? 0) / 100;
     b.payment.livemode = session.livemode;
@@ -647,6 +656,7 @@ export async function setBookingStatus(
     else if (booking.payment?.status === "open") {
       booking.payment.status = "expired";
       booking.payment.url = undefined;
+      booking.payment.clientSecret = undefined;
     }
     return booking;
   });

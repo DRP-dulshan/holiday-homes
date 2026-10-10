@@ -193,7 +193,7 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                         detail={
                           paid
                             ? `AED ${aed.format(payment.amount ?? booking.quote.total)} paid by card${payment.paidAt ? ` on ${formatDate(payment.paidAt.slice(0, 10))}` : ""}.${payment.refunded ? ` AED ${aed.format(payment.refunded)} refunded to your card.` : ""}`
-                            : "Pay securely on Stripe to confirm your stay."
+                            : "Pay securely by card to confirm your stay."
                         }
                       />
                       <Step
