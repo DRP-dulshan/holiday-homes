@@ -49,33 +49,12 @@ function merge(rows: Row[]): Property[] {
   return out;
 }
 
-const titleKey = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-
-/**
- * Not every portal home has photos yet. One without any borrows them from the website's own copy
- * of the same home (matched by slug, then by title). A home with no photos anywhere is kept
- * unlisted, so guests never see a home without a picture; existing bookings for it still resolve.
- */
-function withLocalPhotos(portal: Property[], local: Property[]): Property[] {
-  const bySlug = new Map(local.map((p) => [p.slug, p]));
-  const byTitle = new Map(local.map((p) => [titleKey(p.title), p]));
-  return portal.map((p) => {
-    const gallery = (p.gallery ?? []).filter(Boolean);
-    const image = p.image || gallery[0];
-    if (image) return { ...p, image, gallery: gallery.length ? gallery : [image] };
-    const twin = bySlug.get(p.slug) ?? byTitle.get(titleKey(p.title));
-    if (twin?.image) return { ...p, image: twin.image, gallery: twin.gallery?.length ? twin.gallery : [twin.image] };
-    console.warn(`[catalog] portal home "${p.slug}" has no photos — hidden until it has some.`);
-    return { ...p, image: "", gallery: [], hidden: true };
-  });
-}
-
 /** Every home, including unlisted ones (admin only). */
 export async function getAllProperties(): Promise<Property[]> {
   const [rows, stats, portal] = await Promise.all([readRows(), getRatingStats(), getPortalHomes()]);
   // With the portal connected, the homes published there are the catalog. An unreachable or empty
   // portal falls back to the built-in list so the site never goes blank.
-  const homes = portal ? withLocalPhotos(portal, merge(rows)) : merge(rows);
+  const homes = portal ?? merge(rows);
   // Ratings come from approved guest reviews; homes without any show none.
   return homes.map((p) => {
     const s = stats.get(p.slug);
