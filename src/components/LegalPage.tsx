@@ -3,7 +3,7 @@ import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { PageHero } from "./PageHero";
 
-export type LegalSection = { heading: string; body: ReactNode };
+export type LegalSection = { heading: string; body: ReactNode; /** Anchor for links to this section. */ id?: string };
 
 export function LegalPage({
   eyebrow,
@@ -30,7 +30,7 @@ export function LegalPage({
             </p>
             <div className="mt-8 space-y-10">
               {sections.map((s, i) => (
-                <section key={s.heading}>
+                <section key={s.heading} id={s.id} className="scroll-mt-28">
                   <h2 className="display text-xl font-semibold text-ink">
                     {i + 1}. {s.heading}
                   </h2>

@@ -272,9 +272,8 @@ export default async function PropertyPage({
 
               <div className="mt-10 rounded-card border border-ink-10 bg-ink-05 p-6 text-sm text-ink-80">
                 Every DRP home is furnished by our own design studio and
-                cleaned, inspected and restocked between stays. Guests also
-                get access to the DRP car fleet and a concierge for the
-                duration of their stay.
+                cleaned, inspected and restocked between stays. Guests can
+                also rent the DRP car, and our team is on hand for the duration of their stay.
                 <Link
                   href="/about"
                   className="ml-1 inline-flex items-center gap-1 font-semibold text-brand-600 hover:underline"

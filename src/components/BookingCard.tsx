@@ -15,6 +15,7 @@ import {
 import { aed, quoteStay, rateLines, validateStay } from "@/lib/pricing";
 import { ContactForm } from "./ContactForm";
 import { ApproxPrice } from "./CurrencyProvider";
+import { BookDirectList } from "./BookDirect";
 import { Modal } from "./Modal";
 import { DateRangeCalendar } from "./booking/DateRangeCalendar";
 import { useAvailability } from "./booking/useAvailability";
@@ -253,6 +254,8 @@ export function BookingCard({ property }: { property: Property }) {
           />
         </div>
       ) : null}
+
+      <BookDirectList />
 
       <p className="mt-4 text-center text-xs text-ink-40">
         You won&rsquo;t be charged yet. Or call {site.phoneDisplay}.

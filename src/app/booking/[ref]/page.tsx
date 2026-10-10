@@ -193,7 +193,7 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                         detail={
                           paid
                             ? `AED ${aed.format(payment.amount ?? booking.quote.total)} paid by card${payment.paidAt ? ` on ${formatDate(payment.paidAt.slice(0, 10))}` : ""}.${payment.refunded ? ` AED ${aed.format(payment.refunded)} refunded to your card.` : ""}`
-                            : "Pay securely on Stripe to confirm your stay."
+                            : "Pay securely by card to confirm your stay."
                         }
                       />
                       <Step
@@ -246,7 +246,7 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                     <div className="sm:col-span-2">
                       <Detail
                         label="Rental car"
-                        value={`${describeCar(booking.car)} — the team will send options and rates.`}
+                        value={`${describeCar(booking.car)} — the team will confirm availability and the rate.`}
                       />
                     </div>
                   ) : null}

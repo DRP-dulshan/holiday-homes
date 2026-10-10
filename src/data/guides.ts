@@ -130,7 +130,7 @@ export const guides: Guide[] = [
       { type: "h2", text: "From the airport" },
       {
         type: "p",
-        text: "Taxis, the Metro and pre-arranged transfers all serve the airports. We can arrange an airport transfer on request — add it as an extra at checkout and the team will quote you.",
+        text: "Taxis, the Metro and pre-arranged transfers all serve the airports.",
       },
       {
         type: "tip",
@@ -180,7 +180,7 @@ export const guides: Guide[] = [
       },
       {
         type: "tip",
-        text: "Want us to organise transfers or a car for the three days? Mention it when you book, and the team will arrange it.",
+        text: "Want a car for the three days? Tick \"I'd like to rent the DRP car\" when you book and the team will confirm it.",
       },
     ],
   },

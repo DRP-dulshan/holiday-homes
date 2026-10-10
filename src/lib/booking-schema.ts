@@ -11,14 +11,15 @@ export const CAR_TYPES = [
   { value: "luxury", label: "Luxury" },
 ] as const;
 
+/** Older bookings carry airport/home; new requests are for the DRP car, arranged with the team ("office"). */
 export const CAR_PICKUPS = [
   { value: "airport", label: "Collect at the airport on arrival" },
   { value: "home", label: "Deliver to the home" },
+  { value: "office", label: "Arranged with the team" },
 ] as const;
 
 /** Extras guests can ask for. They aren't charged online: the team confirms availability and the price. */
 export const EXTRAS = [
-  { id: "airport-transfer", label: "Airport transfer" },
   { id: "early-checkin", label: "Early check-in" },
   { id: "late-checkout", label: "Late check-out" },
   { id: "baby-cot", label: "Baby cot or high chair" },
@@ -27,18 +28,23 @@ export const EXTRAS = [
 export type ExtraId = (typeof EXTRAS)[number]["id"];
 const EXTRA_IDS = EXTRAS.map((e) => e.id) as [ExtraId, ...ExtraId[]];
 
-/** "Airport transfer, Early check-in" */
+/** Extras no longer offered, kept so older bookings still read well. */
+const RETIRED_EXTRAS: Record<string, string> = { "airport-transfer": "Airport transfer" };
+
+/** "Early check-in, Baby cot or high chair" */
 export const describeExtras = (ids: readonly string[] = []) =>
-  ids.map((id) => EXTRAS.find((e) => e.id === id)?.label ?? id).join(", ");
+  ids.map((id) => EXTRAS.find((e) => e.id === id)?.label ?? RETIRED_EXTRAS[id] ?? id).join(", ");
 
 export type CarRequest = {
-  type: (typeof CAR_TYPES)[number]["value"];
+  /** Only on older bookings, from when guests chose a car type. */
+  type?: (typeof CAR_TYPES)[number]["value"];
   pickup: (typeof CAR_PICKUPS)[number]["value"];
 };
 
-/** "SUV / family — deliver to the home" */
+/** "DRP car" (older bookings: "SUV / family — deliver to the home") */
 export function describeCar(car: CarRequest) {
-  const type = CAR_TYPES.find((t) => t.value === car.type)?.label ?? car.type;
+  const type = car.type ? (CAR_TYPES.find((t) => t.value === car.type)?.label ?? car.type) : "DRP car";
+  if (car.pickup === "office") return type;
   const pickup = CAR_PICKUPS.find((p) => p.value === car.pickup)?.label ?? car.pickup;
   return `${type} — ${pickup.charAt(0).toLowerCase()}${pickup.slice(1)}`;
 }
@@ -58,7 +64,7 @@ export const bookingRequestSchema = z.object({
   country: z.string().trim().max(80).optional(),
   arrivalTime: z.string().trim().max(40).optional(),
   specialRequests: z.string().trim().max(1500).optional(),
-  /** Rental car add-on — the team sends options and rates with the confirmation. */
+  /** The guest would like to rent the DRP car; the team confirms availability and the rate. */
   needCar: z.boolean().optional(),
   carType: z.enum(["any", "economy", "sedan", "suv", "luxury"]).optional(),
   carPickup: z.enum(["airport", "home"]).optional(),

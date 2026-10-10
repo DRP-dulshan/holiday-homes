@@ -6,6 +6,7 @@ import { WhyDRP } from "@/components/WhyDRP";
 import { FeaturedStays } from "@/components/FeaturedStays";
 import { AreasWeCover } from "@/components/AreasWeCover";
 import { DRPPromise } from "@/components/DRPPromise";
+import { BookDirect } from "@/components/BookDirect";
 import { Testimonials } from "@/components/Testimonials";
 import { FAQAccordion } from "@/components/FAQAccordion";
 import { GuidesTeaser } from "@/components/GuidesTeaser";
@@ -54,6 +55,7 @@ export default async function Home() {
         <FeaturedStays />
         <WhyDRP />
         <AreasWeCover homesByArea={summary.homesByArea} />
+        <BookDirect />
         <DRPPromise />
         <Testimonials reviews={stories} />
         <GuidesTeaser />
