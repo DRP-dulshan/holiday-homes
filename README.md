@@ -137,7 +137,7 @@ test all the flows locally.
 | `RESEND_API_KEY`, `MAIL_FROM` | Turn on real email delivery.                                 |
 | `NOTIFY_EMAIL`    | Inbox for team notifications (default: `site.email`).                   |
 | `CRON_SECRET` | Protects the cron routes (`/api/cron/daily` also sends review requests; `/api/cron/ical` only refreshes Airbnb calendars). |
-| `PORTAL_API_URL`, `PORTAL_API_KEY` | Optional. Connect the D\|R\|P portal: homes published there (portal → unit → Website) replace the built-in list, their availability (incl. Airbnb) comes from the portal, and website bookings are pushed to it. The key equals `WEBSITE_API_KEY` in the portal. If the portal is unreachable the site shows the built-in homes and refuses new bookings for portal homes instead of risking a double booking. |
+| `PORTAL_API_URL`, `PORTAL_API_KEY` | Optional. Connect the D\|R\|P portal: homes published there (portal → unit → Website) replace the built-in list, their availability (incl. Airbnb) comes from the portal, and website bookings are pushed to it. The key equals `WEBSITE_API_KEY` in the portal. If the portal is unreachable the site shows the built-in homes and refuses new bookings for portal homes instead of risking a double booking. A portal home without photos uses the website's photos of the same home (same slug or title); one with none anywhere stays hidden until it has some. |
 | `BLOB_READ_WRITE_TOKEN` | Photo uploads in the admin (Vercel Blob). Optional.               |
 | `STRIPE_SECRET_KEY` | Turns on online payment (`sk_test_…` to test, `sk_live_…` for real payments). |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret (`whsec_…`) of the Stripe webhook below.            |
